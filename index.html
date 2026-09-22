@@ -79,7 +79,7 @@ button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid v
 <details><summary>제작식 확인</summary><div style="overflow:auto"><table id="recipeTable"></table></div></details>
 </section>
 
-<div class="foot">드랍 기준: 숙련도 10단계(×3.75), 10만 소탕 실측 비명초 1,074,906 / 활력수 1,761,158 / 복원석 3,210,900. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
+<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 10단계(×3.75) 10만 소탕 실측값을 숙련도에 맞춰 환산합니다. 곰뼈·곰가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
 </main>
 
 <script>
@@ -98,21 +98,21 @@ coverage:'비명초·활력수·복원석 모두 소탕 기준이 확인되어 �
 hard:{
 name:'경화석',child:[0,3,3,3,3,5,5,4,4],
 resources:[
-{name:'곰뼈',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:null},
-{name:'곰가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:null},
+{name:'곰뼈',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:1999900000,fixed:true},
+{name:'곰가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:1999900000,fixed:true},
 {name:'늑대가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:null},
 {name:'복원석',direct:[1000,3000,4000,5000,10000,100000,500000,1500000,5000000],base:3210900}
 ],
-coverage:'현재 입장권 계산은 복원석만 포함합니다. 곰뼈·곰가죽·늑대가죽은 10만 소탕 기준값이 확인되지 않아 필요 재료량만 계산합니다.'
+coverage:'곰뼈·곰가죽은 전 유저 공통 10만 소탕 1,999,900,000개 기준으로 계산합니다. 복원석은 숙련도 배율을 적용합니다. 늑대가죽은 소탕 기준값이 아직 없어 입장권 합계에서는 제외합니다.'
 },
 life:{
 name:'생명석',child:[0,3,3,3,3,5,5,4,4],
 resources:[
-{name:'곰심장',direct:[500,3000,8000,50000,500000,50000000,500000000,5000000000,15000000000],base:null},
+{name:'곰심장',direct:[500,3000,8000,50000,500000,50000000,500000000,5000000000,15000000000],base:1999900000,fixed:true},
 {name:'활력수',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000],base:1761158},
 {name:'복원석',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000],base:3210900}
 ],
-coverage:'현재 입장권 계산은 활력수·복원석만 포함합니다. 곰심장은 10만 소탕 기준값이 확인되지 않아 필요 재료량만 계산합니다.'
+coverage:'곰심장은 전 유저 공통 10만 소탕 1,999,900,000개 기준으로 계산합니다. 활력수·복원석은 숙련도 배율을 적용하며, 생명석은 현재 필요한 모든 재료의 소탕 기준이 확인되어 입장권까지 계산합니다.'
 }
 };
 var type='maseok',state={};
@@ -160,7 +160,7 @@ function calc(){
  c.resources.forEach(function(r,i){
   var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
   if(r.base){
-   var per100k=r.base*(mult/3.75),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
+   var per100k=r.fixed?r.base:r.base*(mult/3.75),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
    totalRuns+=runs;
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">1만회 예상: '+fmt(per10k)+'</div><div class="line">10만회 예상: '+fmt(per100k)+'</div><div class="strong">소탕 '+fmt(runs)+'회</div></div>';
   }else{
@@ -170,7 +170,7 @@ function calc(){
  el('resourceResults').innerHTML=html;
  var tickets=totalRuns*2,short=Math.max(0,tickets-val('ticketsNow')),dia=short*val('ticketPrice');
  el('ticketsTotal').textContent=fmt(tickets)+'장';el('totalRuns').textContent=fmt(totalRuns)+'회';el('ticketShort').textContent=fmt(short)+'장';el('diamondNeed').textContent=fmt(dia)+' 다이아';
- el('ticketLabel').textContent=type==='maseok'?'총 필요 입장권':'확인 가능 재료 기준 입장권';
+ el('ticketLabel').textContent=(type==='hard'?'확인 가능 재료 기준 입장권':'총 필요 입장권');
  var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
  var remain=inv.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
  var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
