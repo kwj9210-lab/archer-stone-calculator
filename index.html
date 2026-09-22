@@ -79,7 +79,7 @@ button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid v
 <details><summary>제작식 확인</summary><div style="overflow:auto"><table id="recipeTable"></table></div></details>
 </section>
 
-<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 10단계(×3.75) 10만 소탕 실측값을 숙련도에 맞춰 환산합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
+<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 9단계(×3.50) 10만 소탕 실측값을 숙련도에 맞춰 환산합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
 </main>
 
 <script>
@@ -160,7 +160,7 @@ function calc(){
  c.resources.forEach(function(r,i){
   var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
   if(r.base){
-   var per100k=r.fixed?r.base:r.base*(mult/3.75),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
+   var per100k=r.fixed?r.base:r.base*(mult/3.5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
    totalRuns+=runs;
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">1만회 예상: '+fmt(per10k)+'</div><div class="line">10만회 예상: '+fmt(per100k)+'</div><div class="strong">소탕 '+fmt(runs)+'회</div></div>';
   }else{
