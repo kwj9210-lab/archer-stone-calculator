@@ -7,7 +7,7 @@
 <style>
 :root{color-scheme:dark;--bg:#0f1115;--panel:#181b21;--panel2:#20242c;--line:#353b47;--text:#f4f6f8;--muted:#aeb6c2;--accent:#72dc94;--warn:#f2c66d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
-.wrap{max-width:1020px;margin:auto;padding:18px 13px 48px}h1{font-size:25px;margin:0 0 7px}.intro,.foot{font-size:13px;line-height:1.6;color:var(--muted)}.visitor-counter{display:flex;justify-content:center;align-items:center;margin:18px 0 6px}.visitor-counter img{height:24px;max-width:100%}
+.wrap{max-width:1020px;margin:auto;padding:18px 13px 48px}h1{font-size:25px;margin:0 0 7px}.intro,.foot{font-size:13px;line-height:1.6;color:var(--muted)}
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 8px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:11px;padding:12px 8px;font-weight:700}.tab.active{background:#26362d;color:#fff;border-color:#47755a}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin:12px 0}.card h2{font-size:17px;margin:0 0 12px}
 .grid2,.grid3,.grid4,.grid5,.results,.stats{display:grid;gap:10px}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3,.results,.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid5{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -83,7 +83,7 @@ button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid v
   summary{font-size:13px;padding:6px 0}
   table{font-size:11px}
   th,td{padding:7px 4px}
-  .visitor-counter{margin:14px 0 6px}.visitor-counter img{height:22px}.foot{font-size:10px;line-height:1.45;padding:2px 3px}
+  .foot{font-size:10px;line-height:1.45;padding:2px 3px}
 }
 @media(max-width:360px){
   #stoneGrid.grid5{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -152,7 +152,7 @@ button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid v
 <details><summary>제작식 확인</summary><div style="overflow:auto"><table id="recipeTable"></table></div></details>
 </section>
 
-<div class="visitor-counter"><img src="https://hitscounter.dev/api/hit?color=%2372dc94&icon=eye-fill&label=%EB%88%84%EC%A0%81%20%EB%B0%A9%EB%AC%B8&url=https%3A%2F%2Farcher-stone-calculator.vercel.app" alt="누적 방문수"></div>
+
 <div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 9단계(×3.50) 10만 소탕 실측값을 숙련도에 맞춰 환산합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
 </main>
 
