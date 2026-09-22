@@ -131,7 +131,7 @@ button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid v
 <h2>4. 내 던전 숙련도</h2>
 <div class="grid2">
 <label>숙련도 단계<select id="masteryLevel"></select></label>
-<label>숙련도 배율<input id="masteryMult" type="number" min="0.01" step="0.25" value="3.75"></label>
+<label>숙련도 배율<input id="masteryMult" type="number" min="0.01" step="0.25" value="5.00"></label>
 </div>
 <div class="note">1단계 ×1.50부터 단계당 +0.25배로 25단계까지 넣었습니다. 이후 단계가 추가되면 배율을 직접 입력할 수 있습니다.</div>
 </section>
@@ -153,7 +153,7 @@ button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid v
 </section>
 
 
-<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 9단계(×3.50) 10만 소탕 실측값을 숙련도에 맞춰 환산합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
+<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
 </main>
 
 <script>
@@ -163,9 +163,9 @@ var configs={
 maseok:{
 name:'마석',child:[0,3,3,3,3,5,4,4,4],
 resources:[
-{name:'비명초',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:1074906},
-{name:'활력수',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:1761158},
-{name:'복원석',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:3210900}
+{name:'비명초',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:1526775},
+{name:'활력수',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:2508670},
+{name:'복원석',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:460320}
 ],
 coverage:'비명초·활력수·복원석 모두 소탕 기준이 확인되어 입장권까지 계산합니다.'
 },
@@ -234,7 +234,7 @@ function calc(){
  c.resources.forEach(function(r,i){
   var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
   if(r.base){
-   var per100k=r.fixed?r.base:r.base*(mult/3.5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
+   var per100k=r.fixed?r.base:r.base*(mult/5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
    totalRuns+=runs;
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">1만회 예상: '+fmt(per10k)+'</div><div class="line">10만회 예상: '+fmt(per100k)+'</div><div class="strong">소탕 '+fmt(runs)+'회</div></div>';
   }else{
@@ -250,7 +250,7 @@ function calc(){
  var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
  el('summary').innerHTML='보유 '+c.name+' 반영 후 필요한 재료: <b>'+req+'</b><br>신규 제작 과정: '+(craft||'추가 제작 없음')+(remain?'<br>남는 입력 '+c.name+': '+remain:'');
 }
-for(var lv=1;lv<=25;lv++){var o=document.createElement('option');o.value=lv;o.textContent=lv+'단계 · ×'+(1.25+.25*lv).toFixed(2);if(lv===10)o.selected=true;el('masteryLevel').appendChild(o)}
+for(var lv=1;lv<=25;lv++){var o=document.createElement('option');o.value=lv;o.textContent=lv+'단계 · ×'+(1.25+.25*lv).toFixed(2);if(lv===15)o.selected=true;el('masteryLevel').appendChild(o)}
 el('masteryLevel').addEventListener('change',function(){el('masteryMult').value=(1.25+.25*Number(this.value)).toFixed(2);calc()});
 el('masteryMult').addEventListener('input',calc);el('ticketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
 el('clearStones').addEventListener('click',function(){state[type].stones=Array(9).fill(0);render()});
