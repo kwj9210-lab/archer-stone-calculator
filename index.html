@@ -3,50 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>궁수키우기 RPG 마석 계산기</title>
+<title>궁수키우기 RPG 각인석 계산기</title>
 <style>
-:root{color-scheme:dark;--bg:#0f1115;--panel:#181b21;--panel2:#20242c;--line:#353b47;--text:#f4f6f8;--muted:#aeb6c2;--accent:#6bd58b}
+:root{color-scheme:dark;--bg:#0f1115;--panel:#181b21;--panel2:#20242c;--line:#353b47;--text:#f4f6f8;--muted:#aeb6c2;--accent:#72dc94;--warn:#f2c66d}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
-.wrap{max-width:980px;margin:auto;padding:20px 14px 48px}h1{font-size:25px;margin:0 0 7px}.intro,.foot{font-size:13px;line-height:1.6;color:var(--muted)}
+.wrap{max-width:1020px;margin:auto;padding:18px 13px 48px}h1{font-size:25px;margin:0 0 7px}.intro,.foot{font-size:13px;line-height:1.6;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 8px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:11px;padding:12px 8px;font-weight:700}.tab.active{background:#26362d;color:#fff;border-color:#47755a}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin:12px 0}.card h2{font-size:17px;margin:0 0 12px}
-.grid2,.grid3,.grid5,.results,.stats{display:grid;gap:10px}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3,.results,.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.grid5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.grid2,.grid3,.grid4,.grid5,.results,.stats{display:grid;gap:10px}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3,.results,.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid5{grid-template-columns:repeat(5,minmax(0,1fr))}
 label{font-size:13px;color:var(--muted)}input,select,button{font:inherit}input,select{width:100%;min-height:44px;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}
-button{min-height:42px;padding:9px 13px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}
+button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}
 .toprow,.head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}.note,.box{background:var(--panel2);border-radius:10px;padding:11px 12px}.note{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.6}
-.k{font-size:12px;color:var(--muted)}.big{font-size:27px;font-weight:800}.box h3{margin:0 0 7px;font-size:16px}.line{font-size:13px;line-height:1.65}.strong{font-size:19px;font-weight:800;margin-top:4px}
-.results,.stats{margin-top:12px}details{margin-top:12px}summary{cursor:pointer;color:var(--muted)}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}th,td{padding:8px 5px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
-@media(max-width:720px){.grid2,.grid3,.results,.stats{grid-template-columns:1fr}.grid5{grid-template-columns:repeat(3,minmax(0,1fr))}.big{font-size:23px}}
-@media(max-width:420px){.grid5{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.k{font-size:12px;color:var(--muted)}.big{font-size:27px;font-weight:800}.box h3{margin:0 0 7px;font-size:16px}.line{font-size:13px;line-height:1.65}.strong{font-size:19px;font-weight:800;margin-top:4px}.warn{color:var(--warn)}
+.results,.stats{margin-top:12px}details{margin-top:12px}summary{cursor:pointer;color:var(--muted)}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}th,td{padding:8px 5px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}
+@media(max-width:780px){.grid2,.grid3,.grid4,.results,.stats{grid-template-columns:1fr}.grid5{grid-template-columns:repeat(3,minmax(0,1fr))}.big{font-size:23px}}
+@media(max-width:430px){.grid5{grid-template-columns:repeat(2,minmax(0,1fr))}.tabs{gap:5px}.tab{font-size:14px;padding:11px 4px}}
 </style>
 </head>
 <body>
 <main class="wrap">
-<h1>궁수키우기 RPG 마석 계산기</h1>
-<div class="intro">본인 던전 숙련도와 보유 마석·재료·입장권을 입력하면 필요한 소탕 횟수와 입장권을 계산합니다. 재료별 소탕 횟수는 실제 필요량 계산 후 만 단위 올림합니다.</div>
+<h1>궁수키우기 RPG 각인석 계산기</h1>
+<div class="intro">마석·경화석·생명석의 보유 각인석과 재료를 반영해 목표 등급 제작에 필요한 재료를 계산합니다. 던전 숙련도는 확인된 드랍 기준이 있는 재료의 소탕·입장권 계산에 적용됩니다.</div>
+
+<div class="tabs">
+<button class="tab active" data-type="maseok">마석</button>
+<button class="tab" data-type="hard">경화석</button>
+<button class="tab" data-type="life">생명석</button>
+</div>
 
 <section class="card">
 <h2>1. 목표</h2>
 <div class="grid2">
-<label>목표 마석<select id="targetGrade">
-<option value="8" selected>태초</option><option value="7">신화</option><option value="6">전설</option><option value="5">특급</option><option value="4">최상급</option><option value="3">상급</option><option value="2">일반</option><option value="1">하급</option><option value="0">최하급</option>
-</select></label>
+<label>목표 등급<select id="targetGrade"></select></label>
 <label>제작 수량<input id="targetCount" type="number" min="1" step="1" value="1"></label>
 </div>
 </section>
 
 <section class="card">
-<div class="toprow"><h2 style="margin:0">2. 보유 마석</h2><button id="clear" type="button">모두 0</button></div>
-<div id="stones" class="grid5" style="margin-top:12px"></div>
-<div class="note">최종 제작에 재료로 사용할 마석을 입력하세요. 보유 중간 등급을 먼저 차감해서 계산합니다.</div>
+<div class="toprow"><h2 id="ownedTitle" style="margin:0">2. 보유 마석</h2><button id="clearStones" class="minor" type="button">모두 0</button></div>
+<div id="stoneGrid" class="grid5" style="margin-top:12px"></div>
+<div class="note">최종 제작에 재료로 사용할 보유 각인석을 입력하세요. 필요한 등급부터 보유분을 먼저 차감하고 부족한 수량만 하위 등급으로 제작합니다.</div>
 </section>
 
 <section class="card">
 <h2>3. 현재 보유 재료 / 입장권</h2>
-<div class="grid3">
-<label>비명초<input id="raw0" type="number" min="0" value="0"></label>
-<label>활력수<input id="raw1" type="number" min="0" value="0"></label>
-<label>복원석<input id="raw2" type="number" min="0" value="0"></label>
-</div>
+<div id="rawGrid" class="grid4"></div>
 <div class="grid2" style="margin-top:10px">
 <label>던전 입장권 보유량<input id="ticketsNow" type="number" min="0" value="0"></label>
 <label>입장권 1장 가격(다이아)<input id="ticketPrice" type="number" min="0" value="20"></label>
@@ -59,71 +60,128 @@ button{min-height:42px;padding:9px 13px;border:1px solid var(--line);border-radi
 <label>숙련도 단계<select id="masteryLevel"></select></label>
 <label>숙련도 배율<input id="masteryMult" type="number" min="0.01" step="0.25" value="3.75"></label>
 </div>
-<div class="note">1단계 ×1.50에서 단계당 +0.25배로 입력했습니다. 현재 확인된 25단계까지 선택할 수 있고, 이후 단계가 나오면 배율을 직접 입력할 수 있습니다.</div>
+<div class="note">1단계 ×1.50부터 단계당 +0.25배로 25단계까지 넣었습니다. 이후 단계가 추가되면 배율을 직접 입력할 수 있습니다.</div>
 </section>
 
 <section class="card">
 <div class="head">
-<div><div class="k">입력한 숙련도 기준</div><div class="big">마석 제작 계산</div></div>
-<div style="text-align:right"><div class="k">총 필요 입장권</div><div id="ticketsTotal" class="big">0장</div></div>
+<div><div class="k" id="resultKicker">입력한 숙련도 기준</div><div id="resultTitle" class="big">마석 제작 계산</div></div>
+<div style="text-align:right"><div class="k" id="ticketLabel">총 필요 입장권</div><div id="ticketsTotal" class="big">0장</div></div>
 </div>
+<div id="coverageNote" class="note"></div>
 <div id="resourceResults" class="results"></div>
 <div class="stats">
-<div class="box"><div class="k">총 소탕 횟수</div><div id="totalRuns" class="strong">0회</div></div>
+<div class="box"><div class="k">계산 대상 총 소탕</div><div id="totalRuns" class="strong">0회</div></div>
 <div class="box"><div class="k">보유 입장권 반영 후 부족</div><div id="ticketShort" class="strong">0장</div></div>
 <div class="box"><div class="k">부족분 구매 시</div><div id="diamondNeed" class="strong">0 다이아</div></div>
 </div>
 <div id="summary" class="note"></div>
-<details><summary>마석 제작식 확인</summary>
-<table><thead><tr><th>등급</th><th>직접 재료(각)</th><th>하위</th><th>완전 신규 누적(각)</th></tr></thead>
-<tbody>
-<tr><td>최하급</td><td>500</td><td>-</td><td>500</td></tr><tr><td>하급</td><td>2,000</td><td>3</td><td>3,500</td></tr><tr><td>일반</td><td>3,000</td><td>3</td><td>13,500</td></tr><tr><td>상급</td><td>5,000</td><td>3</td><td>45,500</td></tr><tr><td>최상급</td><td>10,000</td><td>3</td><td>146,500</td></tr><tr><td>특급</td><td>60,000</td><td>5</td><td>792,500</td></tr><tr><td>전설</td><td>150,000</td><td>4</td><td>3,320,000</td></tr><tr><td>신화</td><td>400,000</td><td>4</td><td>13,680,000</td></tr><tr><td>태초</td><td>1,000,000</td><td>4</td><td>55,720,000</td></tr>
-</tbody></table></details>
+<details><summary>제작식 확인</summary><div style="overflow:auto"><table id="recipeTable"></table></div></details>
 </section>
-<div class="foot">기준 드랍량: 숙련도 10단계(×3.75), 10만 소탕 실측 비명초 1,074,906 / 활력수 1,761,158 / 복원석 3,210,900. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
+
+<div class="foot">드랍 기준: 숙련도 10단계(×3.75), 10만 소탕 실측 비명초 1,074,906 / 활력수 1,761,158 / 복원석 3,210,900. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
 </main>
+
 <script>
 (function(){
-var grades=[
-{name:'최하급',fee:500,child:0},{name:'하급',fee:2000,child:3},{name:'일반',fee:3000,child:3},{name:'상급',fee:5000,child:3},{name:'최상급',fee:10000,child:3},{name:'특급',fee:60000,child:5},{name:'전설',fee:150000,child:4},{name:'신화',fee:400000,child:4},{name:'태초',fee:1000000,child:4}
-];
+var G=['최하급','하급','일반','상급','최상급','특급','전설','신화','태초'];
+var configs={
+maseok:{
+name:'마석',child:[0,3,3,3,3,5,4,4,4],
+resources:[
+{name:'비명초',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:1074906},
+{name:'활력수',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:1761158},
+{name:'복원석',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:3210900}
+],
+coverage:'비명초·활력수·복원석 모두 소탕 기준이 확인되어 입장권까지 계산합니다.'
+},
+hard:{
+name:'경화석',child:[0,3,3,3,3,5,5,4,4],
+resources:[
+{name:'곰뼈',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:null},
+{name:'곰가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:null},
+{name:'늑대가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:null},
+{name:'복원석',direct:[1000,3000,4000,5000,10000,100000,500000,1500000,5000000],base:3210900}
+],
+coverage:'현재 입장권 계산은 복원석만 포함합니다. 곰뼈·곰가죽·늑대가죽은 10만 소탕 기준값이 확인되지 않아 필요 재료량만 계산합니다.'
+},
+life:{
+name:'생명석',child:[0,3,3,3,3,5,5,4,4],
+resources:[
+{name:'곰심장',direct:[500,3000,8000,50000,500000,50000000,500000000,5000000000,15000000000],base:null},
+{name:'활력수',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000],base:1761158},
+{name:'복원석',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000],base:3210900}
+],
+coverage:'현재 입장권 계산은 활력수·복원석만 포함합니다. 곰심장은 10만 소탕 기준값이 확인되지 않아 필요 재료량만 계산합니다.'
+}
+};
+var type='maseok',state={};
 function el(id){return document.getElementById(id)}
-function num(id){return Math.max(0,Number(el(id).value)||0)}
+function val(id){return Math.max(0,Number(el(id).value)||0)}
 function fmt(v){return Math.round(v).toLocaleString('ko-KR')}
-var stones=el('stones');
-grades.forEach(function(g,i){var l=document.createElement('label');l.innerHTML=g.name+'<input id="stone'+i+'" type="number" min="0" step="1" value="0">';stones.appendChild(l)});
-var mastery=el('masteryLevel');
-for(var lv=1;lv<=25;lv++){var o=document.createElement('option');o.value=lv;o.textContent=lv+'단계 · ×'+(1.25+0.25*lv).toFixed(2);if(lv===10)o.selected=true;mastery.appendChild(o)}
+function initState(t){
+ if(state[t])return;
+ state[t]={stones:Array(9).fill(0),raw:Array(configs[t].resources.length).fill(0),target:8,count:1};
+}
+function saveCurrent(){
+ initState(type);var s=state[type];
+ s.target=Number(el('targetGrade').value);s.count=val('targetCount');
+ s.stones=G.map(function(_,i){return Math.floor(val('stone'+i))});
+ s.raw=configs[type].resources.map(function(_,i){return val('raw'+i)});
+}
+function render(){
+ initState(type);var c=configs[type],s=state[type];
+ el('ownedTitle').textContent='2. 보유 '+c.name;
+ el('resultTitle').textContent=c.name+' 제작 계산';
+ el('targetGrade').innerHTML=G.map(function(x,i){return '<option value="'+i+'" '+(i===s.target?'selected':'')+'>'+x+' '+c.name+'</option>'}).join('');
+ el('targetCount').value=s.count;
+ el('stoneGrid').innerHTML=G.map(function(x,i){return '<label>'+x+'<input id="stone'+i+'" type="number" min="0" step="1" value="'+s.stones[i]+'"></label>'}).join('');
+ el('rawGrid').className=c.resources.length===4?'grid4':'grid3';
+ el('rawGrid').innerHTML=c.resources.map(function(r,i){return '<label>'+r.name+'<input id="raw'+i+'" type="number" min="0" value="'+(s.raw[i]||0)+'"></label>'}).join('');
+ el('coverageNote').textContent=c.coverage;
+ document.querySelectorAll('#stoneGrid input,#rawGrid input,#targetGrade,#targetCount').forEach(function(x){x.addEventListener('input',function(){saveCurrent();calc()})});
+ buildRecipeTable();calc();
+}
+function buildRecipeTable(){
+ var c=configs[type],head='<thead><tr><th>등급</th><th>하위</th>'+c.resources.map(function(r){return '<th>'+r.name+'</th>'}).join('')+'</tr></thead>';
+ var body='<tbody>'+G.map(function(g,i){return '<tr><td>'+g+'</td><td>'+(i?c.child[i]+'개':'-')+'</td>'+c.resources.map(function(r){return '<td>'+fmt(r.direct[i])+'</td>'}).join('')+'</tr>'}).join('')+'</tbody>';
+ el('recipeTable').innerHTML=head+body;
+}
 function calc(){
-var tg=Math.max(0,Math.min(8,Math.floor(num('targetGrade'))));
-var count=Math.max(1,Math.min(9999,Math.floor(num('targetCount'))));
-var inv=grades.map(function(_,i){return Math.floor(num('stone'+i))});
-var crafted=Array(9).fill(0),rawNeed=0;
-function need(g,q){if(q<=0)return;var use=Math.min(inv[g],q);inv[g]-=use;q-=use;if(q<=0)return;crafted[g]+=q;rawNeed+=grades[g].fee*q;if(g>0)need(g-1,q*grades[g].child)}
-need(tg,count);
-var names=['비명초','활력수','복원석'],base=[1074906,1761158,3210900],mult=Math.max(0.01,num('masteryMult')),totalRuns=0,html='';
-for(var i=0;i<3;i++){
-var have=num('raw'+i),shortage=Math.max(0,rawNeed-have),per100k=base[i]*(mult/3.75),per10k=per100k/10;
-var exact=shortage===0?0:(shortage/per100k)*100000;
-var runs=exact===0?0:Math.ceil(exact/10000)*10000;totalRuns+=runs;
-html+='<div class="box"><h3>'+names[i]+'</h3><div class="line">제작 필요: '+fmt(rawNeed)+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">1만회 예상: '+fmt(per10k)+'</div><div class="line">10만회 예상: '+fmt(per100k)+'</div><div class="strong">소탕 '+fmt(runs)+'회</div></div>';
+ var c=configs[type],tg=Math.max(0,Math.min(8,Number(el('targetGrade').value))),count=Math.max(1,Math.floor(val('targetCount')));
+ var inv=G.map(function(_,i){return Math.floor(val('stone'+i))}),crafted=Array(9).fill(0),needRes=Array(c.resources.length).fill(0);
+ function need(g,q){
+  if(q<=0)return;var use=Math.min(inv[g],q);inv[g]-=use;q-=use;if(q<=0)return;
+  crafted[g]+=q;c.resources.forEach(function(r,j){needRes[j]+=r.direct[g]*q});
+  if(g>0)need(g-1,q*c.child[g]);
+ }
+ need(tg,count);
+ var mult=Math.max(.01,val('masteryMult')),totalRuns=0,html='';
+ c.resources.forEach(function(r,i){
+  var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
+  if(r.base){
+   var per100k=r.base*(mult/3.75),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
+   totalRuns+=runs;
+   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">1만회 예상: '+fmt(per10k)+'</div><div class="line">10만회 예상: '+fmt(per100k)+'</div><div class="strong">소탕 '+fmt(runs)+'회</div></div>';
+  }else{
+   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line warn">소탕 기준값 미확인</div></div>';
+  }
+ });
+ el('resourceResults').innerHTML=html;
+ var tickets=totalRuns*2,short=Math.max(0,tickets-val('ticketsNow')),dia=short*val('ticketPrice');
+ el('ticketsTotal').textContent=fmt(tickets)+'장';el('totalRuns').textContent=fmt(totalRuns)+'회';el('ticketShort').textContent=fmt(short)+'장';el('diamondNeed').textContent=fmt(dia)+' 다이아';
+ el('ticketLabel').textContent=type==='maseok'?'총 필요 입장권':'확인 가능 재료 기준 입장권';
+ var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
+ var remain=inv.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
+ var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
+ el('summary').innerHTML='보유 '+c.name+' 반영 후 필요한 재료: <b>'+req+'</b><br>신규 제작 과정: '+(craft||'추가 제작 없음')+(remain?'<br>남는 입력 '+c.name+': '+remain:'');
 }
-el('resourceResults').innerHTML=html;
-var tickets=totalRuns*2;
-var short=Math.max(0,tickets-num('ticketsNow'));
-var dia=short*num('ticketPrice');
-el('totalRuns').textContent=fmt(totalRuns)+'회';
-el('ticketsTotal').textContent=fmt(tickets)+'장';
-el('ticketShort').textContent=fmt(short)+'장';
-el('diamondNeed').textContent=fmt(dia)+' 다이아';
-var craft=crafted.map(function(v,i){return v?grades[i].name+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
-var remain=inv.map(function(v,i){return v?grades[i].name+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
-el('summary').innerHTML='보유 마석을 먼저 사용한 뒤 필요한 원재료: <b>비명초·활력수·복원석 각각 '+fmt(rawNeed)+'개</b><br>신규 제작 과정: '+(craft||'추가 제작 없음')+(remain?'<br>남는 입력 마석: '+remain:'');
-}
-mastery.addEventListener('change',function(){var lv=Number(mastery.value);el('masteryMult').value=(1.25+0.25*lv).toFixed(2);calc()});
-document.querySelectorAll('input,select').forEach(function(x){if(x.id!=='masteryLevel')x.addEventListener('input',calc)});
-el('clear').addEventListener('click',function(){grades.forEach(function(_,i){el('stone'+i).value=0});calc()});
-calc();
+for(var lv=1;lv<=25;lv++){var o=document.createElement('option');o.value=lv;o.textContent=lv+'단계 · ×'+(1.25+.25*lv).toFixed(2);if(lv===10)o.selected=true;el('masteryLevel').appendChild(o)}
+el('masteryLevel').addEventListener('change',function(){el('masteryMult').value=(1.25+.25*Number(this.value)).toFixed(2);calc()});
+el('masteryMult').addEventListener('input',calc);el('ticketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
+el('clearStones').addEventListener('click',function(){state[type].stones=Array(9).fill(0);render()});
+document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){saveCurrent();type=this.dataset.type;document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.type===type)});render()})});
+render();
 })();
 </script>
 </body>
