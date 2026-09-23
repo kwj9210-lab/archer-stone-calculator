@@ -1,517 +1,337 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>궁수키우기 IL2CPP v31 분석 도구</title>
-<style>
-:root{color-scheme:dark;--bg:#0f1117;--panel:#171b24;--line:#344055;--text:#f2f4f8;--muted:#aab3c5;--good:#91e6a7;--bad:#ff8a8a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
-main{max-width:980px;margin:auto;padding:18px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:14px;margin:12px 0}
-h1{font-size:21px;margin:0 0 8px}h2{font-size:16px;margin:0 0 10px}p{color:var(--muted);font-size:13px;line-height:1.55}
-label{display:block;margin:10px 0 5px;color:var(--muted);font-size:13px}input,button{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:#0f1320;color:var(--text);font:inherit}
-button{cursor:pointer;font-weight:700;background:#20354a;margin-top:10px}button:disabled{opacity:.5;cursor:not-allowed}
-pre{white-space:pre-wrap;word-break:break-word;background:#0c0f15;border:1px solid var(--line);border-radius:9px;padding:12px;font-size:12px;line-height:1.5;max-height:620px;overflow:auto}
-.ok{color:var(--good)}.bad{color:var(--bad)}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padding:10px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>궁수키우기 초월석 시뮬레이터 - 실측 효과판</title>
+  <style>
+    :root {
+      --bg:#0f1117;
+      --panel:#171b24;
+      --card:#202635;
+      --text:#f2f4f8;
+      --muted:#aab3c5;
+      --line:#344055;
+      --accent:#7cc7ff;
+      --bad:#ff8a8a;
+      --good:#91e6a7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    h2 { font-size: 17px; margin: 0 0 10px; }
+    p { margin: 6px 0; color: var(--muted); }
+    .notice {
+      border: 1px solid var(--line);
+      background: #151923;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 10px 0 4px;
+    }
+    input, select, button {
+      width: 100%;
+      font-size: 16px;
+      color: var(--text);
+      background: #0f1320;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    button {
+      background: #20354a;
+      border-color: #3f6f9c;
+      cursor: pointer;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    button:hover { background: #284765; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+      text-align: right;
+      white-space: nowrap;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    .small { font-size: 12px; color: var(--muted); }
+    .ok { color: var(--good); }
+    .bad { color: var(--bad); }
+    .scroll { overflow-x: auto; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .card strong { display:block; font-size:14px; }
+    .card span { color:var(--muted); font-size:12px; }
+    @media (max-width: 760px) {
+      main { padding: 12px; }
+      .grid { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr 1fr; }
+      th, td { font-size: 13px; padding: 7px 5px; }
+    }
+  </style>
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 5</small></h1>
-<p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
+  <h1>궁수키우기 초월석 시뮬레이터 - 실측 효과판</h1>
+  <div class="notice">
+    <p><b>현재 상태:</b> 비용표와 조합 전수조사는 반영됨. 정확한 투력식은 아직 APK 분석 후 교체 필요.</p>
+    <p>기본 점수는 임시 가중치다. 사용자가 말한 “차원각인 올인이 높았다”는 실측을 확인하기 위해 차원각인 가중치를 높게 둔 상태.</p>
+  </div>
 
-<section class="panel">
-<div class="row">
-<div><label>global-metadata.dat</label><input id="meta" type="file"></div>
-<div><label>libil2cpp.so</label><input id="lib" type="file"></div>
-</div>
-<button id="run" type="button">분석 실행</button>
-<p id="status">두 파일을 선택하세요.</p>
-</section>
+  <div class="grid">
+    <section class="panel">
+      <h2>입력</h2>
+      <label for="stones">보유 초월석</label>
+      <input id="stones" type="number" min="0" step="100" value="130400">
 
-<section class="panel">
-<h2>분석 결과</h2>
-<pre id="out">아직 실행 전.</pre>
-<a id="download" hidden download="archer_il2cpp_probe_report.txt">분석 보고서 TXT 저장</a>
-</section>
+      <label for="fixed">고정 MAX 항목</label>
+      <select id="fixed">
+        <option value="-1">없음</option>
+        <option value="0">청람결정 MAX 고정</option>
+        <option value="1">성해공명 MAX 고정</option>
+        <option value="2">차원각인 MAX 고정</option>
+        <option value="3">영겁성핵 MAX 고정</option>
+      </select>
+
+      <div class="cards">
+        <div class="card">
+          <strong>청람결정</strong>
+          <label for="lv0">현재 Lv</label>
+          <input id="lv0" type="number" min="0" max="1500" step="100" value="0">
+        </div>
+        <div class="card">
+          <strong>성해공명</strong>
+          <label for="lv1">현재 Lv</label>
+          <input id="lv1" type="number" min="0" max="1500" step="100" value="0">
+        </div>
+        <div class="card">
+          <strong>차원각인</strong>
+          <label for="lv2">현재 Lv</label>
+          <input id="lv2" type="number" min="0" max="1500" step="100" value="0">
+        </div>
+        <div class="card">
+          <strong>영겁성핵</strong>
+          <label for="lv3">현재 Lv</label>
+          <input id="lv3" type="number" min="0" max="1500" step="100" value="0">
+        </div>
+      </div>
+
+      <button id="run" type="button">전수조사 실행</button>
+      <p id="msg" class="small"></p>
+    </section>
+
+    <section class="panel">
+      <h2>확정 비용표</h2>
+      <div class="scroll">
+        <table id="costTable"></table>
+      </div>
+      <p class="small">100레벨 단위 비용. Lv.1500 MAX 총비용: 청람 50,500 / 성해 64,000 / 차원 96,500 / 영겁 110,500</p>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:14px">
+    <h2>결과</h2>
+    <div id="summary" class="small">아직 계산 전.</div>
+    <div class="scroll">
+      <table id="resultTable"></table>
+    </div>
+  </section>
 </main>
 
 <script>
-(() => {
-  const TARGETS = [
-    "CalculateGoldTranscendMultiplierAtLevel",
-    "GetTotalGoldTranscendenceAttackMultiplier",
-    "GetGoldTranscendCostForTargetLevel",
-    "GetGoldTranscendTotalCost",
-    "GetTranscendenceCurrentEffectAtLevel"
+(function(){
+  const names = ["청람결정", "성해공명", "차원각인", "영겁성핵"];
+  const costs = [
+    [500,1000,2000,3000,4000,4000,4000,4000,4000,4000,4000,4000,4000,4000,4000],
+    [1000,1500,2500,4000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000],
+    [1500,2500,4000,6000,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500],
+    [2000,3000,5000,7000,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500]
   ];
-  const $ = id => document.getElementById(id);
-  const hex = (n, w=0) => {
-    const s = (typeof n === "bigint" ? n : BigInt(n >>> 0)).toString(16).toUpperCase();
-    return "0x" + s.padStart(w, "0");
-  };
-  const u16=(v,o)=>v.getUint16(o,true), u32=(v,o)=>v.getUint32(o,true), i32=(v,o)=>v.getInt32(o,true), u64=(v,o)=>v.getBigUint64(o,true);
-  function cstr(bytes, off, max=4096){
-    if(off < 0 || off >= bytes.length) return "";
-    let e=off, lim=Math.min(bytes.length,off+max);
-    while(e<lim && bytes[e]!==0)e++;
-    return new TextDecoder().decode(bytes.subarray(off,e));
+
+  function fmt(n){ return Math.round(n).toLocaleString("ko-KR"); }
+  function clampLevel(v){
+    v = Number(v);
+    if (!Number.isFinite(v)) return 0;
+    v = Math.max(0, Math.min(1500, v));
+    return Math.floor(v / 100) * 100;
   }
-  function findAscii(bytes,start,size,text){
-    const pat = new TextEncoder().encode(text);
-    const end = Math.min(bytes.length,start+size);
-    const out=[];
-    outer: for(let i=start;i+pat.length<end;i++){
-      if(bytes[i]!==pat[0]) continue;
-      for(let j=1;j<pat.length;j++) if(bytes[i+j]!==pat[j]) continue outer;
-      if(i+pat.length<end && bytes[i+pat.length]===0) out.push(i-start);
-    }
-    return out;
+  function costFromTo(row, fromLv, toLv){
+    fromLv = clampLevel(fromLv);
+    toLv = clampLevel(toLv);
+    if (toLv < fromLv) return Infinity;
+    let start = fromLv / 100;
+    let end = toLv / 100;
+    let total = 0;
+    for (let i=start; i<end; i++) total += costs[row][i] || 0;
+    return total;
   }
-  function parseMetadata(buf){
-    const v=new DataView(buf), b=new Uint8Array(buf);
-    const sanity=u32(v,0), version=i32(v,4);
-    if(sanity!==0xFAB11BAF) throw new Error("global-metadata.dat sanity 불일치");
-    if(version!==31) throw new Error("현재 분석기는 metadata v31 전용입니다. 감지 버전: "+version);
+  function maxCost(row){ return costFromTo(row, 0, 1500); }
 
-    const stringOffset=u32(v,24), stringSize=i32(v,28);
-    const methodsOffset=u32(v,48), methodsSize=i32(v,52);
-    const typeDefsOffset=u32(v,160), typeDefsSize=i32(v,164);
-    const imagesOffset=u32(v,168), imagesSize=i32(v,172);
-    const METHOD_SIZE=36, TYPE_SIZE=88, IMAGE_SIZE=40;
-    if(methodsSize%METHOD_SIZE) throw new Error("v31 method struct 크기(36)와 methodsSize가 맞지 않음");
-    if(typeDefsSize%TYPE_SIZE) throw new Error("v31 type struct 크기(88)와 typeDefinitionsSize가 맞지 않음");
-    if(imagesSize%IMAGE_SIZE) throw new Error("v31 image struct 크기(40)와 imagesSize가 맞지 않음");
+  // 게임 영상에서 직접 읽은 100레벨 단위 공격력 증가값을
+  // 게임의 큰 수 표기(10,000 단위 접미사) 기준 대수값으로 변환한 표.
+  // 각 값은 log_10000(1 + 공격력증가% / 100)에 해당하는 비교용 효과지수다.
+  const effectScore = [
+    [0.000000000,149998.124999977,299996.250000000,449942.374999998,599990.500000000,748638.624997334,899988.750000000,1199985.000000000,1499981.250000000,1799925.500000000,2099973.750000000,2399970.000000000,2699966.250000000,3199908.000000000,3699953.750000000,4199947.500000000],
+    [0.000000000,299996.250000000,524993.437499999,712491.093749968,912488.593746625,1099986.250000000,1287483.906249870,1662479.218749999,2037474.531248255,2412469.843749830,2787465.156249999,3162460.468749999,3537455.781249884,4162447.968749970,4787440.156249999,5412432.343750000],
+    [0.000000000,449942.374999998,824989.687499744,1124986.188631823,1424982.187499995,1706228.671873322,1987475.156249999,2549968.124999977,3112461.093749968,3674954.062499975,4237447.031249965,4799940.000000000,5362432.968749969,6299907.250000000,7237409.753561861,8174897.812499425],
+    [0.000000000,599990.500000000,1049986.874999737,1424982.187499995,1774977.812499425,2093723.828124734,2412469.843749830,3049960.874999737,3687453.906249871,4324945.937499938,4962437.968749969,5599930.000000000,6237422.031249965,7299909.000000000,8362395.468749999,9424882.191294398]
+  ];
 
-    const methodCount=methodsSize/METHOD_SIZE, typeCount=typeDefsSize/TYPE_SIZE, imageCount=imagesSize/IMAGE_SIZE;
-    const targetNameIndices=new Map();
-    for(const t of TARGETS){
-      const hits=findAscii(b,stringOffset,stringSize,t);
-      targetNameIndices.set(t,new Set(hits));
-    }
-
-    const methods=[];
-    const allMethods=[];
-    for(let i=0;i<methodCount;i++){
-      const o=methodsOffset+i*METHOD_SIZE, nameIndex=u32(v,o);
-      const declaringType=i32(v,o+4);
-      const token=u32(v,o+24);
-      const name=cstr(b,stringOffset+nameIndex);
-      allMethods.push({name,defIndex:i,nameIndex,declaringType,token,pointerIndex:(token&0x00FFFFFF)-1});
-      for(const t of TARGETS){
-        if(!targetNameIndices.get(t).has(nameIndex)) continue;
-        methods.push({target:t,defIndex:i,nameIndex,declaringType,token});
-      }
-    }
-
-    function typeInfo(idx){
-      if(idx<0||idx>=typeCount) return {name:"?",namespace:"?"};
-      const o=typeDefsOffset+idx*TYPE_SIZE;
-      const ni=u32(v,o), nsi=u32(v,o+4);
-      return {name:cstr(b,stringOffset+ni),namespace:cstr(b,stringOffset+nsi)};
-    }
-    const images=[];
-    for(let i=0;i<imageCount;i++){
-      const o=imagesOffset+i*IMAGE_SIZE;
-      const ni=u32(v,o), typeStart=i32(v,o+8), typeCount2=u32(v,o+12);
-      images.push({index:i,name:cstr(b,stringOffset+ni),typeStart,typeCount:typeCount2});
-    }
-    function imageForType(ti){
-      return images.find(x=>ti>=x.typeStart && ti<x.typeStart+x.typeCount) || null;
-    }
-    for(const m of methods){
-      m.type=typeInfo(m.declaringType);
-      m.image=imageForType(m.declaringType);
-      m.pointerIndex=(m.token & 0x00FFFFFF)-1;
-    }
-    for(const m of allMethods){
-      m.type=typeInfo(m.declaringType);
-      m.image=imageForType(m.declaringType);
-    }
-    return {version,methodCount,typeCount,imageCount,methods,allMethods,images};
+  function calcScore(levels){
+    let score = 0;
+    for (let i=0; i<4; i++) score += effectScore[i][Math.round(levels[i] / 100)] || 0;
+    return score;
   }
 
-  function parseElf(buf){
-    const v=new DataView(buf), b=new Uint8Array(buf);
-    if(b[0]!==0x7f||b[1]!==0x45||b[2]!==0x4c||b[3]!==0x46) throw new Error("libil2cpp.so가 ELF 파일이 아님");
-    if(b[4]!==2) throw new Error("ELF64가 아님");
-    if(b[5]!==1) throw new Error("little-endian ELF가 아님");
-    const machine=u16(v,18);
-    if(machine!==183) throw new Error("ARM64(AArch64) ELF가 아님. e_machine="+machine);
-    const phoff=Number(u64(v,32)), phentsize=u16(v,54), phnum=u16(v,56);
-    const segs=[]; let dynamicPh=null;
-    for(let i=0;i<phnum;i++){
-      const o=phoff+i*phentsize;
-      const p_type=u32(v,o), flags=u32(v,o+4), offset=Number(u64(v,o+8)), va=u64(v,o+16),
-            filesz=Number(u64(v,o+32)), memsz=Number(u64(v,o+40));
-      const ph={p_type,flags,offset,va,filesz,memsz};
-      if(p_type===1 && memsz>0) segs.push(ph);
-      if(p_type===2) dynamicPh=ph;
+  function renderCostTable(){
+    const table = document.getElementById("costTable");
+    let html = "<thead><tr><th>구간</th>";
+    names.forEach(n => html += "<th>" + n + "</th>");
+    html += "</tr></thead><tbody>";
+    for (let b=0;b<15;b++){
+      html += "<tr><td>Lv." + (b*100) + "→" + ((b+1)*100) + "</td>";
+      for (let r=0;r<4;r++) html += "<td>" + fmt(costs[r][b]) + "</td>";
+      html += "</tr>";
     }
-    const exec=segs.filter(s=>[1,3,5,7].includes(s.flags));
-    const data=segs.filter(s=>[2,4,6].includes(s.flags));
-    function vaToOff(va){
-      for(const s of segs){
-        const end=s.va+BigInt(s.memsz);
-        if(va>=s.va && va<end){
-          const delta=va-s.va;
-          const off=BigInt(s.offset)+delta;
-          if(off<0n || off>=BigInt(buf.byteLength)) throw new Error("VA가 파일 범위를 벗어남: "+hex(va));
-          return Number(off);
-        }
-      }
-      throw new Error("VA 매핑 실패: "+hex(va));
-    }
-    function inExec(va){ return exec.some(s=>va>=s.va && va<s.va+BigInt(s.memsz)); }
-
-    // Android/ARM64 ELF는 .data.rel.ro 포인터가 relocation 적용 전에는 0 또는 미해결 상태일 수 있다.
-    let relocationApplied=0, relocationSeen=0;
-    if(dynamicPh){
-      const dyn=new Map();
-      for(let p=dynamicPh.offset;p+16<=dynamicPh.offset+dynamicPh.filesz;p+=16){
-        const tag=v.getBigInt64(p,true), val=u64(v,p+8);
-        if(tag===0n) break;
-        if(!dyn.has(tag.toString())) dyn.set(tag.toString(),val);
-      }
-      const relaVA=dyn.get("7"), relaSize=dyn.get("8"), symtabVA=dyn.get("6");
-      if(relaVA!==undefined && relaSize!==undefined){
-        try{
-          const relaOff=vaToOff(relaVA), count=Number(relaSize/24n);
-          const symtabOff=symtabVA!==undefined?vaToOff(symtabVA):0;
-          for(let i=0;i<count;i++){
-            const o=relaOff+i*24;
-            if(o+24>buf.byteLength) break;
-            const rOffset=u64(v,o), rInfo=u64(v,o+8), addend=v.getBigInt64(o+16,true);
-            const type=Number(rInfo & 0xffffffffn), sym=Number(rInfo>>32n);
-            relocationSeen++;
-            let value=null;
-            if(type===1027){ // R_AARCH64_RELATIVE
-              value=BigInt.asUintN(64,addend);
-            }else if(type===257 && symtabVA!==undefined){ // R_AARCH64_ABS64
-              const so=symtabOff+sym*24;
-              if(so+24<=buf.byteLength){
-                const stValue=u64(v,so+8);
-                value=BigInt.asUintN(64,stValue+addend);
-              }
-            }
-            if(value!==null){
-              try{
-                const dst=vaToOff(rOffset);
-                if(dst+8<=buf.byteLength){
-                  v.setBigUint64(dst,value,true);
-                  relocationApplied++;
-                }
-              }catch(e){}
-            }
-          }
-        }catch(e){}
-      }
-    }
-
-    function readPtrVA(va){ return u64(v,vaToOff(va)); }
-    function readStrVA(va,max=1024){ return cstr(b,vaToOff(va),max); }
-    function refs(addr){
-      const out=[];
-      for(const s of data){
-        const end=Math.min(s.offset+s.filesz,buf.byteLength)-8;
-        for(let p=s.offset;p<=end;p+=8){
-          if(u64(v,p)===addr) out.push(s.va+BigInt(p-s.offset));
-        }
-      }
-      return out;
-    }
-    function byteHits(sec,pat){
-      const out=[], start=sec.offset, end=Math.min(buf.byteLength,sec.offset+sec.filesz);
-      outer: for(let i=start;i+pat.length<=end;i++){
-        if(b[i]!==pat[0])continue;
-        for(let j=1;j<pat.length;j++)if(b[i+j]!==pat[j])continue outer;
-        out.push(sec.va+BigInt(i-start));
-      }
-      return out;
-    }
-    return {buf,v,b,segs,exec,data,vaToOff,inExec,readPtrVA,readStrVA,refs,byteHits,relocationApplied,relocationSeen};
+    html += "<tr><td><b>MAX 총비용</b></td>";
+    for (let r=0;r<4;r++) html += "<td><b>" + fmt(maxCost(r)) + "</b></td>";
+    html += "</tr></tbody>";
+    table.innerHTML = html;
   }
 
-  function findCodeGenModuleDirect(elf,name,requiredIndices,log){
-    const pat=new TextEncoder().encode(name+"\0");
-    const hits=[];
-    for(const sec of elf.segs) hits.push(...elf.byteHits(sec,pat));
-    log.push(name+" 문자열 후보: "+hits.length+"개");
-    const maxIdx=Math.max(...requiredIndices,0);
-    for(const nameVA of hits){
-      const rr=elf.refs(nameVA);
-      for(const candidate of rr){
-        try{
-          if(elf.readPtrVA(candidate)!==nameVA) continue;
-          const count=Number(elf.readPtrVA(candidate+8n));
-          const ptrs=elf.readPtrVA(candidate+16n);
-          if(!Number.isFinite(count)||count<=maxIdx||count>1000000) continue;
-          elf.vaToOff(ptrs);
-          let good=0;
-          for(const idx of requiredIndices){
-            const fn=elf.readPtrVA(ptrs+BigInt(idx*8));
-            if(fn!==0n && elf.inExec(fn)) good++;
-          }
-          if(good===requiredIndices.length){
-            log.push("CodeGenModule 직접 탐색 성공: "+name+" @ "+hex(candidate)+" / methods="+count);
-            return {name,p:candidate,methodPointerCount:count,methodPointers:ptrs};
-          }
-        }catch(e){}
-      }
-    }
-    return null;
-  }
+  function run(){
+    const stones = Math.max(0, Math.floor(Number(document.getElementById("stones").value) || 0));
+    const fixed = Number(document.getElementById("fixed").value);
+    const current = [0,1,2,3].map(i => clampLevel(document.getElementById("lv"+i).value));
+    const msg = document.getElementById("msg");
+    const results = [];
 
-  function findCodeRegistration(elf,imageCount,log){
-    const pat=new TextEncoder().encode("mscorlib.dll\0");
-    const secSets=[elf.exec,elf.data];
-    for(const secs of secSets){
-      for(const sec of secs){
-        const hits=elf.byteHits(sec,pat);
-        for(const dllva of hits){
-          const r1=elf.refs(dllva);
-          for(const refva of r1){
-            const r2=elf.refs(refva);
-            for(const refva2 of r2){
-              for(let i=imageCount-1;i>=0;i--){
-                const base=refva2-BigInt(i*8);
-                const r3=elf.refs(base);
-                for(const refva3 of r3){
-                  try{
-                    const count=elf.readPtrVA(refva3-8n);
-                    if(count===BigInt(imageCount)){
-                      const cr=refva3-112n;
-                      try{
-                        const cgCount=elf.readPtrVA(cr+104n);
-                        const cgPtr=elf.readPtrVA(cr+112n);
-                        elf.vaToOff(cgPtr);
-                        if(cgCount>0n && cgCount<10000n){
-                          log.push("CodeRegistration(v31) 후보: "+hex(cr)+" / codeGenModules="+cgCount);
-                          return {va:cr,version:31,count:Number(cgCount),modulesPtr:cgPtr};
-                        }
-                      }catch(e){}
-                    }
-                  }catch(e){}
-                }
-              }
-            }
+    let baseCost = 0;
+    let baseLevels = current.slice();
+
+    if (fixed >= 0) {
+      const c = costFromTo(fixed, baseLevels[fixed], 1500);
+      baseCost += c;
+      baseLevels[fixed] = 1500;
+    }
+
+    if (baseCost > stones) {
+      msg.innerHTML = '<span class="bad">고정 MAX 비용이 보유 초월석보다 큼. 필요 ' + fmt(baseCost) + ' / 보유 ' + fmt(stones) + '</span>';
+      document.getElementById("summary").textContent = "계산 불가";
+      document.getElementById("resultTable").innerHTML = "";
+      return;
+    }
+
+    const remain = stones - baseCost;
+
+    for (let a = baseLevels[0]; a <= 1500; a += 100) {
+      if (a < baseLevels[0]) continue;
+      if (fixed === 0 && a !== 1500) continue;
+      const ca = costFromTo(0, baseLevels[0], a);
+      if (ca > remain) continue;
+
+      for (let b = baseLevels[1]; b <= 1500; b += 100) {
+        if (fixed === 1 && b !== 1500) continue;
+        const cb = ca + costFromTo(1, baseLevels[1], b);
+        if (cb > remain) continue;
+
+        for (let c = baseLevels[2]; c <= 1500; c += 100) {
+          if (fixed === 2 && c !== 1500) continue;
+          const cc = cb + costFromTo(2, baseLevels[2], c);
+          if (cc > remain) continue;
+
+          for (let d = baseLevels[3]; d <= 1500; d += 100) {
+            if (fixed === 3 && d !== 1500) continue;
+            const spendExtra = cc + costFromTo(3, baseLevels[3], d);
+            if (spendExtra > remain) continue;
+
+            const levels = [a,b,c,d];
+            const spend = baseCost + spendExtra;
+            results.push({
+              levels,
+              spend,
+              left: stones - spend,
+              score: calcScore(levels)
+            });
           }
         }
       }
     }
-    throw new Error("CodeRegistration 자동 탐색 실패");
+
+    results.sort((x,y) => {
+      if (y.score !== x.score) return y.score - x.score;
+      return x.left - y.left;
+    });
+
+    msg.innerHTML = '<span class="ok">계산 완료. 가능한 조합 ' + fmt(results.length) + '개</span>';
+    const best = results[0];
+
+    if (!best) {
+      document.getElementById("summary").textContent = "가능한 조합 없음";
+      document.getElementById("resultTable").innerHTML = "";
+      return;
+    }
+
+    document.getElementById("summary").innerHTML =
+      "1위: " + names.map((n,i)=> n + " Lv." + best.levels[i]).join(" / ") +
+      " · 사용 " + fmt(best.spend) + " · 잔여 " + fmt(best.left) +
+      " · 효과지수 " + best.score.toFixed(3);
+
+    let html = "<thead><tr><th>순위</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th><th>사용</th><th>잔여</th><th>효과지수</th></tr></thead><tbody>";
+    results.slice(0, 50).forEach((r, idx) => {
+      html += "<tr><td>" + (idx+1) + "</td>";
+      r.levels.forEach(lv => html += "<td>Lv." + lv + "</td>");
+      html += "<td>" + fmt(r.spend) + "</td><td>" + fmt(r.left) + "</td><td>" + r.score.toFixed(3) + "</td></tr>";
+    });
+    html += "</tbody>";
+    document.getElementById("resultTable").innerHTML = html;
   }
 
-  function resolveFunctions(meta,elf,cr,log){
-    let modules=[];
-    if(cr){
-      for(let i=0;i<cr.count;i++){
-        const p=elf.readPtrVA(cr.modulesPtr+BigInt(i*8));
-        if(p===0n) continue;
-        try{
-          const namePtr=elf.readPtrVA(p);
-          const name=elf.readStrVA(namePtr);
-          const methodPointerCount=Number(elf.readPtrVA(p+8n));
-          const methodPointers=elf.readPtrVA(p+16n);
-          modules.push({i,p,name,methodPointerCount,methodPointers});
-        }catch(e){}
-      }
-      log.push("CodeRegistration에서 읽은 CodeGenModule: "+modules.length+"개");
-    }
-
-    const byImage=new Map();
-    for(const m of meta.methods){
-      const name=m.image?.name||"";
-      if(!byImage.has(name)) byImage.set(name,[]);
-      byImage.get(name).push(m.pointerIndex);
-    }
-    for(const [name,indices] of byImage){
-      if(!modules.some(x=>x.name===name)){
-        const direct=findCodeGenModuleDirect(elf,name,indices,log);
-        if(direct) modules.push(direct);
-      }
-    }
-
-    for(const m of meta.methods){
-      const want=m.image?.name || "";
-      const mod=modules.find(x=>x.name===want) || modules.find(x=>x.name.toLowerCase()===want.toLowerCase());
-      if(!mod){
-        m.resolveError="CodeGenModule 미발견: "+want;
-        continue;
-      }
-      m.module=mod.name;
-      if(m.pointerIndex<0 || m.pointerIndex>=mod.methodPointerCount){
-        m.resolveError="token pointer index 범위 초과: "+m.pointerIndex+" / "+mod.methodPointerCount;
-        continue;
-      }
-      const ptr=elf.readPtrVA(mod.methodPointers+BigInt(m.pointerIndex*8));
-      m.functionVA=ptr;
-      try{m.functionFileOffset=elf.vaToOff(ptr)}catch(e){m.resolveError="함수 VA 매핑 실패";continue}
-      let next=0n;
-      const maxScan=Math.min(mod.methodPointerCount,m.pointerIndex+256);
-      for(let j=m.pointerIndex+1;j<maxScan;j++){
-        const q=elf.readPtrVA(mod.methodPointers+BigInt(j*8));
-        if(q>ptr && (next===0n || q<next)) next=q;
-      }
-      let size=1024;
-      if(next>ptr){
-        const d=Number(next-ptr);
-        if(d>0 && d<=4096) size=d;
-      }
-      size=Math.min(size,4096,elf.buf.byteLength-m.functionFileOffset);
-      const code=elf.b.subarray(m.functionFileOffset,m.functionFileOffset+size);
-      const lines=[];
-      for(let i=0;i<code.length;i+=16){
-        const chunk=Array.from(code.subarray(i,i+16)).map(x=>x.toString(16).padStart(2,"0")).join(" ");
-        lines.push((m.functionFileOffset+i).toString(16).padStart(8,"0")+": "+chunk);
-      }
-      m.codeSize=size;
-      m.codeBytes=code;
-      m.hexDump=lines.join("\n");
-    }
-    return modules;
-  }
-
-  function decodeDirectCalls(method){
-    const out=[];
-    if(!method.functionVA || !method.codeBytes) return out;
-    const dv=new DataView(method.codeBytes.buffer,method.codeBytes.byteOffset,method.codeBytes.byteLength);
-    for(let off=0;off+4<=method.codeBytes.length;off+=4){
-      const ins=dv.getUint32(off,true);
-      if((ins & 0xFC000000) !== 0x94000000) continue;
-      let imm=ins & 0x03FFFFFF;
-      if(imm & 0x02000000) imm-=0x04000000;
-      const at=method.functionVA+BigInt(off);
-      const target=BigInt.asUintN(64,at+BigInt(imm*4));
-      out.push({at,target});
-    }
-    return out;
-  }
-
-  function annotateInternalCalls(meta,elf,modules,log){
-    const modByName=new Map(modules.map(m=>[m.name,m]));
-    const vaNames=new Map();
-    const vaMeta=new Map();
-    for(const am of meta.allMethods){
-      const img=am.image?.name||"";
-      const mod=modByName.get(img);
-      if(!mod || am.pointerIndex<0 || am.pointerIndex>=mod.methodPointerCount) continue;
-      try{
-        const va=elf.readPtrVA(mod.methodPointers+BigInt(am.pointerIndex*8));
-        if(!vaNames.has(va.toString())){
-          const full=(am.type?.name?am.type.name+".":"")+am.name;
-          vaNames.set(va.toString(),full);
-          vaMeta.set(va.toString(),{...am,va,mod});
-        }
-      }catch(e){}
-    }
-    const helpers=new Map();
-    log.push("");
-    log.push("[대상 함수 내부 직접 호출 매핑]");
-    for(const m of meta.methods){
-      log.push(m.target);
-      for(const c of decodeDirectCalls(m)){
-        const n=vaNames.get(c.target.toString());
-        if(n){
-          log.push("  "+hex(c.at)+" -> "+hex(c.target)+"  "+n);
-          if(!TARGETS.includes(n.split(".").pop())) helpers.set(c.target.toString(),vaMeta.get(c.target.toString()));
-        }
-      }
-    }
-    if(helpers.size){
-      log.push("");
-      log.push("[Assembly-CSharp 내부 helper 코드]");
-      for(const h of helpers.values()){
-        try{
-          const mod=h.mod, ptr=h.va;
-          const allPtrs=[];
-          for(let i=0;i<mod.methodPointerCount;i++){
-            const q=elf.readPtrVA(mod.methodPointers+BigInt(i*8));
-            if(q>0n) allPtrs.push(q);
-          }
-          allPtrs.sort((a,b)=>a<b?-1:a>b?1:0);
-          let next=0n;
-          for(const q of allPtrs){ if(q>ptr){next=q;break;} }
-          let size=512;
-          if(next>ptr){ const d=Number(next-ptr); if(d>0&&d<=2048) size=d; }
-          const off=elf.vaToOff(ptr);
-          size=Math.min(size,2048,elf.buf.byteLength-off);
-          const code=elf.b.subarray(off,off+size);
-          log.push((h.type?.name?h.type.name+".":"")+h.name);
-          log.push("  VA: "+hex(ptr)+" / pointerIndex: "+h.pointerIndex+" / bytes: "+size);
-          for(let i=0;i<code.length;i+=16){
-            const chunk=Array.from(code.subarray(i,i+16)).map(x=>x.toString(16).padStart(2,"0")).join(" ");
-            log.push((off+i).toString(16).padStart(8,"0")+": "+chunk);
-          }
-          log.push("");
-        }catch(e){ log.push("  helper extract error: "+String(e)); }
-      }
-    }
-  }
-
-  $("run").addEventListener("click", async () => {
-    const mf=$("meta").files[0], lf=$("lib").files[0];
-    if(!mf||!lf){$("status").innerHTML='<span class="bad">두 파일을 모두 선택하세요.</span>';return}
-    $("run").disabled=true;$("status").textContent="분석 중…";$("out").textContent="분석 중…";
-    const log=[];
-    try{
-      const [mb,lb]=await Promise.all([mf.arrayBuffer(),lf.arrayBuffer()]);
-      const meta=parseMetadata(mb);
-      log.push("Metadata Version: "+meta.version);
-      log.push("Method definitions: "+meta.methodCount.toLocaleString());
-      log.push("Type definitions: "+meta.typeCount.toLocaleString());
-      log.push("Images: "+meta.imageCount.toLocaleString());
-      log.push("");
-      log.push("[대상 메서드 metadata 매칭]");
-      if(!meta.methods.length) log.push("대상 메서드를 찾지 못함");
-      for(const m of meta.methods){
-        log.push(m.target);
-        log.push("  MethodDef index: "+m.defIndex);
-        log.push("  methodIndex(v31 metadata): 없음 (token 기반)");
-        log.push("  token: "+hex(m.token,8)+" / pointerIndex: "+m.pointerIndex);
-        log.push("  declaringType: "+(m.type.namespace?m.type.namespace+".":"")+m.type.name+" (#"+m.declaringType+")");
-        log.push("  image: "+(m.image?.name||"?"));
-      }
-      log.push("");
-      const elf=parseElf(lb);
-      log.push("ELF64 ARM64 확인");
-      log.push("LOAD segments: "+elf.segs.length+" / exec "+elf.exec.length+" / data "+elf.data.length);
-      log.push("RELA entries: "+elf.relocationSeen.toLocaleString()+" / 적용: "+elf.relocationApplied.toLocaleString());
-      let cr=null;
-      try{
-        cr=findCodeRegistration(elf,meta.imageCount,log);
-      }catch(e){
-        log.push("CodeRegistration 자동 탐색은 실패. CodeGenModule 직접 탐색으로 계속 진행.");
-      }
-      log.push("");
-      const modules=resolveFunctions(meta,elf,cr,log);
-      annotateInternalCalls(meta,elf,modules,log);
-      log.push("");
-      log.push("[실제 함수 주소]");
-      for(const m of meta.methods){
-        log.push(m.target);
-        if(m.resolveError){log.push("  ERROR: "+m.resolveError);continue}
-        log.push("  module: "+m.module);
-        log.push("  VA: "+hex(m.functionVA));
-        log.push("  file offset: "+hex(BigInt(m.functionFileOffset)));
-        log.push("  extracted bytes: "+m.codeSize);
-        log.push(m.hexDump);
-        log.push("");
-      }
-      const report=log.join("\n");
-      $("out").textContent=report;
-      $("status").innerHTML='<span class="ok">분석 완료. 아래 TXT를 저장해서 채팅에 올리면 다음 단계(ARM64 함수식 복원)를 바로 이어갈 수 있습니다.</span>';
-      const blob=new Blob([report],{type:"text/plain;charset=utf-8"});
-      const a=$("download");
-      if(a.dataset.url) URL.revokeObjectURL(a.dataset.url);
-      const url=URL.createObjectURL(blob);a.href=url;a.dataset.url=url;a.hidden=false;
-    }catch(e){
-      const msg=(e&&e.stack)?e.stack:String(e);
-      $("out").textContent=log.concat(["","ERROR",msg]).join("\n");
-      $("status").innerHTML='<span class="bad">분석 실패: '+String(e.message||e)+'</span>';
-    }finally{$("run").disabled=false}
-  });
+  renderCostTable();
+  document.getElementById("run").addEventListener("click", run);
+  run();
 })();
 </script>
 </body>
