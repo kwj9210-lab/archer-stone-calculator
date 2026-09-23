@@ -1,0 +1,88 @@
+name: ARM64 transcend disassembly
+
+on:
+  push:
+    branches:
+      - transcend-sim-wip-20260923
+    paths:
+      - "analysis/archer_il2cpp_probe_report.txt"
+      - ".github/workflows/transcend-disasm.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  disasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install capstone
+      - name: Disassemble extracted ARM64 functions
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
+
+          p = Path("analysis/archer_il2cpp_probe_report.txt")
+          text = p.read_text(encoding="utf-8")
+          md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
+          md.detail = False
+
+          wanted = {
+              "CalculateGoldTranscendMultiplierAtLevel",
+              "GetTotalGoldTranscendenceAttackMultiplier",
+              "GetGoldTranscendCostForTargetLevel",
+              "GetGoldTranscendTotalCost",
+              "GetTranscendenceCurrentEffectAtLevel",
+          }
+
+          current = None
+          base_va = None
+          chunks = []
+          funcs = {}
+
+          def flush():
+              global current, base_va, chunks
+              if current and base_va is not None and chunks:
+                  funcs[current] = (base_va, bytes(chunks))
+              current = None
+              base_va = None
+              chunks = []
+
+          for line in text.splitlines():
+              if line in wanted:
+                  flush()
+                  current = line
+                  continue
+              if not current:
+                  continue
+              m = re.match(r"\s*VA:\s*(0x[0-9A-Fa-f]+)", line)
+              if m:
+                  base_va = int(m.group(1), 16)
+                  continue
+              m = re.match(r"^[0-9A-Fa-f]{8}:\s*((?:[0-9A-Fa-f]{2}(?:\s+|$))+)", line)
+              if m:
+                  chunks.extend(int(x,16) for x in m.group(1).split())
+                  continue
+              if line.startswith("Get") or line.startswith("Calculate"):
+                  flush()
+          flush()
+
+          for name,(va,code) in funcs.items():
+              print("\n" + "="*100)
+              print(name, hex(va), "bytes", len(code))
+              print("="*100)
+              for ins in md.disasm(code, va):
+                  extra = ""
+                  if ins.mnemonic in ("bl","b") and ins.op_str.startswith("#0x"):
+                      try:
+                          extra = f"    ; target={ins.op_str[1:]}"
+                      except Exception:
+                          pass
+                  print(f"{ins.address:016x}  {ins.mnemonic:8s} {ins.op_str}{extra}")
+          PY
