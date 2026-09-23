@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 18</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 19</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -1040,6 +1040,163 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     for(const [name,row] of rows6x100) scanEverywhere(name,row);
   }
 
+
+  function dumpLiveUpgradePathsBuild19(meta,elf,modules,log){
+    log.push("");
+    log.push("[라이브 초월 업그레이드 경로 build19]");
+
+    const wantedDefs=new Set([581,585,586,5064,5065,5066,5067,5068,5235,5253]);
+    const mod=modules.find(m=>m.name==="Assembly-CSharp.dll");
+    if(!mod){log.push("Assembly-CSharp.dll module 없음");return;}
+
+    function getLiteral(idx){
+      try{
+        const v=meta.rawView,b=meta.rawBytes;
+        const lo=v.getUint32(8,true), ls=v.getInt32(12,true);
+        const ldo=v.getUint32(16,true), lds=v.getInt32(20,true);
+        if(idx<0||idx>=ls/8) return null;
+        const o=lo+idx*8, len=v.getUint32(o,true), di=v.getInt32(o+4,true);
+        if(di<0||len>20000||di+len>lds) return null;
+        return new TextDecoder().decode(b.subarray(ldo+di,ldo+di+len));
+      }catch(e){return null;}
+    }
+    const resolved=[];
+    const vaMap=new Map();
+    for(const m of meta.allMethods){
+      if(m.image?.name!=="Assembly-CSharp.dll") continue;
+      if(m.pointerIndex<0||m.pointerIndex>=mod.methodPointerCount) continue;
+      try{
+        const va=elf.readPtrVA(mod.methodPointers+BigInt(m.pointerIndex*8));
+        if(!va||!elf.inExec(va)) continue;
+        const mm={...m,va,full:(m.type?.name?m.type.name+".":"")+m.name};
+        resolved.push(mm);
+        if(!vaMap.has(va.toString())) vaMap.set(va.toString(),mm);
+      }catch(e){}
+    }
+    resolved.sort((a,b)=>a.va<b.va?-1:a.va>b.va?1:0);
+
+    function fieldsForTypeName(typeName){
+      const ts=meta.typeDefs.filter(t=>t.name===typeName);
+      for(const t of ts){
+        log.push("STATE TYPE "+typeName+" type#"+t.index+" fields="+t.fieldCount);
+        for(let k=0;k<t.fieldCount;k++){
+          const fi=t.firstFieldIdx+k, fld=meta.fields[fi];
+          if(fld) log.push("  field#"+fi+" "+fld.name+" typeIndex="+fld.typeIndex+" token="+hex(BigInt(fld.token),8));
+        }
+      }
+    }
+    fieldsForTypeName("<RequestGrowthTranscendenceUpgradeWithWalletLeaseCore>d__209");
+    fieldsForTypeName("<RequestTranscendenceUpgradeWithWalletLease>d__207");
+    fieldsForTypeName("<RequestGrowthTranscendenceUpgradeWithWalletLease>d__208");
+
+    function sx(v,bits){
+      const x=BigInt(v), sign=1n<<BigInt(bits-1), mod=1n<<BigInt(bits);
+      return (x&sign)?x-mod:x;
+    }
+    function usageStringFromMem(mem){
+      try{
+        const p=elf.readPtrVA(mem);
+        const candidates=[p];
+        try{candidates.push(elf.readPtrVA(p));}catch(e){}
+        for(const enc of candidates){
+          const tag=Number((enc>>29n)&7n), idx=Number(enc&0x1fffffffn);
+          if(tag===5){
+            return {enc,idx,text:getLiteral(idx)};
+          }
+        }
+      }catch(e){}
+      return null;
+    }
+    function scanCodeStrings(va,code){
+      const regs=new Array(31).fill(null), out=[];
+      for(let rel=0;rel+4<=code.length;rel+=4){
+        const w=new DataView(code.buffer,code.byteOffset+rel,4).getUint32(0,true)>>>0;
+        const pc=va+BigInt(rel);
+        if((w&0x9F000000)===0x90000000){
+          const rd=w&31, immlo=(w>>>29)&3, immhi=(w>>>5)&0x7ffff;
+          const imm21=(BigInt(immhi)<<2n)|BigInt(immlo);
+          if(rd<31) regs[rd]={addr:(pc&~0xfffn)+(sx(imm21,21)<<12n),pc};
+          continue;
+        }
+        if((w&0xFF000000)===0x91000000){
+          const rd=w&31,rn=(w>>>5)&31,sh=(w>>>22)&1,imm12=(w>>>10)&0xfff,r=rn<31?regs[rn]:null;
+          if(r&&pc-r.pc<=128n){
+            const addr=r.addr+(BigInt(imm12)<<(sh?12n:0n));
+            if(rd<31) regs[rd]={addr,pc};
+          }else if(rd<31) regs[rd]=null;
+          continue;
+        }
+        if((w&0xFFC00000)===0xF9400000){
+          const rt=w&31,rn=(w>>>5)&31,imm12=(w>>>10)&0xfff,r=rn<31?regs[rn]:null;
+          if(r&&pc-r.pc<=128n){
+            const mem=r.addr+BigInt(imm12*8);
+            const us=usageStringFromMem(mem);
+            if(us) out.push({pc,mem,...us});
+            try{
+              const val=elf.readPtrVA(mem);
+              if(rt<31) regs[rt]={addr:val,pc};
+            }catch(e){if(rt<31)regs[rt]=null;}
+          } else if(rt<31) regs[rt]=null;
+          continue;
+        }
+      }
+      const seen=new Set();
+      return out.filter(x=>{
+        const k=x.pc+"|"+x.idx;
+        if(seen.has(k))return false;seen.add(k);return true;
+      });
+    }
+    function scanInterestingImmediates(va,code){
+      const out=[];
+      const dv=new DataView(code.buffer,code.byteOffset,code.byteLength);
+      for(let rel=0;rel+4<=code.length;rel+=4){
+        const w=dv.getUint32(rel,true)>>>0, pc=va+BigInt(rel);
+        if((w&0x7F800000)===0x52800000){
+          const imm16=(w>>>5)&0xffff,hw=(w>>>21)&3;
+          const val=imm16*Math.pow(2,16*hw);
+          if([4,6,8,15,100,300,400,500,600,1000,1500,2000,2500,3000,4000,5000,6000,7500,8500].includes(val))
+            out.push({pc,kind:"MOVZ",val,word:w});
+        }
+        // ADD/SUB immediate family; includes CMP alias for SUBS when rd=31.
+        if((w&0x1F000000)===0x11000000){
+          const imm12=(w>>>10)&0xfff, sh=(w>>>22)&1, val=imm12*(sh?4096:1);
+          if([4,6,8,15,100,300,400,500,600,1000,1500,2000,2500,3000,4000].includes(val))
+            out.push({pc,kind:"ADD/SUB imm",val,word:w});
+        }
+      }
+      return out;
+    }
+
+    const targets=resolved.filter(m=>wantedDefs.has(m.defIndex));
+    for(const m of targets){
+      let pos=resolved.findIndex(x=>x.va===m.va), size=4096;
+      if(pos>=0&&pos+1<resolved.length){
+        const d=Number(resolved[pos+1].va-m.va);
+        if(d>0&&d<=20000) size=d;
+      }
+      let off;
+      try{off=elf.vaToOff(m.va);}catch(e){continue;}
+      size=Math.min(size,20000,elf.buf.byteLength-off);
+      const code=elf.b.subarray(off,off+size);
+      log.push("");
+      log.push("METHOD "+m.full+" #"+m.defIndex+" VA="+hex(m.va)+" bytes="+size);
+      const ps=(m.parameterCount>0&&m.parameterStart>=0)?meta.parameters.slice(m.parameterStart,m.parameterStart+m.parameterCount):[];
+      log.push("  params="+ps.map(p=>p.name+"(type="+p.typeIndex+")").join(", "));
+      const calls=decodeDirectCalls({functionVA:m.va,codeBytes:code});
+      log.push("  directCalls="+calls.length);
+      for(const c of calls){
+        const callee=vaMap.get(c.target.toString());
+        log.push("    "+hex(c.at)+" -> "+hex(c.target)+(callee?" "+callee.full+" #"+callee.defIndex:""));
+      }
+      const ims=scanInterestingImmediates(m.va,code);
+      log.push("  interestingImmediates="+ims.length);
+      for(const x of ims) log.push("    "+hex(x.pc)+" "+x.kind+" "+x.val+" word=0x"+x.word.toString(16).padStart(8,"0"));
+      const ss=scanCodeStrings(m.va,code);
+      log.push("  stringUsageHits="+ss.length);
+      for(const x of ss) log.push("    "+hex(x.pc)+" mem="+hex(x.mem)+" encoded="+hex(x.enc)+" idx="+x.idx+" text="+JSON.stringify(x.text));
+    }
+  }
+
   function dumpGoldInitializerBlobs(meta,elf,log){
     log.push("");
     log.push("[Gold 초월 정적 초기값 직접 복원 build9]");
@@ -1230,6 +1387,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       mapTargetStringLiteralOwners(meta,elf,modules,log);
       dumpGrowthStoneMatrixAndNameArrays(meta,elf,log);
       dumpGrowthStoneMatrixExactBuild18(meta,elf,log);
+      dumpLiveUpgradePathsBuild19(meta,elf,modules,log);
       scanKnownUserCostPatterns(meta,elf,modules,log);
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
