@@ -162,26 +162,71 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
   function optimize(budget,fixed,step,topN){
     budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
     const cList=levelsFor(fixed[2],step), dList=levelsFor(fixed[3],step);
-    const cdScore=new Float64Array(budget+1); cdScore.fill(-Infinity);
-    const cdC=new Uint16Array(budget+1), cdD=new Uint16Array(budget+1);
-    const cdUsed=new Int32Array(budget+1); cdUsed.fill(-1);
+
+    // 같은 전투력(게임 표시상 동일) 후보를 놓치지 않도록
+    // CD 조합을 예산별로 여러 개 보관한다.
+    const K=step===1 ? (budget<=170000 ? 24 : 12) : 8;
+    const width=budget+1, total=width*K;
+    const cdScore=new Float64Array(total); cdScore.fill(-Infinity);
+    const cdC=new Uint16Array(total), cdD=new Uint16Array(total);
+
+    function cdInsert(cost,score,c,d){
+      const base=cost*K;
+      for(let j=0;j<K;j++){
+        const p=base+j;
+        if(cdScore[p]===-Infinity){
+          cdScore[p]=score; cdC[p]=c; cdD[p]=d; return;
+        }
+        if(cdC[p]===c && cdD[p]===d){
+          if(score>cdScore[p])cdScore[p]=score;
+          return;
+        }
+        if(score>cdScore[p]){
+          for(let z=K-1;z>j;z--){
+            const q=base+z, prev=q-1;
+            cdScore[q]=cdScore[prev]; cdC[q]=cdC[prev]; cdD[q]=cdD[prev];
+          }
+          cdScore[p]=score; cdC[p]=c; cdD[p]=d; return;
+        }
+      }
+    }
 
     for(const c of cList){
       const cc=levelCost[2][c]; if(cc>budget)continue;
       for(const d of dList){
         const co=cc+levelCost[3][d]; if(co>budget)continue;
-        const sc=levelEffect[2][c]+levelEffect[3][d];
-        if(sc>cdScore[co]){
-          cdScore[co]=sc; cdC[co]=c; cdD[co]=d; cdUsed[co]=co;
-        }
+        cdInsert(co,levelEffect[2][c]+levelEffect[3][d],c,d);
       }
     }
+
+    // 정확한 비용 x의 후보 + x-1까지의 후보를 합쳐
+    // "이 예산 이하" 상위 K개를 유지한다.
+    const temp=[];
     for(let x=1;x<=budget;x++){
-      const prev={score:cdScore[x-1],used:cdUsed[x-1],levels:[0,0,cdC[x-1],cdD[x-1]]};
-      const cur=cdUsed[x]>=0?{score:cdScore[x],used:cdUsed[x],levels:[0,0,cdC[x],cdD[x]]}:null;
-      if(cdUsed[x-1]>=0 && better(prev,cur)){
-        cdScore[x]=cdScore[x-1]; cdC[x]=cdC[x-1]; cdD[x]=cdD[x-1]; cdUsed[x]=cdUsed[x-1];
+      temp.length=0;
+      const cur=x*K, prev=(x-1)*K;
+      for(let j=0;j<K;j++){
+        if(cdScore[cur+j]>-Infinity)temp.push({s:cdScore[cur+j],c:cdC[cur+j],d:cdD[cur+j]});
+        if(cdScore[prev+j]>-Infinity)temp.push({s:cdScore[prev+j],c:cdC[prev+j],d:cdD[prev+j]});
       }
+      temp.sort((u,v)=>{
+        const ds=v.s-u.s;
+        if(Math.abs(ds)>EPS)return ds;
+        const uc=levelCost[2][u.c]+levelCost[3][u.d];
+        const vc=levelCost[2][v.c]+levelCost[3][v.d];
+        if(uc!==vc)return uc-vc;
+        return u.c!==v.c ? v.c-u.c : v.d-u.d;
+      });
+      const seen=new Set();
+      let w=0;
+      for(const t of temp){
+        const key=t.c+","+t.d;
+        if(seen.has(key))continue;
+        seen.add(key);
+        cdScore[cur+w]=t.s; cdC[cur+w]=t.c; cdD[cur+w]=t.d;
+        w++; if(w>=K)break;
+      }
+      while(w<K){cdScore[cur+w]=-Infinity;cdC[cur+w]=0;cdD[cur+w]=0;w++;}
     }
 
     const aList=levelsFor(fixed[0],step), bList=levelsFor(fixed[1],step);
@@ -199,16 +244,21 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
       const ca=levelCost[0][a]; if(ca>budget)continue;
       for(const b of bList){
         const ab=ca+levelCost[1][b]; if(ab>budget)continue;
-        const rem=budget-ab; if(cdUsed[rem]<0)continue;
-        const used=ab+cdUsed[rem];
-        const cand={
-          levels:[a,b,cdC[rem],cdD[rem]],
-          used,
-          left:budget-used,
-          score:levelEffect[0][a]+levelEffect[1][b]+cdScore[rem]
-        };
-        if(better(cand,best))best=cand;
-        addTop(cand);
+        const rem=budget-ab, base=rem*K;
+        for(let j=0;j<K;j++){
+          const cds=cdScore[base+j]; if(cds===-Infinity)break;
+          const c=cdC[base+j], d=cdD[base+j];
+          const cdUsed=levelCost[2][c]+levelCost[3][d];
+          const used=ab+cdUsed;
+          const cand={
+            levels:[a,b,c,d],
+            used,
+            left:budget-used,
+            score:levelEffect[0][a]+levelEffect[1][b]+cds
+          };
+          if(better(cand,best))best=cand;
+          addTop(cand);
+        }
       }
     }
     return {best,top:top.map(x=>x.cand)};
@@ -257,28 +307,42 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
       document.getElementById("rankTable").innerHTML="";
       return;
     }
-    document.getElementById("best").innerHTML=
-      '<div class="bestline">최고 전투력 배분</div>'+
-      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(b.used)+'</b></span><span>잔여 <b>'+fmt(b.left)+'</b></span></div>';
 
-    document.getElementById("targets").innerHTML=b.levels.map((lv,i)=>
+    const rawMax=Math.max(...exact.top.map(r=>r.score),b.score);
+    const joint=exact.top.filter(r=>rawMax-r.score<=EPS);
+    const jointBest=joint.reduce((x,y)=>!x||y.left>x.left?y:x,null);
+    const shown=jointBest||b;
+
+    document.getElementById("best").innerHTML=
+      '<div class="bestline">'+(joint.length>1?'공동 1위 중 잔여 최대 추천':'최고 전투력 배분')+'</div>'+
+      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(shown.used)+'</b></span><span>잔여 <b>'+fmt(shown.left)+'</b></span>'+
+      (joint.length>1?'<span>공동 1위 <b>'+joint.length+'개</b></span>':'')+'</div>';
+
+    document.getElementById("targets").innerHTML=shown.levels.map((lv,i)=>
       '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
     ).join("");
 
     if(coarse.best){
       const c=coarse.best;
-      const same=c.levels.every((x,i)=>x===b.levels[i]);
-      document.getElementById("compare").innerHTML=same
-        ? '100레벨 단위 결과와 잔여 재투자 결과가 동일합니다.'
-        : '<b>잔여 재투자 포함 재최적화</b><br>'+
-          shortNames.map((n,i)=>n+' Lv.'+c.levels[i]).join(' / ')+' · 잔여 '+fmt(c.left)+
-          '<br><span class="arrow">→</span> '+
-          shortNames.map((n,i)=>n+' Lv.'+b.levels[i]).join(' / ')+' · 잔여 '+fmt(b.left);
+      const same=c.levels.every((x,i)=>x===shown.levels[i]);
+      document.getElementById("compare").innerHTML=(joint.length>1
+        ? '<b>공동 1위 '+joint.length+'개</b> · 게임 표시 전투력이 같은 범위로 판정됨.<br>그중 잔여 초월석이 가장 많은 조합을 대표 추천으로 표시합니다.<br>'
+        : '')+
+        (same
+          ? '100레벨 단위 결과와 잔여 재투자 결과가 동일합니다.'
+          : '<b>잔여 재투자 포함 재최적화</b><br>'+
+            shortNames.map((n,i)=>n+' Lv.'+c.levels[i]).join(' / ')+' · 잔여 '+fmt(c.left)+
+            '<br><span class="arrow">→</span> '+
+            shortNames.map((n,i)=>n+' Lv.'+shown.levels[i]).join(' / ')+' · 잔여 '+fmt(shown.left));
     }
 
     let h="<thead><tr><th>순위</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th><th>사용</th><th>잔여</th></tr></thead><tbody>";
+    let jointCount=0;
     exact.top.forEach((r,idx)=>{
-      h+="<tr><td>"+(idx+1)+"</td>";
+      const isJoint=rawMax-r.score<=EPS;
+      if(isJoint)jointCount++;
+      const rank=isJoint ? "공동 1위" : (joint.length + (idx-joint.length) + 1)+"위";
+      h+="<tr><td>"+rank+"</td>";
       r.levels.forEach(lv=>h+="<td>Lv."+lv+"</td>");
       h+="<td>"+fmt(r.used)+"</td><td>"+fmt(r.left)+"</td></tr>";
     });
@@ -299,7 +363,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
     button.disabled=true; status.textContent="1레벨 단위까지 전수조사 중...";
     setTimeout(()=>{
       const coarse=optimize(calcPool,fixed,100,5);
-      const exact=optimize(calcPool,fixed,1,20);
+      const exact=optimize(calcPool,fixed,1,50);
       if(pool>TOTAL_MAX && exact.best){
         exact.best.left+=pool-TOTAL_MAX; exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
         if(coarse.best)coarse.best.left+=pool-TOTAL_MAX;
