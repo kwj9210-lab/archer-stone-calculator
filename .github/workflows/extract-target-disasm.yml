@@ -28,18 +28,29 @@ jobs:
             "TranscendenceBalance.GetPrecisionDefenseBonusAtLevel",
             "TranscendenceBalance..cctor",
           ]
-          sections=src.split("="*110)
+          lines=src.splitlines()
           out=[]
           for t in targets:
-            for i,s in enumerate(sections):
-              if t in s:
-                out.append("="*110+"\n"+s.strip()+"\n"+"="*110)
+            start=None
+            for i,line in enumerate(lines):
+              if line.startswith(t+" VA="):
+                start=i-1
                 break
-          Path("analysis/target_disassembly.txt").write_text("\n\n".join(out)+"\n")
+            if start is None:
+              out.append(f"MISSING {t}")
+              continue
+            end=len(lines)
+            for j in range(start+2,len(lines)):
+              if lines[j].startswith("="*20) and j+1<len(lines) and " VA=" in lines[j+1]:
+                end=j
+                break
+            out.extend(lines[start:end])
+            out.append("")
+          Path("analysis/target_disassembly.txt").write_text("\n".join(out)+"\n")
           PY
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add analysis/target_disassembly.txt
-          git commit -m "Extract target transcend disassembly" || exit 0
+          git commit -m "Fix target transcend disassembly extraction" || exit 0
           git push
