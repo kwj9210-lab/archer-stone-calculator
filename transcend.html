@@ -59,23 +59,11 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
       </div>
       <div id="poolPreview" class="small"></div>
     </div>
-
-    <div class="field">
-      <label>반드시 MAX로 둘 항목</label>
-      <div class="checks">
-        <label class="check"><input id="fix0" type="checkbox">청람결정</label>
-        <label class="check"><input id="fix1" type="checkbox">성해공명</label>
-        <label class="check"><input id="fix2" type="checkbox">차원각인</label>
-        <label class="check"><input id="fix3" type="checkbox">영겁성핵</label>
-      </div>
-    </div>
-
     <div class="row">
       <button id="run" type="button">최적 배분 계산</button>
-      <button id="clearFix" class="secondary" type="button">MAX 고정 해제</button>
     </div>
     <div id="status" class="status small" aria-live="polite"></div>
-    <p class="small">동일 전투력으로 판단되는 조합은 초월석을 덜 쓰는 쪽을 우선합니다. 100레벨 사이 효과는 실측 구간값을 기준으로 1레벨 단위 보간합니다.</p>
+    <p class="small">동일 전투력으로 판단되는 조합은 초월석을 덜 쓰는 쪽을 우선합니다. 별도 고정 조건 없이 네 항목 전체를 자동으로 최적 배분합니다. 100레벨 사이 효과는 실측 구간값을 기준으로 1레벨 단위 보간합니다.</p>
   </section>
 
   <div class="stack">
@@ -357,11 +345,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
     const status=document.getElementById("status"), button=document.getElementById("run");
     let pool=getPool();
     if(!Number.isFinite(pool)||pool<0){status.innerHTML='<span class="bad">초월석 값을 확인해 주세요.</span>';return;}
-    const fixed=[0,1,2,3].map(i=>document.getElementById("fix"+i).checked);
-    const fixedCost=fixed.reduce((s,x,i)=>s+(x?levelCost[i][1500]:0),0);
-    if(fixedCost>pool){
-      status.innerHTML='<span class="bad">MAX 고정에 필요한 초월석 '+fmt(fixedCost)+'개가 현재 총량보다 많습니다.</span>';return;
-    }
+    const fixed=[false,false,false,false];
     const calcPool=Math.min(pool,TOTAL_MAX);
     button.disabled=true; status.textContent="1레벨 단위까지 전수조사 중...";
     setTimeout(()=>{
@@ -384,9 +368,6 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
     updatePoolPreview();
   });
   ["remain","cur0","cur1","cur2","cur3"].forEach(id=>document.getElementById(id).addEventListener("input",updatePoolPreview));
-  document.getElementById("clearFix").addEventListener("click",()=>{
-    for(let i=0;i<4;i++)document.getElementById("fix"+i).checked=false;
-  });
   document.getElementById("run").addEventListener("click",run);
   renderCostTable(); updatePoolPreview(); document.getElementById("status").textContent="값을 확인한 뒤 ‘최적 배분 계산’을 눌러주세요.";
 })();
