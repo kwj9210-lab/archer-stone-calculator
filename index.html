@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 11</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 12</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -587,9 +587,15 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
     const picks=resolved.filter(am => {
       if(am.image?.name!=="Assembly-CSharp.dll") return false;
-      if(am.type?.name==="Game_grow" && (am.name.includes("GoldTranscend") || am.name===".cctor")) return true;
+      if(am.type?.name==="Game_grow" && (
+        am.name.includes("GoldTranscend") ||
+        am.name.includes("TranscendGrowth") ||
+        am.name.includes("GrowthTranscend") ||
+        am.name===".cctor"
+      )) return true;
       if(am.type?.name==="GrowthTranscendenceProgress") return true;
       if(am.type?.name==="GrowthStoneTranscendence") return true;
+      if(am.type?.name==="ChuTiCheet" && am.name.includes("GrowthTranscendence")) return true;
       if(am.type?.name==="TranscendenceBalance" && (
         am.name===".cctor" ||
         am.name==="GetStageEquivalentMultiplier" ||
@@ -684,16 +690,54 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
       log.push("[초월 관련 타입 필드/상수 build11]");
+      function readCompressedUInt32At(off){
+        const v=meta.rawView;
+        let p=off;
+        const first=v.getUint8(p++);
+        let val;
+        if((first & 0x80)===0){
+          val=first>>>0;
+        }else if((first & 0xC0)===0x80){
+          val=(((first & 0x7F)<<8) | v.getUint8(p++))>>>0;
+        }else if((first & 0xE0)===0xC0){
+          val=(((first & 0x3F)*0x1000000) + (v.getUint8(p++)<<16) + (v.getUint8(p++)<<8) + v.getUint8(p++))>>>0;
+        }else if(first===0xF0){
+          val=v.getUint32(p,true); p+=4;
+        }else if(first===0xFE){
+          val=0xFFFFFFFE;
+        }else if(first===0xFF){
+          val=0xFFFFFFFF;
+        }else{
+          throw new Error("invalid compressed uint32 prefix 0x"+first.toString(16));
+        }
+        return {value:val>>>0,next:p};
+      }
+      function readCompressedInt32At(off){
+        const r=readCompressedUInt32At(off);
+        const enc=r.value>>>0;
+        if(enc===0xFFFFFFFF) return {value:-2147483648,next:r.next};
+        const neg=(enc & 1)!==0;
+        const n=enc>>>1;
+        return {value:neg?-(n+1):n,next:r.next};
+      }
       function defaultRaw(globalFieldIndex){
         const dv=meta.fieldDefaults.get(globalFieldIndex);
         if(!dv || dv.dataIndex<0 || dv.dataIndex>=meta.defaultDataSize) return "";
         const o=meta.defaultDataOffset+dv.dataIndex;
         const out=[];
-        if(o+4<=meta.rawView.byteLength) out.push("i32="+meta.rawView.getInt32(o,true), "u32="+meta.rawView.getUint32(o,true));
-        if(o+8<=meta.rawView.byteLength) out.push("i64="+meta.rawView.getBigInt64(o,true).toString());
+        try{
+          const ci=readCompressedInt32At(o), cu=readCompressedUInt32At(o);
+          out.push("compressedI32="+ci.value, "compressedU32="+cu.value);
+        }catch(e){ out.push("compressed=ERR"); }
+        if(o+8<=meta.rawView.byteLength){
+          out.push("rawF64="+meta.rawView.getFloat64(o,true));
+        }
+        const raw=[];
+        for(let k=0;k<Math.min(12,meta.rawView.byteLength-o);k++) raw.push(meta.rawView.getUint8(o+k).toString(16).padStart(2,"0"));
+        out.push("raw="+raw.join(""));
         return " default{"+out.join(", ")+"} dataIndex="+dv.dataIndex;
       }
-      for(const tn of ["GrowthTranscendenceProgress","GrowthStoneTranscendence","Game_grow"]){
+      for(const tn of ["GrowthTranscendenceProgress","GrowthStoneTranscendence","Game_grow","ChuTiCheet"]){
         const ts=meta.typeDefs.filter(t=>t.name===tn);
         if(!ts.length){ log.push(tn+": type 없음"); continue; }
         for(const t of ts){
@@ -701,7 +745,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
           for(let fi=0;fi<t.fieldCount;fi++){
             const g=t.firstFieldIdx+fi, fld=meta.fields[g];
             if(!fld) continue;
-            if(tn==="Game_grow" && !/transcend/i.test(fld.name)) continue;
+            if((tn==="Game_grow" || tn==="ChuTiCheet") && !/transcend/i.test(fld.name)) continue;
             log.push("  field#"+g+" "+fld.name+" (typeIndex="+fld.typeIndex+") token="+hex(BigInt(fld.token),8)+defaultRaw(g));
           }
         }
