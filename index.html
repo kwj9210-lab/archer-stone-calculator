@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 9</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 10</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -79,18 +79,26 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     const methodsOffset=u32(v,48), methodsSize=i32(v,52);
     const fieldDefaultsOffset=u32(v,64), fieldDefaultsSize=i32(v,68);
     const defaultDataOffset=u32(v,72), defaultDataSize=i32(v,76);
+    const parametersOffset=u32(v,88), parametersSize=i32(v,92);
     const fieldsOffset=u32(v,96), fieldsSize=i32(v,100);
     const typeDefsOffset=u32(v,160), typeDefsSize=i32(v,164);
     const imagesOffset=u32(v,168), imagesSize=i32(v,172);
     const fieldRefsOffset=u32(v,184), fieldRefsSize=i32(v,188);
-    const METHOD_SIZE=36, FIELD_SIZE=12, FIELD_DEFAULT_SIZE=12, FIELD_REF_SIZE=8, TYPE_SIZE=88, IMAGE_SIZE=40;
+    const METHOD_SIZE=36, PARAM_SIZE=12, FIELD_SIZE=12, FIELD_DEFAULT_SIZE=12, FIELD_REF_SIZE=8, TYPE_SIZE=88, IMAGE_SIZE=40;
     if(methodsSize%METHOD_SIZE) throw new Error("v31 method struct 크기(36)와 methodsSize가 맞지 않음");
     if(typeDefsSize%TYPE_SIZE) throw new Error("v31 type struct 크기(88)와 typeDefinitionsSize가 맞지 않음");
     if(imagesSize%IMAGE_SIZE) throw new Error("v31 image struct 크기(40)와 imagesSize가 맞지 않음");
 
     const methodCount=methodsSize/METHOD_SIZE, typeCount=typeDefsSize/TYPE_SIZE, imageCount=imagesSize/IMAGE_SIZE;
+    const parameterCount=parametersSize/PARAM_SIZE;
     const fieldCount=fieldsSize/FIELD_SIZE, fieldDefaultCount=fieldDefaultsSize/FIELD_DEFAULT_SIZE;
     const fieldRefCount=fieldRefsSize/FIELD_REF_SIZE;
+    const parameters=[];
+    for(let i=0;i<parameterCount;i++){
+      const o=parametersOffset+i*PARAM_SIZE;
+      const nameIndex=u32(v,o), token=u32(v,o+4), typeIndex=i32(v,o+8);
+      parameters.push({index:i,nameIndex,name:cstr(b,stringOffset+nameIndex),token,typeIndex});
+    }
     const fields=[];
     for(let i=0;i<fieldCount;i++){
       const o=fieldsOffset+i*FIELD_SIZE;
@@ -120,12 +128,15 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     for(let i=0;i<methodCount;i++){
       const o=methodsOffset+i*METHOD_SIZE, nameIndex=u32(v,o);
       const declaringType=i32(v,o+4);
+      const returnTypeIndex=i32(v,o+8);
+      const parameterStart=i32(v,o+16);
       const token=u32(v,o+24);
+      const flags=u16(v,o+28), parameterCount2=u16(v,o+34);
       const name=cstr(b,stringOffset+nameIndex);
-      allMethods.push({name,defIndex:i,nameIndex,declaringType,token,pointerIndex:(token&0x00FFFFFF)-1});
+      allMethods.push({name,defIndex:i,nameIndex,declaringType,returnTypeIndex,parameterStart,parameterCount:parameterCount2,flags,token,pointerIndex:(token&0x00FFFFFF)-1});
       for(const t of TARGETS){
         if(!targetNameIndices.get(t).has(nameIndex)) continue;
-        methods.push({target:t,defIndex:i,nameIndex,declaringType,token});
+        methods.push({target:t,defIndex:i,nameIndex,declaringType,returnTypeIndex,parameterStart,parameterCount:parameterCount2,flags,token});
       }
     }
 
@@ -161,7 +172,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       m.type=typeInfo(m.declaringType);
       m.image=imageForType(m.declaringType);
     }
-    return {version,methodCount,typeCount,imageCount,methods,allMethods,images,fields,fieldDefaults,fieldRefs,typeDefs,defaultDataOffset,defaultDataSize,rawView:v,rawBytes:b};
+    return {version,methodCount,typeCount,imageCount,methods,allMethods,images,parameters,fields,fieldDefaults,fieldRefs,typeDefs,defaultDataOffset,defaultDataSize,rawView:v,rawBytes:b};
   }
 
   function parseElf(buf){
@@ -577,6 +588,8 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     const picks=resolved.filter(am => {
       if(am.image?.name!=="Assembly-CSharp.dll") return false;
       if(am.type?.name==="Game_grow" && (am.name.includes("GoldTranscend") || am.name===".cctor")) return true;
+      if(am.type?.name==="GrowthTranscendenceProgress" && (am.name==="GetLevel" || am.name===".cctor")) return true;
+      if(am.type?.name==="GrowthStoneTranscendence" && (am.name==="GetLevel" || am.name===".cctor")) return true;
       if(am.type?.name==="TranscendenceBalance" && (
         am.name===".cctor" ||
         am.name==="GetStageEquivalentMultiplier" ||
@@ -607,6 +620,8 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
         const temp={functionVA:ptr,codeBytes:code};
         log.push(h.full);
         log.push("  MethodDef index: "+h.defIndex+" / pointerIndex: "+h.pointerIndex);
+        const ps=(h.parameterCount>0 && h.parameterStart>=0)?meta.parameters.slice(h.parameterStart,h.parameterStart+h.parameterCount):[];
+        log.push("  params: "+(ps.length?ps.map((p,ix)=>"#"+ix+" "+p.name+" (typeIndex="+p.typeIndex+")").join(", "):"(none)"));
         log.push("  VA: "+hex(ptr)+" / file offset: "+hex(BigInt(off))+" / bytes: "+size);
         const calls=decodeDirectCalls(temp);
         if(calls.length){
@@ -649,6 +664,8 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
         log.push("  token: "+hex(m.token,8)+" / pointerIndex: "+m.pointerIndex);
         log.push("  declaringType: "+(m.type.namespace?m.type.namespace+".":"")+m.type.name+" (#"+m.declaringType+")");
         log.push("  image: "+(m.image?.name||"?"));
+        const ps=(m.parameterCount>0 && m.parameterStart>=0)?meta.parameters.slice(m.parameterStart,m.parameterStart+m.parameterCount):[];
+        log.push("  params: "+(ps.length?ps.map((p,ix)=>"#"+ix+" "+p.name+" (typeIndex="+p.typeIndex+")").join(", "):"(none)"));
       }
       log.push("");
       const elf=parseElf(lb);
@@ -665,6 +682,19 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       const modules=resolveFunctions(meta,elf,cr,log);
       annotateInternalCalls(meta,elf,modules,log);
       dumpGoldInitializerBlobs(meta,elf,log);
+      log.push("");
+      log.push("[레벨 저장 타입 필드]");
+      for(const tn of ["GrowthTranscendenceProgress","GrowthStoneTranscendence"]){
+        const ts=meta.typeDefs.filter(t=>t.name===tn);
+        if(!ts.length){ log.push(tn+": type 없음"); continue; }
+        for(const t of ts){
+          log.push(tn+" type#"+t.index+" firstField="+t.firstFieldIdx+" fieldCount="+t.fieldCount);
+          for(let fi=0;fi<t.fieldCount;fi++){
+            const g=t.firstFieldIdx+fi, fld=meta.fields[g];
+            if(fld) log.push("  field#"+g+" "+fld.name+" (typeIndex="+fld.typeIndex+") token="+hex(BigInt(fld.token),8));
+          }
+        }
+      }
       dumpRelatedMethods(meta,elf,modules,log);
       log.push("");
       log.push("[실제 함수 주소]");
@@ -693,6 +723,6 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
   });
 })();
 </script>
-<!-- build9 FieldInfo decode -->
+<!-- build10 level mapping -->
 </body>
 </html>
