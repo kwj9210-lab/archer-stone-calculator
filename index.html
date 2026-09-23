@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 17</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 18</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -148,6 +148,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
         index:idx,
         name:cstr(b,stringOffset+ni),
         namespace:cstr(b,stringOffset+nsi),
+        byvalTypeIndex:i32(v,o+8),
         firstFieldIdx:i32(v,o+32),
         fieldCount:u16(v,o+68),
         token:u32(v,o+84)
@@ -947,6 +948,98 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
   }
 
+
+  function dumpGrowthStoneMatrixExactBuild18(meta,elf,log){
+    log.push("");
+    log.push("[GrowthStone 비용행렬 exact build18]");
+
+    function hexBytes(arr){ return Array.from(arr).map(x=>x.toString(16).padStart(2,"0")).join(""); }
+    function i32Bytes(vals){
+      const a=new Uint8Array(vals.length*4), v=new DataView(a.buffer);
+      vals.forEach((x,i)=>v.setInt32(i*4,x,true));
+      return a;
+    }
+    function hitsIn(bytes,pat,start=0,end=bytes.length,max=40){
+      const out=[];
+      outer: for(let i=start;i+pat.length<=end;i++){
+        if(bytes[i]!==pat[0]) continue;
+        for(let j=1;j<pat.length;j++) if(bytes[i+j]!==pat[j]) continue outer;
+        out.push(i); if(out.length>=max) break;
+      }
+      return out;
+    }
+    function scanEverywhere(label,vals){
+      const pat=i32Bytes(vals);
+      const mh=hitsIn(meta.rawBytes,pat,0,meta.rawBytes.length,20);
+      log.push("  "+label+" metadataHits="+mh.length+(mh.length?" offs="+mh.map(x=>"0x"+x.toString(16)).join(", "):""));
+      const eh=[];
+      for(const sec of elf.segs){
+        const hs=hitsIn(elf.b,pat,sec.offset,Math.min(elf.b.length,sec.offset+sec.filesz),20);
+        for(const off of hs) eh.push(sec.va+BigInt(off-sec.offset));
+      }
+      log.push("  "+label+" elfHits="+eh.length+(eh.length?" VAs="+eh.map(hex).join(", "):""));
+    }
+
+    // Exact field-ref resolution: Il2CppFieldRef.typeIndex is an Il2CppType index.
+    // For a type definition, byvalTypeIndex points back to that Il2CppType.
+    try{
+      const slotVA=0x3E003D0n;
+      const usageVA=elf.readPtrVA(slotVA);
+      const encoded=elf.readPtrVA(usageVA);
+      const tag=Number((encoded>>29n)&7n), idx=Number(encoded&0x1fffffffn);
+      log.push("  Costs handle slot="+hex(slotVA)+" usage="+hex(usageVA)+" encoded="+hex(encoded)+" tag="+tag+" idx="+idx);
+      if(tag===4){
+        const fr=meta.fieldRefs[idx];
+        log.push("  fieldRef="+JSON.stringify(fr||null));
+        if(fr){
+          const owners=meta.typeDefs.filter(t=>t.byvalTypeIndex===fr.typeIndex);
+          log.push("  ownerByByvalTypeIndex count="+owners.length);
+          for(const t of owners){
+            log.push("    type#"+t.index+" "+t.namespace+"."+t.name+" byval="+t.byvalTypeIndex+" firstField="+t.firstFieldIdx+" fieldCount="+t.fieldCount);
+            if(fr.fieldIndex>=0 && fr.fieldIndex<t.fieldCount){
+              const fi=t.firstFieldIdx+fr.fieldIndex, fld=meta.fields[fi], dv=meta.fieldDefaults.get(fi);
+              log.push("      resolved field#"+fi+" "+(fld?.name||"?")+" token="+hex(BigInt(fld?.token||0))+" fieldTypeIndex="+(fld?.typeIndex??"?"));
+              if(dv){
+                log.push("      default dataIndex="+dv.dataIndex+" defaultTypeIndex="+dv.typeIndex);
+                if(dv.dataIndex>=0 && dv.dataIndex<meta.defaultDataSize){
+                  const start=meta.defaultDataOffset+dv.dataIndex;
+                  const n=Math.min(160,meta.defaultDataSize-dv.dataIndex);
+                  const raw=meta.rawBytes.subarray(start,start+n);
+                  log.push("      raw160="+hexBytes(raw));
+                  const vals=[];
+                  for(let k=0;k+4<=raw.length;k+=4) vals.push(meta.rawView.getInt32(start+k,true));
+                  log.push("      int32[0..]="+JSON.stringify(vals));
+                }
+              } else log.push("      field default entry 없음");
+            }
+          }
+        }
+      }
+    }catch(e){ log.push("  exact field resolution ERROR "+String(e.message||e)); }
+
+    const rows6=[
+      ["row0 per-level",[5,10,20,30,40,40]],
+      ["row1 per-level",[10,15,25,40,50,50]],
+      ["row2 per-level",[15,25,40,60,75,75]],
+      ["row3 per-level",[20,30,50,70,85,85]]
+    ];
+    const full6=rows6.flatMap(x=>x[1]);
+    const rows15=[
+      [5,10,20,30,...Array(11).fill(40)],
+      [10,15,25,40,...Array(11).fill(50)],
+      [15,25,40,60,...Array(11).fill(75)],
+      [20,30,50,70,...Array(11).fill(85)]
+    ];
+    scanEverywhere("4x6 per-level full",full6);
+    for(const [name,row] of rows6) scanEverywhere(name,row);
+    scanEverywhere("4x15 per-level full",rows15.flat());
+
+    // Also test 100-level aggregate numbers, in case the initializer stores block costs directly.
+    const rows6x100=rows6.map(([n,row])=>[n+" x100",row.map(v=>v*100)]);
+    scanEverywhere("4x6 block-cost full",rows6x100.flatMap(x=>x[1]));
+    for(const [name,row] of rows6x100) scanEverywhere(name,row);
+  }
+
   function dumpGoldInitializerBlobs(meta,elf,log){
     log.push("");
     log.push("[Gold 초월 정적 초기값 직접 복원 build9]");
@@ -1136,6 +1229,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       diagnoseLive1500(meta,log);
       mapTargetStringLiteralOwners(meta,elf,modules,log);
       dumpGrowthStoneMatrixAndNameArrays(meta,elf,log);
+      dumpGrowthStoneMatrixExactBuild18(meta,elf,log);
       scanKnownUserCostPatterns(meta,elf,modules,log);
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
