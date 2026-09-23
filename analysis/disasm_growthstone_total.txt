@@ -1,0 +1,65 @@
+01ea0ef0  stp      x30, x25, [sp, #-0x40]!
+01ea0ef4  stp      x24, x23, [sp, #0x10]
+01ea0ef8  stp      x22, x21, [sp, #0x20]
+01ea0efc  stp      x20, x19, [sp, #0x30]
+01ea0f00  adrp     x22, #0x406c000
+01ea0f04  mov      w19, w2
+01ea0f08  mov      w20, w1
+01ea0f0c  ldrb     w8, [x22, #0x3f0]
+01ea0f10  mov      w21, w0
+01ea0f14  tbnz     w8, #0, #0x1ea0f2c
+01ea0f18  adrp     x0, #0x3dea000
+01ea0f1c  ldr      x0, [x0, #0x6a8]
+01ea0f20  bl       #0x1828f84
+01ea0f24  mov      w8, #1
+01ea0f28  strb     w8, [x22, #0x3f0]
+01ea0f2c  cmp      w19, w20
+01ea0f30  mov      w22, wzr
+01ea0f34  b.le     #0x1ea0fd4
+01ea0f38  cmp      w21, #3
+01ea0f3c  b.hi     #0x1ea0fd4
+01ea0f40  tbnz     w20, #0x1f, #0x1ea0fd4
+01ea0f44  cmp      w19, #0x258
+01ea0f48  b.gt     #0x1ea0fd4
+01ea0f4c  adrp     x23, #0x3dea000
+01ea0f50  mov      w25, #0x851f
+01ea0f54  mov      w22, wzr
+01ea0f58  ldr      x23, [x23, #0x6a8]
+01ea0f5c  mov      w24, w21
+01ea0f60  movk     w25, #0x51eb, lsl #16
+01ea0f64  ldr      x0, [x23]
+01ea0f68  ldr      w8, [x0, #0xe4]
+01ea0f6c  cbnz     w8, #0x1ea0f78
+01ea0f70  bl       #0x18290d4
+01ea0f74  ldr      x0, [x23]
+01ea0f78  ldr      x8, [x0, #0xb8]
+01ea0f7c  ldr      x8, [x8, #8]
+01ea0f80  cbz      x8, #0x1ea0ff0
+01ea0f84  ldr      x9, [x8, #0x10]
+01ea0f88  ldr      w10, [x9]
+01ea0f8c  cmp      w10, w21
+01ea0f90  b.ls     #0x1ea0fec
+01ea0f94  smull    x10, w20, w25
+01ea0f98  ldr      x9, [x9, #0x10]
+01ea0f9c  lsr      x11, x10, #0x3f
+01ea0fa0  asr      x10, x10, #0x25
+01ea0fa4  add      w10, w10, w11
+01ea0fa8  sxtw     x10, w10
+01ea0fac  cmp      w10, w9
+01ea0fb0  b.hs     #0x1ea0fec
+01ea0fb4  madd     x9, x9, x24, x10
+01ea0fb8  add      x8, x8, x9, lsl #2
+01ea0fbc  add      w9, w20, #2
+01ea0fc0  add      w20, w20, #1
+01ea0fc4  cmp      w9, w19
+01ea0fc8  ldr      w8, [x8, #0x20]
+01ea0fcc  add      w22, w8, w22
+01ea0fd0  b.le     #0x1ea0f68
+01ea0fd4  mov      w0, w22
+01ea0fd8  ldp      x20, x19, [sp, #0x30]
+01ea0fdc  ldp      x22, x21, [sp, #0x20]
+01ea0fe0  ldp      x24, x23, [sp, #0x10]
+01ea0fe4  ldp      x30, x25, [sp], #0x40
+01ea0fe8  ret      
+01ea0fec  bl       #0x1829208
+01ea0ff0  bl       #0x1829200
