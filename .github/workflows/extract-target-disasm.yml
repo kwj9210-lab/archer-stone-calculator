@@ -1,0 +1,45 @@
+name: Extract target disassembly
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [transcend-build7-20260923]
+    paths: [".github/workflows/extract-target-disasm.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          src=Path("analysis/build7_disassembly.txt").read_text()
+          targets=[
+            "Game_grow.GetGoldTranscendMaxMultiplierExponent",
+            "Game_grow.CalculateGoldTranscendMultiplierAtLevel",
+            "Game_grow.GetTotalGoldTranscendenceAttackMultiplier",
+            "Game_grow..cctor",
+            "TranscendenceBalance.GetStageEquivalentMultiplier",
+            "TranscendenceBalance.GetSkyArtMultiplierAtLevel",
+            "TranscendenceBalance.GetPrecisionDefenseBonusAtLevel",
+            "TranscendenceBalance..cctor",
+          ]
+          sections=src.split("="*110)
+          out=[]
+          for t in targets:
+            for i,s in enumerate(sections):
+              if t in s:
+                out.append("="*110+"\n"+s.strip()+"\n"+"="*110)
+                break
+          Path("analysis/target_disassembly.txt").write_text("\n\n".join(out)+"\n")
+          PY
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add analysis/target_disassembly.txt
+          git commit -m "Extract target transcend disassembly" || exit 0
+          git push
