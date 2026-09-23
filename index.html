@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 16</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 17</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -853,6 +853,100 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
   }
 
+
+  function dumpGrowthStoneMatrixAndNameArrays(meta,elf,log){
+    log.push("");
+    log.push("[GrowthStone 비용행렬 / 이름배열 직접복원 build17]");
+
+    function stringLiteralByIndex(idx){
+      const v=meta.rawView,b=meta.rawBytes;
+      const litOff=v.getUint32(8,true), litSize=v.getInt32(12,true);
+      const litDataOff=v.getUint32(16,true), litDataSize=v.getInt32(20,true);
+      if(idx<0 || idx>=litSize/8) return null;
+      const o=litOff+idx*8, len=v.getUint32(o,true), di=v.getInt32(o+4,true);
+      if(di<0||len>100000||di+len>litDataSize) return null;
+      return new TextDecoder().decode(b.subarray(litDataOff+di,litDataOff+di+len));
+    }
+    function decodeUsageSlot(slotVA){
+      try{
+        const usageVA=elf.readPtrVA(slotVA);
+        const encoded=elf.readPtrVA(usageVA);
+        const tag=Number((encoded>>29n)&7n), idx=Number(encoded&0x1fffffffn);
+        return {slotVA,usageVA,encoded,tag,idx};
+      }catch(e){ return {slotVA,error:String(e.message||e)}; }
+    }
+    function ownerTypeOfField(fi){
+      for(const t of meta.typeDefs){
+        if(t.firstFieldIdx>=0 && fi>=t.firstFieldIdx && fi<t.firstFieldIdx+t.fieldCount) return t;
+      }
+      return null;
+    }
+
+    // GrowthStoneTranscendence..cctor:
+    // x19 <- [0x3E003D0], then RuntimeHelpers.InitializeArray(array, [x19])
+    const gs=decodeUsageSlot(0x3E003D0n);
+    log.push("GrowthStone Costs field slot 0x3E003D0");
+    if(gs.error){ log.push("  ERROR "+gs.error); }
+    else{
+      log.push("  usageVA="+hex(gs.usageVA)+" encoded="+hex(gs.encoded)+" tag="+gs.tag+" idx="+gs.idx);
+      if(gs.tag===4){
+        const fr=meta.fieldRefs[gs.idx];
+        if(fr){
+          log.push("  fieldRef typeIndex="+fr.typeIndex+" relativeField="+fr.fieldIndex);
+          // Resolve relative field against every <PrivateImplementationDetails> type.
+          for(const t of meta.typeDefs){
+            if(t.name!=="<PrivateImplementationDetails>") continue;
+            if(fr.fieldIndex<0 || fr.fieldIndex>=t.fieldCount) continue;
+            const fi=t.firstFieldIdx+fr.fieldIndex, fld=meta.fields[fi], dv=meta.fieldDefaults.get(fi);
+            log.push("  candidate "+t.name+" field#"+fi+" "+(fld?.name||"?")+" token="+hex(BigInt(fld?.token||0)));
+            if(dv && dv.dataIndex>=0 && dv.dataIndex<meta.defaultDataSize){
+              const start=meta.defaultDataOffset+dv.dataIndex;
+              const next=[...meta.fieldDefaults.values()]
+                .filter(x=>x.dataIndex>dv.dataIndex).map(x=>x.dataIndex).sort((a,b)=>a-b)[0] ?? meta.defaultDataSize;
+              const bytes=Math.min(next-dv.dataIndex,512);
+              log.push("    dataIndex="+dv.dataIndex+" inferredBytes="+bytes);
+              const vals=[];
+              for(let k=0;k+4<=bytes;k+=4) vals.push(meta.rawView.getInt32(start+k,true));
+              log.push("    int32 = ["+vals.join(", ")+"]");
+            }
+          }
+        }
+      }
+    }
+
+    // Read multidimensional array dimension descriptor copied from VA 0x9274D0.
+    try{
+      const off=elf.vaToOff(0x9274D0n), raw=[];
+      for(let i=0;i<16;i++) raw.push(elf.b[off+i]);
+      const dv=new DataView(Uint8Array.from(raw).buffer);
+      const ints=[]; for(let i=0;i<4;i++) ints.push(dv.getInt32(i*4,true));
+      const longs=[]; for(let i=0;i<2;i++) longs.push(dv.getBigInt64(i*8,true).toString());
+      log.push("  dimension blob @0x9274D0 raw="+raw.map(x=>x.toString(16).padStart(2,"0")).join("")+" i32=["+ints.join(", ")+"] i64=["+longs.join(", ")+"]");
+    }catch(e){ log.push("  dimension blob error: "+String(e.message||e)); }
+
+    const arrays=[
+      ["TranscendGrowthPlaceholderNames",0x40n,[0x3DEAC70n,0x3DEACA8n,0x3DEAC80n,0x3DEAC30n,0x3DEABF8n,0x3DEAC88n,0x3DEAC60n,0x3DEAC08n]],
+      ["TranscendenceShortEffects",0x58n,[0x3DEAC90n,0x3DEAC48n,0x3DEAC38n,0x3DEAC50n,0x3DEAC10n,0x3DEACC0n,0x3DEAC98n,0x3DEAC78n]],
+      ["TranscendenceEffectNames",0x60n,[0x3DEAC68n,0x3DEAC20n,0x3DEAC00n,0x3DEAC28n,0x3DEAC58n,0x3DEACE8n,0x3DEACB8n,0x3DEAC18n]]
+    ];
+    for(const [name,staticOff,slots] of arrays){
+      log.push(name+" staticOffset=0x"+staticOff.toString(16));
+      for(let i=0;i<slots.length;i++){
+        const d=decodeUsageSlot(slots[i]);
+        if(d.error){ log.push("  ["+i+"] slot="+hex(slots[i])+" ERROR "+d.error); continue; }
+        let extra="";
+        if(d.tag===5){
+          const txt=stringLiteralByIndex(d.idx);
+          extra=" string="+JSON.stringify(txt);
+        } else if(d.tag===4){
+          const fr=meta.fieldRefs[d.idx];
+          extra=" fieldRef="+JSON.stringify(fr||null);
+        }
+        log.push("  ["+i+"] slot="+hex(slots[i])+" usage="+hex(d.usageVA)+" encoded="+hex(d.encoded)+" tag="+d.tag+" idx="+d.idx+extra);
+      }
+    }
+  }
+
   function dumpGoldInitializerBlobs(meta,elf,log){
     log.push("");
     log.push("[Gold 초월 정적 초기값 직접 복원 build9]");
@@ -1041,6 +1135,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       annotateInternalCalls(meta,elf,modules,log);
       diagnoseLive1500(meta,log);
       mapTargetStringLiteralOwners(meta,elf,modules,log);
+      dumpGrowthStoneMatrixAndNameArrays(meta,elf,log);
       scanKnownUserCostPatterns(meta,elf,modules,log);
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
