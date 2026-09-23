@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 4</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 5</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -92,12 +92,15 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
 
     const methods=[];
+    const allMethods=[];
     for(let i=0;i<methodCount;i++){
       const o=methodsOffset+i*METHOD_SIZE, nameIndex=u32(v,o);
+      const declaringType=i32(v,o+4);
+      const token=u32(v,o+24);
+      const name=cstr(b,stringOffset+nameIndex);
+      allMethods.push({name,defIndex:i,nameIndex,declaringType,token,pointerIndex:(token&0x00FFFFFF)-1});
       for(const t of TARGETS){
         if(!targetNameIndices.get(t).has(nameIndex)) continue;
-        const declaringType=i32(v,o+4);
-        const token=u32(v,o+24);
         methods.push({target:t,defIndex:i,nameIndex,declaringType,token});
       }
     }
@@ -122,7 +125,11 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       m.image=imageForType(m.declaringType);
       m.pointerIndex=(m.token & 0x00FFFFFF)-1;
     }
-    return {version,methodCount,typeCount,imageCount,methods,images};
+    for(const m of allMethods){
+      m.type=typeInfo(m.declaringType);
+      m.image=imageForType(m.declaringType);
+    }
+    return {version,methodCount,typeCount,imageCount,methods,allMethods,images};
   }
 
   function parseElf(buf){
@@ -360,9 +367,87 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
         lines.push((m.functionFileOffset+i).toString(16).padStart(8,"0")+": "+chunk);
       }
       m.codeSize=size;
+      m.codeBytes=code;
       m.hexDump=lines.join("\n");
     }
     return modules;
+  }
+
+  function decodeDirectCalls(method){
+    const out=[];
+    if(!method.functionVA || !method.codeBytes) return out;
+    const dv=new DataView(method.codeBytes.buffer,method.codeBytes.byteOffset,method.codeBytes.byteLength);
+    for(let off=0;off+4<=method.codeBytes.length;off+=4){
+      const ins=dv.getUint32(off,true);
+      if((ins & 0xFC000000) !== 0x94000000) continue;
+      let imm=ins & 0x03FFFFFF;
+      if(imm & 0x02000000) imm-=0x04000000;
+      const at=method.functionVA+BigInt(off);
+      const target=BigInt.asUintN(64,at+BigInt(imm*4));
+      out.push({at,target});
+    }
+    return out;
+  }
+
+  function annotateInternalCalls(meta,elf,modules,log){
+    const modByName=new Map(modules.map(m=>[m.name,m]));
+    const vaNames=new Map();
+    const vaMeta=new Map();
+    for(const am of meta.allMethods){
+      const img=am.image?.name||"";
+      const mod=modByName.get(img);
+      if(!mod || am.pointerIndex<0 || am.pointerIndex>=mod.methodPointerCount) continue;
+      try{
+        const va=elf.readPtrVA(mod.methodPointers+BigInt(am.pointerIndex*8));
+        if(!vaNames.has(va.toString())){
+          const full=(am.type?.name?am.type.name+".":"")+am.name;
+          vaNames.set(va.toString(),full);
+          vaMeta.set(va.toString(),{...am,va,mod});
+        }
+      }catch(e){}
+    }
+    const helpers=new Map();
+    log.push("");
+    log.push("[대상 함수 내부 직접 호출 매핑]");
+    for(const m of meta.methods){
+      log.push(m.target);
+      for(const c of decodeDirectCalls(m)){
+        const n=vaNames.get(c.target.toString());
+        if(n){
+          log.push("  "+hex(c.at)+" -> "+hex(c.target)+"  "+n);
+          if(!TARGETS.includes(n.split(".").pop())) helpers.set(c.target.toString(),vaMeta.get(c.target.toString()));
+        }
+      }
+    }
+    if(helpers.size){
+      log.push("");
+      log.push("[Assembly-CSharp 내부 helper 코드]");
+      for(const h of helpers.values()){
+        try{
+          const mod=h.mod, ptr=h.va;
+          const allPtrs=[];
+          for(let i=0;i<mod.methodPointerCount;i++){
+            const q=elf.readPtrVA(mod.methodPointers+BigInt(i*8));
+            if(q>0n) allPtrs.push(q);
+          }
+          allPtrs.sort((a,b)=>a<b?-1:a>b?1:0);
+          let next=0n;
+          for(const q of allPtrs){ if(q>ptr){next=q;break;} }
+          let size=512;
+          if(next>ptr){ const d=Number(next-ptr); if(d>0&&d<=2048) size=d; }
+          const off=elf.vaToOff(ptr);
+          size=Math.min(size,2048,elf.buf.byteLength-off);
+          const code=elf.b.subarray(off,off+size);
+          log.push((h.type?.name?h.type.name+".":"")+h.name);
+          log.push("  VA: "+hex(ptr)+" / pointerIndex: "+h.pointerIndex+" / bytes: "+size);
+          for(let i=0;i<code.length;i+=16){
+            const chunk=Array.from(code.subarray(i,i+16)).map(x=>x.toString(16).padStart(2,"0")).join(" ");
+            log.push((off+i).toString(16).padStart(8,"0")+": "+chunk);
+          }
+          log.push("");
+        }catch(e){ log.push("  helper extract error: "+String(e)); }
+      }
+    }
   }
 
   $("run").addEventListener("click", async () => {
@@ -400,7 +485,8 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
         log.push("CodeRegistration 자동 탐색은 실패. CodeGenModule 직접 탐색으로 계속 진행.");
       }
       log.push("");
-      resolveFunctions(meta,elf,cr,log);
+      const modules=resolveFunctions(meta,elf,cr,log);
+      annotateInternalCalls(meta,elf,modules,log);
       log.push("");
       log.push("[실제 함수 주소]");
       for(const m of meta.methods){
