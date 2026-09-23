@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 10</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 11</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -588,8 +588,8 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     const picks=resolved.filter(am => {
       if(am.image?.name!=="Assembly-CSharp.dll") return false;
       if(am.type?.name==="Game_grow" && (am.name.includes("GoldTranscend") || am.name===".cctor")) return true;
-      if(am.type?.name==="GrowthTranscendenceProgress" && (am.name==="GetLevel" || am.name===".cctor")) return true;
-      if(am.type?.name==="GrowthStoneTranscendence" && (am.name==="GetLevel" || am.name===".cctor")) return true;
+      if(am.type?.name==="GrowthTranscendenceProgress") return true;
+      if(am.type?.name==="GrowthStoneTranscendence") return true;
       if(am.type?.name==="TranscendenceBalance" && (
         am.name===".cctor" ||
         am.name==="GetStageEquivalentMultiplier" ||
@@ -683,16 +683,38 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       annotateInternalCalls(meta,elf,modules,log);
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
-      log.push("[레벨 저장 타입 필드]");
-      for(const tn of ["GrowthTranscendenceProgress","GrowthStoneTranscendence"]){
+      log.push("[초월 관련 타입 필드/상수 build11]");
+      function defaultRaw(globalFieldIndex){
+        const dv=meta.fieldDefaults.get(globalFieldIndex);
+        if(!dv || dv.dataIndex<0 || dv.dataIndex>=meta.defaultDataSize) return "";
+        const o=meta.defaultDataOffset+dv.dataIndex;
+        const out=[];
+        if(o+4<=meta.rawView.byteLength) out.push("i32="+meta.rawView.getInt32(o,true), "u32="+meta.rawView.getUint32(o,true));
+        if(o+8<=meta.rawView.byteLength) out.push("i64="+meta.rawView.getBigInt64(o,true).toString());
+        return " default{"+out.join(", ")+"} dataIndex="+dv.dataIndex;
+      }
+      for(const tn of ["GrowthTranscendenceProgress","GrowthStoneTranscendence","Game_grow"]){
         const ts=meta.typeDefs.filter(t=>t.name===tn);
         if(!ts.length){ log.push(tn+": type 없음"); continue; }
         for(const t of ts){
           log.push(tn+" type#"+t.index+" firstField="+t.firstFieldIdx+" fieldCount="+t.fieldCount);
           for(let fi=0;fi<t.fieldCount;fi++){
             const g=t.firstFieldIdx+fi, fld=meta.fields[g];
-            if(fld) log.push("  field#"+g+" "+fld.name+" (typeIndex="+fld.typeIndex+") token="+hex(BigInt(fld.token),8));
+            if(!fld) continue;
+            if(tn==="Game_grow" && !/transcend/i.test(fld.name)) continue;
+            log.push("  field#"+g+" "+fld.name+" (typeIndex="+fld.typeIndex+") token="+hex(BigInt(fld.token),8)+defaultRaw(g));
           }
+        }
+      }
+
+      log.push("");
+      log.push("[초월 관련 메서드 목록 build11]");
+      for(const tn of ["GrowthTranscendenceProgress","GrowthStoneTranscendence"]){
+        const arr=meta.allMethods.filter(m=>m.type?.name===tn && m.image?.name==="Assembly-CSharp.dll");
+        log.push(tn+" methods="+arr.length);
+        for(const m of arr){
+          const ps=(m.parameterCount>0 && m.parameterStart>=0)?meta.parameters.slice(m.parameterStart,m.parameterStart+m.parameterCount):[];
+          log.push("  #"+m.defIndex+" "+m.name+"("+ps.map(p=>p.name).join(", ")+") token="+hex(m.token,8));
         }
       }
       dumpRelatedMethods(meta,elf,modules,log);
