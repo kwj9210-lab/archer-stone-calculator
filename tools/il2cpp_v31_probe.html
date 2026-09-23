@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 12</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 13</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -495,6 +495,92 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 
 
 
+  function diagnoseLive1500(meta,log){
+    log.push("");
+    log.push("[Lv.1500 시스템 후보 탐색 build13]");
+
+    function readCompressedUInt32At(off){
+      const v=meta.rawView; let p=off; const first=v.getUint8(p++); let val;
+      if((first&0x80)===0) val=first;
+      else if((first&0xC0)===0x80) val=((first&0x7F)<<8)|v.getUint8(p++);
+      else if((first&0xE0)===0xC0) val=(((first&0x3F)*0x1000000)+(v.getUint8(p++)<<16)+(v.getUint8(p++)<<8)+v.getUint8(p++))>>>0;
+      else if(first===0xF0){val=v.getUint32(p,true);p+=4;}
+      else if(first===0xFE) val=0xFFFFFFFE;
+      else if(first===0xFF) val=0xFFFFFFFF;
+      else throw new Error("compressed uint");
+      return {value:val>>>0,next:p};
+    }
+    function readCompressedInt32At(off){
+      const r=readCompressedUInt32At(off), e=r.value>>>0;
+      if(e===0xFFFFFFFF) return -2147483648;
+      return (e&1)?-((e>>>1)+1):(e>>>1);
+    }
+    function ownerType(fieldIndex){
+      for(const t of meta.typeDefs){
+        if(t.firstFieldIdx>=0 && fieldIndex>=t.firstFieldIdx && fieldIndex<t.firstFieldIdx+t.fieldCount) return t;
+      }
+      return null;
+    }
+
+    const hits1500=[];
+    for(const [fi,dv] of meta.fieldDefaults){
+      if(dv.dataIndex<0 || dv.dataIndex>=meta.defaultDataSize) continue;
+      try{
+        const val=readCompressedInt32At(meta.defaultDataOffset+dv.dataIndex);
+        if(val===1500){
+          const fld=meta.fields[fi], t=ownerType(fi);
+          hits1500.push({fi,name:fld?.name||"?",type:t?.name||"?",token:fld?.token||0});
+        }
+      }catch(e){}
+    }
+    log.push("compressed int 기본값 1500 필드: "+hits1500.length);
+    for(const h of hits1500.slice(0,200)) log.push("  "+h.type+"."+h.name+" field#"+h.fi+" token="+hex(BigInt(h.token),8));
+
+    const rx=/(transcend|resonan|engr(?:av|ave)|dimension|crystal|core|awak|ascen)/i;
+    const types=meta.typeDefs.filter(t=>rx.test(t.name)||rx.test(t.namespace||""));
+    log.push("관련 이름 타입: "+types.length);
+    for(const t of types.slice(0,300)) log.push("  type#"+t.index+" "+(t.namespace?t.namespace+".":"")+t.name);
+
+    const methods=meta.allMethods.filter(m=>rx.test(m.name)||rx.test(m.type?.name||""));
+    log.push("관련 이름 메서드: "+methods.length);
+    for(const m of methods.slice(0,1200)){
+      const ps=(m.parameterCount>0&&m.parameterStart>=0)?meta.parameters.slice(m.parameterStart,m.parameterStart+m.parameterCount):[];
+      log.push("  #"+m.defIndex+" "+(m.type?.name||"?")+"."+m.name+"("+ps.map(p=>p.name).join(", ")+") token="+hex(m.token,8));
+    }
+
+    const v=meta.rawView,b=meta.rawBytes;
+    const litOff=v.getUint32(8,true), litSize=v.getInt32(12,true);
+    const litDataOff=v.getUint32(16,true), litDataSize=v.getInt32(20,true);
+    const LIT_SIZE=8, litCount=litSize/LIT_SIZE;
+    const literals=[];
+    for(let i=0;i<litCount;i++){
+      const o=litOff+i*LIT_SIZE, len=v.getUint32(o,true), di=v.getInt32(o+4,true);
+      if(di<0||len>100000||di+len>litDataSize) continue;
+      literals.push({i,len,di});
+    }
+    const terms=["청람결정","성해공명","차원각인","영겁성핵","청람","성해","차원","영겁","growth_transcendence_price_v3","growth_transcendence_600"];
+    const dec=new TextDecoder();
+    for(const term of terms){
+      const pat=new TextEncoder().encode(term);
+      let found=[];
+      outer: for(const li of literals){
+        const st=litDataOff+li.di, ed=st+li.len;
+        if(li.len<pat.length) continue;
+        for(let p=st;p+pat.length<=ed;p++){
+          let ok=true;
+          for(let j=0;j<pat.length;j++) if(b[p+j]!==pat[j]){ok=false;break;}
+          if(ok){
+            found.push({idx:li.i,text:dec.decode(b.subarray(st,ed))});
+            if(found.length>=20) break outer;
+            break;
+          }
+        }
+      }
+      log.push("string literal '"+term+"' hits="+found.length);
+      for(const h of found) log.push("  literal#"+h.idx+" = "+JSON.stringify(h.text));
+    }
+  }
+
   function dumpGoldInitializerBlobs(meta,elf,log){
     log.push("");
     log.push("[Gold 초월 정적 초기값 직접 복원 build9]");
@@ -587,15 +673,9 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
     const picks=resolved.filter(am => {
       if(am.image?.name!=="Assembly-CSharp.dll") return false;
-      if(am.type?.name==="Game_grow" && (
-        am.name.includes("GoldTranscend") ||
-        am.name.includes("TranscendGrowth") ||
-        am.name.includes("GrowthTranscend") ||
-        am.name===".cctor"
-      )) return true;
-      if(am.type?.name==="GrowthTranscendenceProgress") return true;
-      if(am.type?.name==="GrowthStoneTranscendence") return true;
-      if(am.type?.name==="ChuTiCheet" && am.name.includes("GrowthTranscendence")) return true;
+      if(am.type?.name==="Game_grow" && (/transcend/i.test(am.name) || am.name===".cctor")) return true;
+      if(/transcend/i.test(am.type?.name||"")) return true;
+      if(am.type?.name==="ChuTiCheet" && /transcend/i.test(am.name)) return true;
       if(am.type?.name==="TranscendenceBalance" && (
         am.name===".cctor" ||
         am.name==="GetStageEquivalentMultiplier" ||
@@ -687,6 +767,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       log.push("");
       const modules=resolveFunctions(meta,elf,cr,log);
       annotateInternalCalls(meta,elf,modules,log);
+      diagnoseLive1500(meta,log);
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
       log.push("[초월 관련 타입 필드/상수 build11]");
