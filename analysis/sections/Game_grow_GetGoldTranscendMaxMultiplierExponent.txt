@@ -1,0 +1,51 @@
+==============================================================================================================
+Game_grow.GetGoldTranscendMaxMultiplierExponent VA=0x1a8fc4c bytes=188
+==============================================================================================================
+0000000001a8fc4c  str      x30, [sp, #-0x20]!
+0000000001a8fc50  stp      x20, x19, [sp, #0x10]
+0000000001a8fc54  adrp     x20, #0x406a000
+0000000001a8fc58  mov      w19, w0
+0000000001a8fc5c  ldrb     w8, [x20, #0xcf5]
+0000000001a8fc60  tbnz     w8, #0, #0x1a8fc78
+0000000001a8fc64  adrp     x0, #0x3de6000
+0000000001a8fc68  ldr      x0, [x0, #0x1d0]
+0000000001a8fc6c  bl       #0x1828f84
+0000000001a8fc70  mov      w8, #1
+0000000001a8fc74  strb     w8, [x20, #0xcf5]
+0000000001a8fc78  tbnz     w19, #0x1f, #0x1a8fcec
+0000000001a8fc7c  adrp     x20, #0x3de6000
+0000000001a8fc80  ldr      x20, [x20, #0x1d0]
+0000000001a8fc84  ldr      x0, [x20]
+0000000001a8fc88  ldr      w8, [x0, #0xe4]
+0000000001a8fc8c  cbnz     w8, #0x1a8fc98
+0000000001a8fc90  bl       #0x18290d4
+0000000001a8fc94  ldr      x0, [x20]
+0000000001a8fc98  ldr      x8, [x0, #0xb8]
+0000000001a8fc9c  ldr      x9, [x8]
+0000000001a8fca0  cbz      x9, #0x1a8fd00
+0000000001a8fca4  mov      w8, wzr
+0000000001a8fca8  tbnz     w19, #0, #0x1a8fcf0
+0000000001a8fcac  ldr      w10, [x9, #0x18]
+0000000001a8fcb0  cmp      w10, w19
+0000000001a8fcb4  b.le     #0x1a8fcf0
+0000000001a8fcb8  ldr      w8, [x0, #0xe4]
+0000000001a8fcbc  cbnz     w8, #0x1a8fcd4
+0000000001a8fcc0  bl       #0x18290d4
+0000000001a8fcc4  ldr      x8, [x20]
+0000000001a8fcc8  ldr      x8, [x8, #0xb8]
+0000000001a8fccc  ldr      x9, [x8]
+0000000001a8fcd0  cbz      x9, #0x1a8fd00
+0000000001a8fcd4  ldr      w8, [x9, #0x18]
+0000000001a8fcd8  cmp      w8, w19
+0000000001a8fcdc  b.ls     #0x1a8fd04
+0000000001a8fce0  add      x8, x9, w19, uxtw #2
+0000000001a8fce4  ldr      w8, [x8, #0x20]
+0000000001a8fce8  b        #0x1a8fcf0
+0000000001a8fcec  mov      w8, wzr
+0000000001a8fcf0  ldp      x20, x19, [sp, #0x10]
+0000000001a8fcf4  mov      w0, w8
+0000000001a8fcf8  ldr      x30, [sp], #0x20
+0000000001a8fcfc  ret      
+0000000001a8fd00  bl       #0x1829200
+0000000001a8fd04  bl       #0x1829208
+
