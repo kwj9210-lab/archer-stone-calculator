@@ -3,259 +3,340 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>궁수키우기 RPG 각인석 계산기</title>
+<title>궁수키우기 IL2CPP v31 분석 도구</title>
 <style>
-:root{color-scheme:dark;--bg:#0f1115;--panel:#181b21;--panel2:#20242c;--line:#353b47;--text:#f4f6f8;--muted:#aeb6c2;--accent:#72dc94;--warn:#f2c66d}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
-.wrap{max-width:1020px;margin:auto;padding:18px 13px 48px}h1{font-size:25px;margin:0 0 7px}.intro,.foot{font-size:13px;line-height:1.6;color:var(--muted)}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 8px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:11px;padding:12px 8px;font-weight:700}.tab.active{background:#26362d;color:#fff;border-color:#47755a}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin:12px 0}.card h2{font-size:17px;margin:0 0 12px}
-.grid2,.grid3,.grid4,.grid5,.results,.stats{display:grid;gap:10px}.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3,.results,.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid5{grid-template-columns:repeat(5,minmax(0,1fr))}
-label{font-size:13px;color:var(--muted)}input,select,button{font:inherit}input,select{width:100%;min-height:44px;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}
-button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text)}
-.toprow,.head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}.note,.box{background:var(--panel2);border-radius:10px;padding:11px 12px}.note{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.6}
-.k{font-size:12px;color:var(--muted)}.big{font-size:27px;font-weight:800}.box h3{margin:0 0 7px;font-size:16px}.line{font-size:13px;line-height:1.65}.strong{font-size:19px;font-weight:800;margin-top:4px}.warn{color:var(--warn)}
-.results,.stats{margin-top:12px}details{margin-top:12px}summary{cursor:pointer;color:var(--muted)}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}th,td{padding:8px 5px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}
-@media(max-width:600px){
-  body{background:#0b0d11}
-  .wrap{padding:10px 8px 34px}
-  h1{font-size:20px;margin:2px 4px 4px}
-  .intro{font-size:11.5px;line-height:1.45;margin:0 4px 8px}
-  .tabs{
-    position:sticky;top:0;z-index:20;
-    grid-template-columns:repeat(3,1fr);gap:5px;
-    margin:8px -2px;padding:7px 2px;
-    background:rgba(11,13,17,.96);
-    backdrop-filter:blur(8px)
-  }
-  .tab{min-height:44px;padding:9px 4px;border-radius:9px;font-size:14px}
-  .tab.active{background:#244a31;border-color:#5eaa78}
-  .card{padding:11px;margin:8px 0;border-radius:11px}
-  .card h2{font-size:15px;margin-bottom:9px}
-  .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-  #stoneGrid.grid5{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  #rawGrid.grid3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-  #rawGrid.grid4{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-  label{font-size:11.5px;min-width:0}
-  input,select{
-    min-height:38px;margin-top:4px;padding:7px 8px;
-    border-radius:8px;font-size:15px
-  }
-  #stoneGrid input,#rawGrid input{text-align:center;font-weight:700}
-  .minor{min-height:34px;padding:6px 9px;font-size:12px}
-  .note{padding:8px 9px;margin-top:8px;font-size:10.5px;line-height:1.45}
-  .result-card{display:flex;flex-direction:column}
-  .result-card .head{order:1}
-  .result-card .stats{order:2}
-  .result-card #resourceResults{order:3}
-  .result-card #coverageNote{order:4}
-  .result-card #summary{order:5}
-  .result-card details{order:6}
-  .head{align-items:center}
-  .head>div:first-child .k{display:none}
-  .head>div:first-child .big{font-size:19px}
-  .head>div:last-child{margin-left:auto}
-  .head>div:last-child .k{font-size:10px}
-  .head>div:last-child .big{font-size:20px;color:#f4cb70}
-  .stats{
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:5px;margin-top:10px
-  }
-  .stats .box{padding:9px 5px;text-align:center;border:1px solid #303744}
-  .stats .k{font-size:9.5px;line-height:1.3;min-height:26px;display:flex;align-items:center;justify-content:center}
-  .stats .strong{font-size:clamp(12px,3.5vw,17px);line-height:1.25;word-break:keep-all;overflow-wrap:anywhere}
-  .results{grid-template-columns:1fr;gap:7px;margin-top:9px}
-  .results .box{
-    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:4px 8px;padding:10px 11px;border:1px solid #343c49
-  }
-  .results .box h3{
-    grid-column:1/-1;margin:0 0 3px;font-size:15px;
-    padding-bottom:6px;border-bottom:1px solid #303744
-  }
-  .results .box .line{font-size:11.5px;line-height:1.45;min-width:0;overflow-wrap:anywhere}
-  .results .box .strong{
-    grid-column:1/-1;margin-top:4px;padding-top:6px;
-    border-top:1px solid #303744;font-size:16px;color:#76d999
-  }
-  .big{font-size:21px}
-  details{margin-top:8px}
-  summary{font-size:13px;padding:6px 0}
-  table{font-size:11px}
-  th,td{padding:7px 4px}
-  .foot{font-size:10px;line-height:1.45;padding:2px 3px}
-}
-@media(max-width:360px){
-  #stoneGrid.grid5{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .grid2{gap:5px}
-  input,select{font-size:14px;padding:6px}
-  .stats .strong{font-size:11.5px}
-}
+:root{color-scheme:dark;--bg:#0f1117;--panel:#171b24;--line:#344055;--text:#f2f4f8;--muted:#aab3c5;--good:#91e6a7;--bad:#ff8a8a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+main{max-width:980px;margin:auto;padding:18px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:14px;margin:12px 0}
+h1{font-size:21px;margin:0 0 8px}h2{font-size:16px;margin:0 0 10px}p{color:var(--muted);font-size:13px;line-height:1.55}
+label{display:block;margin:10px 0 5px;color:var(--muted);font-size:13px}input,button{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:#0f1320;color:var(--text);font:inherit}
+button{cursor:pointer;font-weight:700;background:#20354a;margin-top:10px}button:disabled{opacity:.5;cursor:not-allowed}
+pre{white-space:pre-wrap;word-break:break-word;background:#0c0f15;border:1px solid var(--line);border-radius:9px;padding:12px;font-size:12px;line-height:1.5;max-height:620px;overflow:auto}
+.ok{color:var(--good)}.bad{color:var(--bad)}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padding:10px}}
 </style>
 </head>
 <body>
-<main class="wrap">
-<h1>궁수키우기 RPG 각인석 계산기</h1>
-<div class="intro">마석·경화석·생명석의 보유 각인석과 재료를 반영해 목표 등급 제작에 필요한 재료를 계산합니다. 던전 숙련도는 확인된 드랍 기준이 있는 재료의 소탕·입장권 계산에 적용됩니다.</div>
+<main>
+<h1>IL2CPP v31 초월 함수 분석 도구</h1>
+<p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
-<div class="tabs">
-<button class="tab active" data-type="maseok">마석</button>
-<button class="tab" data-type="hard">경화석</button>
-<button class="tab" data-type="life">생명석</button>
+<section class="panel">
+<div class="row">
+<div><label>global-metadata.dat</label><input id="meta" type="file"></div>
+<div><label>libil2cpp.so</label><input id="lib" type="file"></div>
 </div>
-
-<section class="card">
-<h2>1. 목표</h2>
-<div class="grid2">
-<label>목표 등급<select id="targetGrade"></select></label>
-<label>제작 수량<input id="targetCount" type="number" min="1" step="1" value="1"></label>
-</div>
+<button id="run" type="button">분석 실행</button>
+<p id="status">두 파일을 선택하세요.</p>
 </section>
 
-<section class="card">
-<div class="toprow"><h2 id="ownedTitle" style="margin:0">2. 보유 마석</h2><button id="clearStones" class="minor" type="button">모두 0</button></div>
-<div id="stoneGrid" class="grid5" style="margin-top:12px"></div>
-<div class="note">최종 제작에 재료로 사용할 보유 각인석을 입력하세요. 필요한 등급부터 보유분을 먼저 차감하고 부족한 수량만 하위 등급으로 제작합니다.</div>
+<section class="panel">
+<h2>분석 결과</h2>
+<pre id="out">아직 실행 전.</pre>
+<a id="download" hidden download="archer_il2cpp_probe_report.txt">분석 보고서 TXT 저장</a>
 </section>
-
-<section class="card">
-<h2>3. 현재 보유 재료 / 입장권</h2>
-<div id="rawGrid" class="grid4"></div>
-<div class="grid2" style="margin-top:10px">
-<label>던전 입장권 보유량<input id="ticketsNow" type="number" min="0" value="0"></label>
-<label>입장권 1장 가격(다이아)<input id="ticketPrice" type="number" min="0" value="20"></label>
-</div>
-</section>
-
-<section class="card">
-<h2>4. 내 던전 숙련도</h2>
-<div class="grid2">
-<label>숙련도 단계<select id="masteryLevel"></select></label>
-<label>숙련도 배율<input id="masteryMult" type="number" min="0.01" step="0.25" value="5.00"></label>
-</div>
-<div class="note">1단계 ×1.50부터 단계당 +0.25배로 25단계까지 넣었습니다. 이후 단계가 추가되면 배율을 직접 입력할 수 있습니다.</div>
-</section>
-
-<section class="card result-card">
-<div class="head">
-<div><div class="k" id="resultKicker">입력한 숙련도 기준</div><div id="resultTitle" class="big">마석 제작 계산</div></div>
-<div style="text-align:right"><div class="k" id="ticketLabel">총 필요 입장권</div><div id="ticketsTotal" class="big">0장</div></div>
-</div>
-<div id="coverageNote" class="note"></div>
-<div id="resourceResults" class="results"></div>
-<div class="stats">
-<div class="box"><div class="k">계산 대상 총 소탕</div><div id="totalRuns" class="strong">0회</div></div>
-<div class="box"><div class="k">보유 입장권 반영 후 부족</div><div id="ticketShort" class="strong">0장</div></div>
-<div class="box"><div class="k">부족분 구매 시</div><div id="diamondNeed" class="strong">0 다이아</div></div>
-</div>
-<div id="summary" class="note"></div>
-<details><summary>제작식 확인</summary><div style="overflow:auto"><table id="recipeTable"></table></div></details>
-</section>
-
-
-<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
 </main>
 
 <script>
-(function(){
-var G=['최하급','하급','일반','상급','최상급','특급','전설','신화','태초'];
-var configs={
-maseok:{
-name:'마석',child:[0,3,3,3,3,5,4,4,4],
-resources:[
-{name:'비명초',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:1526775},
-{name:'활력수',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:2508670},
-{name:'복원석',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000],base:4587000}
-],
-coverage:'비명초·활력수·복원석 모두 소탕 기준이 확인되어 입장권까지 계산합니다.'
-},
-hard:{
-name:'경화석',child:[0,3,3,3,3,5,5,4,4],
-resources:[
-{name:'곰뼈',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:1999900000,fixed:true},
-{name:'곰가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:1999900000,fixed:true},
-{name:'늑대가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000],base:1999900000,fixed:true},
-{name:'복원석',direct:[1000,3000,4000,5000,10000,100000,500000,1500000,5000000],base:4587000}
-],
-coverage:'곰뼈·곰가죽·늑대가죽은 전 유저 공통 10만 소탕 1,999,900,000개 기준으로 계산합니다. 복원석은 숙련도 배율을 적용하며, 경화석도 필요한 모든 재료의 소탕 기준이 확인되어 입장권까지 계산합니다.'
-},
-life:{
-name:'생명석',child:[0,3,3,3,3,5,5,4,4],
-resources:[
-{name:'곰심장',direct:[500,3000,8000,50000,500000,50000000,500000000,5000000000,15000000000],base:1999900000,fixed:true},
-{name:'활력수',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000],base:2508670},
-{name:'복원석',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000],base:4587000}
-],
-coverage:'곰심장은 전 유저 공통 10만 소탕 1,999,900,000개 기준으로 계산합니다. 활력수·복원석은 숙련도 배율을 적용하며, 생명석은 현재 필요한 모든 재료의 소탕 기준이 확인되어 입장권까지 계산합니다.'
-}
-};
-var type='maseok',state={};
-function el(id){return document.getElementById(id)}
-function val(id){return Math.max(0,Number(el(id).value)||0)}
-function fmt(v){return Math.round(v).toLocaleString('ko-KR')}
-function initState(t){
- if(state[t])return;
- state[t]={stones:Array(9).fill(0),raw:Array(configs[t].resources.length).fill(0),target:8,count:1};
-}
-function saveCurrent(){
- initState(type);var s=state[type];
- s.target=Number(el('targetGrade').value);s.count=val('targetCount');
- s.stones=G.map(function(_,i){return Math.floor(val('stone'+i))});
- s.raw=configs[type].resources.map(function(_,i){return val('raw'+i)});
-}
-function render(){
- initState(type);var c=configs[type],s=state[type];
- el('ownedTitle').textContent='2. 보유 '+c.name;
- el('resultTitle').textContent=c.name+' 제작 계산';
- el('targetGrade').innerHTML=G.map(function(x,i){return '<option value="'+i+'" '+(i===s.target?'selected':'')+'>'+x+' '+c.name+'</option>'}).join('');
- el('targetCount').value=s.count;
- el('stoneGrid').innerHTML=G.map(function(x,i){return '<label>'+x+'<input id="stone'+i+'" type="number" min="0" step="1" value="'+s.stones[i]+'"></label>'}).join('');
- el('rawGrid').className=c.resources.length===4?'grid4':'grid3';
- el('rawGrid').innerHTML=c.resources.map(function(r,i){return '<label>'+r.name+'<input id="raw'+i+'" type="number" min="0" value="'+(s.raw[i]||0)+'"></label>'}).join('');
- el('coverageNote').textContent=c.coverage;
- document.querySelectorAll('#stoneGrid input,#rawGrid input,#targetGrade,#targetCount').forEach(function(x){x.addEventListener('input',function(){saveCurrent();calc()})});
- buildRecipeTable();calc();
-}
-function buildRecipeTable(){
- var c=configs[type],head='<thead><tr><th>등급</th><th>하위</th>'+c.resources.map(function(r){return '<th>'+r.name+'</th>'}).join('')+'</tr></thead>';
- var body='<tbody>'+G.map(function(g,i){return '<tr><td>'+g+'</td><td>'+(i?c.child[i]+'개':'-')+'</td>'+c.resources.map(function(r){return '<td>'+fmt(r.direct[i])+'</td>'}).join('')+'</tr>'}).join('')+'</tbody>';
- el('recipeTable').innerHTML=head+body;
-}
-function calc(){
- var c=configs[type],tg=Math.max(0,Math.min(8,Number(el('targetGrade').value))),count=Math.max(1,Math.floor(val('targetCount')));
- var inv=G.map(function(_,i){return Math.floor(val('stone'+i))}),crafted=Array(9).fill(0),needRes=Array(c.resources.length).fill(0);
- function need(g,q){
-  if(q<=0)return;var use=Math.min(inv[g],q);inv[g]-=use;q-=use;if(q<=0)return;
-  crafted[g]+=q;c.resources.forEach(function(r,j){needRes[j]+=r.direct[g]*q});
-  if(g>0)need(g-1,q*c.child[g]);
- }
- need(tg,count);
- var mult=Math.max(.01,val('masteryMult')),totalRuns=0,html='';
- c.resources.forEach(function(r,i){
-  var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
-  if(r.base){
-   var per100k=r.fixed?r.base:r.base*(mult/5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
-   totalRuns+=runs;
-   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">1만회 예상: '+fmt(per10k)+'</div><div class="line">10만회 예상: '+fmt(per100k)+'</div><div class="strong">소탕 '+fmt(runs)+'회</div></div>';
-  }else{
-   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line warn">소탕 기준값 미확인</div></div>';
+(() => {
+  const TARGETS = [
+    "CalculateGoldTranscendMultiplierAtLevel",
+    "GetTotalGoldTranscendenceAttackMultiplier",
+    "GetGoldTranscendCostForTargetLevel",
+    "GetGoldTranscendTotalCost",
+    "GetTranscendenceCurrentEffectAtLevel"
+  ];
+  const $ = id => document.getElementById(id);
+  const hex = (n, w=0) => {
+    const s = (typeof n === "bigint" ? n : BigInt(n >>> 0)).toString(16).toUpperCase();
+    return "0x" + s.padStart(w, "0");
+  };
+  const u16=(v,o)=>v.getUint16(o,true), u32=(v,o)=>v.getUint32(o,true), i32=(v,o)=>v.getInt32(o,true), u64=(v,o)=>v.getBigUint64(o,true);
+  function cstr(bytes, off, max=4096){
+    if(off < 0 || off >= bytes.length) return "";
+    let e=off, lim=Math.min(bytes.length,off+max);
+    while(e<lim && bytes[e]!==0)e++;
+    return new TextDecoder().decode(bytes.subarray(off,e));
   }
- });
- el('resourceResults').innerHTML=html;
- var tickets=totalRuns*2,short=Math.max(0,tickets-val('ticketsNow')),dia=short*val('ticketPrice');
- el('ticketsTotal').textContent=fmt(tickets)+'장';el('totalRuns').textContent=fmt(totalRuns)+'회';el('ticketShort').textContent=fmt(short)+'장';el('diamondNeed').textContent=fmt(dia)+' 다이아';
- el('ticketLabel').textContent='총 필요 입장권';
- var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
- var remain=inv.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
- var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
- el('summary').innerHTML='보유 '+c.name+' 반영 후 필요한 재료: <b>'+req+'</b><br>신규 제작 과정: '+(craft||'추가 제작 없음')+(remain?'<br>남는 입력 '+c.name+': '+remain:'');
-}
-for(var lv=1;lv<=25;lv++){var o=document.createElement('option');o.value=lv;o.textContent=lv+'단계 · ×'+(1.25+.25*lv).toFixed(2);if(lv===15)o.selected=true;el('masteryLevel').appendChild(o)}
-el('masteryLevel').addEventListener('change',function(){el('masteryMult').value=(1.25+.25*Number(this.value)).toFixed(2);calc()});
-el('masteryMult').addEventListener('input',calc);el('ticketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
-el('clearStones').addEventListener('click',function(){state[type].stones=Array(9).fill(0);render()});
-document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){saveCurrent();type=this.dataset.type;document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.type===type)});render()})});
-render();
+  function findAscii(bytes,start,size,text){
+    const pat = new TextEncoder().encode(text);
+    const end = Math.min(bytes.length,start+size);
+    const out=[];
+    outer: for(let i=start;i+pat.length<end;i++){
+      if(bytes[i]!==pat[0]) continue;
+      for(let j=1;j<pat.length;j++) if(bytes[i+j]!==pat[j]) continue outer;
+      if(i+pat.length<end && bytes[i+pat.length]===0) out.push(i-start);
+    }
+    return out;
+  }
+  function parseMetadata(buf){
+    const v=new DataView(buf), b=new Uint8Array(buf);
+    const sanity=u32(v,0), version=i32(v,4);
+    if(sanity!==0xFAB11BAF) throw new Error("global-metadata.dat sanity 불일치");
+    if(version!==31) throw new Error("현재 분석기는 metadata v31 전용입니다. 감지 버전: "+version);
+
+    const stringOffset=u32(v,24), stringSize=i32(v,28);
+    const methodsOffset=u32(v,48), methodsSize=i32(v,52);
+    const typeDefsOffset=u32(v,160), typeDefsSize=i32(v,164);
+    const imagesOffset=u32(v,168), imagesSize=i32(v,172);
+    const METHOD_SIZE=40, TYPE_SIZE=88, IMAGE_SIZE=40;
+    if(methodsSize%METHOD_SIZE) throw new Error("v31 method struct 크기(40)와 methodsSize가 맞지 않음");
+    if(typeDefsSize%TYPE_SIZE) throw new Error("v31 type struct 크기(88)와 typeDefinitionsSize가 맞지 않음");
+    if(imagesSize%IMAGE_SIZE) throw new Error("v31 image struct 크기(40)와 imagesSize가 맞지 않음");
+
+    const methodCount=methodsSize/METHOD_SIZE, typeCount=typeDefsSize/TYPE_SIZE, imageCount=imagesSize/IMAGE_SIZE;
+    const targetNameIndices=new Map();
+    for(const t of TARGETS){
+      const hits=findAscii(b,stringOffset,stringSize,t);
+      targetNameIndices.set(t,new Set(hits));
+    }
+
+    const methods=[];
+    for(let i=0;i<methodCount;i++){
+      const o=methodsOffset+i*METHOD_SIZE, nameIndex=u32(v,o);
+      for(const t of TARGETS){
+        if(!targetNameIndices.get(t).has(nameIndex)) continue;
+        const declaringType=i32(v,o+4);
+        const methodIndex=i32(v,o+24);
+        const token=u32(v,o+28);
+        methods.push({target:t,defIndex:i,nameIndex,declaringType,methodIndex,token});
+      }
+    }
+
+    function typeInfo(idx){
+      if(idx<0||idx>=typeCount) return {name:"?",namespace:"?"};
+      const o=typeDefsOffset+idx*TYPE_SIZE;
+      const ni=u32(v,o), nsi=u32(v,o+4);
+      return {name:cstr(b,stringOffset+ni),namespace:cstr(b,stringOffset+nsi)};
+    }
+    const images=[];
+    for(let i=0;i<imageCount;i++){
+      const o=imagesOffset+i*IMAGE_SIZE;
+      const ni=u32(v,o), typeStart=i32(v,o+8), typeCount2=u32(v,o+12);
+      images.push({index:i,name:cstr(b,stringOffset+ni),typeStart,typeCount:typeCount2});
+    }
+    function imageForType(ti){
+      return images.find(x=>ti>=x.typeStart && ti<x.typeStart+x.typeCount) || null;
+    }
+    for(const m of methods){
+      m.type=typeInfo(m.declaringType);
+      m.image=imageForType(m.declaringType);
+      m.pointerIndex=(m.token & 0x00FFFFFF)-1;
+    }
+    return {version,methodCount,typeCount,imageCount,methods,images};
+  }
+
+  function parseElf(buf){
+    const v=new DataView(buf), b=new Uint8Array(buf);
+    if(b[0]!==0x7f||b[1]!==0x45||b[2]!==0x4c||b[3]!==0x46) throw new Error("libil2cpp.so가 ELF 파일이 아님");
+    if(b[4]!==2) throw new Error("ELF64가 아님");
+    if(b[5]!==1) throw new Error("little-endian ELF가 아님");
+    const machine=u16(v,18);
+    if(machine!==183) throw new Error("ARM64(AArch64) ELF가 아님. e_machine="+machine);
+    const phoff=Number(u64(v,32)), phentsize=u16(v,54), phnum=u16(v,56);
+    const segs=[];
+    for(let i=0;i<phnum;i++){
+      const o=phoff+i*phentsize;
+      const p_type=u32(v,o), flags=u32(v,o+4), offset=Number(u64(v,o+8)), va=u64(v,o+16),
+            filesz=Number(u64(v,o+32)), memsz=Number(u64(v,o+40));
+      if(p_type===1 && memsz>0) segs.push({flags,offset,va,filesz,memsz});
+    }
+    const exec=segs.filter(s=>[1,3,5,7].includes(s.flags));
+    const data=segs.filter(s=>[2,4,6].includes(s.flags));
+    function vaToOff(va){
+      for(const s of segs){
+        const end=s.va+BigInt(s.memsz);
+        if(va>=s.va && va<=end){
+          const delta=va-s.va;
+          const off=BigInt(s.offset)+delta;
+          if(off<0n || off>=BigInt(buf.byteLength)) throw new Error("VA가 파일 범위를 벗어남: "+hex(va));
+          return Number(off);
+        }
+      }
+      throw new Error("VA 매핑 실패: "+hex(va));
+    }
+    function readPtrVA(va){ return u64(v,vaToOff(va)); }
+    function readStrVA(va,max=1024){ return cstr(b,vaToOff(va),max); }
+    function refs(addr){
+      const out=[];
+      for(const s of data){
+        const end=Math.min(s.offset+s.filesz,buf.byteLength)-8;
+        for(let p=s.offset;p<=end;p+=8){
+          if(u64(v,p)===addr) out.push(s.va+BigInt(p-s.offset));
+        }
+      }
+      return out;
+    }
+    function byteHits(sec,pat){
+      const out=[], start=sec.offset, end=Math.min(buf.byteLength,sec.offset+sec.filesz);
+      outer: for(let i=start;i+pat.length<=end;i++){
+        if(b[i]!==pat[0])continue;
+        for(let j=1;j<pat.length;j++)if(b[i+j]!==pat[j])continue outer;
+        out.push(sec.va+BigInt(i-start));
+      }
+      return out;
+    }
+    return {buf,v,b,segs,exec,data,vaToOff,readPtrVA,readStrVA,refs,byteHits};
+  }
+
+  function findCodeRegistration(elf,imageCount,log){
+    const pat=new TextEncoder().encode("mscorlib.dll\0");
+    const secSets=[elf.exec,elf.data];
+    for(const secs of secSets){
+      for(const sec of secs){
+        const hits=elf.byteHits(sec,pat);
+        for(const dllva of hits){
+          const r1=elf.refs(dllva);
+          for(const refva of r1){
+            const r2=elf.refs(refva);
+            for(const refva2 of r2){
+              for(let i=imageCount-1;i>=0;i--){
+                const base=refva2-BigInt(i*8);
+                const r3=elf.refs(base);
+                for(const refva3 of r3){
+                  try{
+                    const count=elf.readPtrVA(refva3-8n);
+                    if(count===BigInt(imageCount)){
+                      const raw=refva3-112n;
+                      const v31=raw-16n;
+                      try{
+                        const cgCount=elf.readPtrVA(v31+120n);
+                        const cgPtr=elf.readPtrVA(v31+128n);
+                        elf.vaToOff(cgPtr);
+                        if(cgCount>0n && cgCount<10000n){
+                          log.push("CodeRegistration(v31) 후보: "+hex(v31)+" / codeGenModules="+cgCount);
+                          return {va:v31,version:31,count:Number(cgCount),modulesPtr:cgPtr};
+                        }
+                      }catch(e){}
+                      try{
+                        const cgCount=elf.readPtrVA(raw+104n);
+                        const cgPtr=elf.readPtrVA(raw+112n);
+                        elf.vaToOff(cgPtr);
+                        if(cgCount>0n && cgCount<10000n){
+                          log.push("CodeRegistration(v29 호환 후보): "+hex(raw)+" / codeGenModules="+cgCount);
+                          return {va:raw,version:29,count:Number(cgCount),modulesPtr:cgPtr};
+                        }
+                      }catch(e){}
+                    }
+                  }catch(e){}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    throw new Error("CodeRegistration 자동 탐색 실패");
+  }
+
+  function resolveFunctions(meta,elf,cr,log){
+    const modules=[];
+    for(let i=0;i<cr.count;i++){
+      const p=elf.readPtrVA(cr.modulesPtr+BigInt(i*8));
+      if(p===0n) continue;
+      try{
+        const namePtr=elf.readPtrVA(p);
+        const name=elf.readStrVA(namePtr);
+        const methodPointerCount=Number(elf.readPtrVA(p+8n));
+        const methodPointers=elf.readPtrVA(p+16n);
+        modules.push({i,p,name,methodPointerCount,methodPointers});
+      }catch(e){}
+    }
+    log.push("읽은 CodeGenModule: "+modules.length+"개");
+    for(const m of meta.methods){
+      const want=m.image?.name || "";
+      const mod=modules.find(x=>x.name===want) || modules.find(x=>x.name.toLowerCase()===want.toLowerCase());
+      if(!mod){
+        m.resolveError="CodeGenModule 미발견: "+want;
+        continue;
+      }
+      m.module=mod.name;
+      if(m.pointerIndex<0 || m.pointerIndex>=mod.methodPointerCount){
+        m.resolveError="token pointer index 범위 초과: "+m.pointerIndex+" / "+mod.methodPointerCount;
+        continue;
+      }
+      const ptr=elf.readPtrVA(mod.methodPointers+BigInt(m.pointerIndex*8));
+      m.functionVA=ptr;
+      try{m.functionFileOffset=elf.vaToOff(ptr)}catch(e){m.resolveError="함수 VA 매핑 실패";continue}
+      let next=0n;
+      const maxScan=Math.min(mod.methodPointerCount,m.pointerIndex+256);
+      for(let j=m.pointerIndex+1;j<maxScan;j++){
+        const q=elf.readPtrVA(mod.methodPointers+BigInt(j*8));
+        if(q>ptr && (next===0n || q<next)) next=q;
+      }
+      let size=1024;
+      if(next>ptr){
+        const d=Number(next-ptr);
+        if(d>0 && d<=4096) size=d;
+      }
+      size=Math.min(size,4096,elf.buf.byteLength-m.functionFileOffset);
+      const code=elf.b.subarray(m.functionFileOffset,m.functionFileOffset+size);
+      const lines=[];
+      for(let i=0;i<code.length;i+=16){
+        const chunk=Array.from(code.subarray(i,i+16)).map(x=>x.toString(16).padStart(2,"0")).join(" ");
+        lines.push((m.functionFileOffset+i).toString(16).padStart(8,"0")+": "+chunk);
+      }
+      m.codeSize=size;
+      m.hexDump=lines.join("\n");
+    }
+    return modules;
+  }
+
+  $("run").addEventListener("click", async () => {
+    const mf=$("meta").files[0], lf=$("lib").files[0];
+    if(!mf||!lf){$("status").innerHTML='<span class="bad">두 파일을 모두 선택하세요.</span>';return}
+    $("run").disabled=true;$("status").textContent="분석 중…";$("out").textContent="분석 중…";
+    const log=[];
+    try{
+      const [mb,lb]=await Promise.all([mf.arrayBuffer(),lf.arrayBuffer()]);
+      const meta=parseMetadata(mb);
+      log.push("Metadata Version: "+meta.version);
+      log.push("Method definitions: "+meta.methodCount.toLocaleString());
+      log.push("Type definitions: "+meta.typeCount.toLocaleString());
+      log.push("Images: "+meta.imageCount.toLocaleString());
+      log.push("");
+      log.push("[대상 메서드 metadata 매칭]");
+      if(!meta.methods.length) log.push("대상 메서드를 찾지 못함");
+      for(const m of meta.methods){
+        log.push(m.target);
+        log.push("  MethodDef index: "+m.defIndex);
+        log.push("  methodIndex(v31): "+m.methodIndex);
+        log.push("  token: "+hex(m.token,8)+" / pointerIndex: "+m.pointerIndex);
+        log.push("  declaringType: "+(m.type.namespace?m.type.namespace+".":"")+m.type.name+" (#"+m.declaringType+")");
+        log.push("  image: "+(m.image?.name||"?"));
+      }
+      log.push("");
+      const elf=parseElf(lb);
+      log.push("ELF64 ARM64 확인");
+      log.push("LOAD segments: "+elf.segs.length+" / exec "+elf.exec.length+" / data "+elf.data.length);
+      const cr=findCodeRegistration(elf,meta.imageCount,log);
+      log.push("");
+      resolveFunctions(meta,elf,cr,log);
+      log.push("");
+      log.push("[실제 함수 주소]");
+      for(const m of meta.methods){
+        log.push(m.target);
+        if(m.resolveError){log.push("  ERROR: "+m.resolveError);continue}
+        log.push("  module: "+m.module);
+        log.push("  VA: "+hex(m.functionVA));
+        log.push("  file offset: "+hex(BigInt(m.functionFileOffset)));
+        log.push("  extracted bytes: "+m.codeSize);
+        log.push(m.hexDump);
+        log.push("");
+      }
+      const report=log.join("\n");
+      $("out").textContent=report;
+      $("status").innerHTML='<span class="ok">분석 완료. 아래 TXT를 저장해서 채팅에 올리면 다음 단계(ARM64 함수식 복원)를 바로 이어갈 수 있습니다.</span>';
+      const blob=new Blob([report],{type:"text/plain;charset=utf-8"});
+      const a=$("download");
+      if(a.dataset.url) URL.revokeObjectURL(a.dataset.url);
+      const url=URL.createObjectURL(blob);a.href=url;a.dataset.url=url;a.hidden=false;
+    }catch(e){
+      const msg=(e&&e.stack)?e.stack:String(e);
+      $("out").textContent=log.concat(["","ERROR",msg]).join("\n");
+      $("status").innerHTML='<span class="bad">분석 실패: '+String(e.message||e)+'</span>';
+    }finally{$("run").disabled=false}
+  });
 })();
 </script>
 </body>
