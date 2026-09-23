@@ -1043,9 +1043,9 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 
   function dumpLiveUpgradePathsBuild19(meta,elf,modules,log){
     log.push("");
-    log.push("[라이브 초월 업그레이드 경로 build19]");
+    log.push("[Stone 초월 실경로 build20]");
 
-    const wantedDefs=new Set([581,585,586,5064,5065,5066,5067,5068,5235,5253]);
+    const wantedDefs=new Set([581,585,586,5001,5064,5065,5066,5067,5068,5235,5253,15097,15098,15099,15100,15101,15102]);
     const mod=modules.find(m=>m.name==="Assembly-CSharp.dll");
     if(!mod){log.push("Assembly-CSharp.dll module 없음");return;}
 
@@ -1154,20 +1154,37 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
         if((w&0x7F800000)===0x52800000){
           const imm16=(w>>>5)&0xffff,hw=(w>>>21)&3;
           const val=imm16*Math.pow(2,16*hw);
-          if([4,6,8,15,100,300,400,500,600,1000,1500,2000,2500,3000,4000,5000,6000,7500,8500].includes(val))
+          if([4,6,8,15,99,100,299,300,399,400,499,500,599,600,899,900,999,1000,1199,1200,1499,1500,2000,2500,3000,4000,5000,6000,7500,8500].includes(val))
             out.push({pc,kind:"MOVZ",val,word:w});
         }
         // ADD/SUB immediate family; includes CMP alias for SUBS when rd=31.
         if((w&0x1F000000)===0x11000000){
           const imm12=(w>>>10)&0xfff, sh=(w>>>22)&1, val=imm12*(sh?4096:1);
-          if([4,6,8,15,100,300,400,500,600,1000,1500,2000,2500,3000,4000].includes(val))
+          if([4,6,8,15,99,100,299,300,399,400,499,500,599,600,899,900,999,1000,1199,1200,1499,1500,2000,2500,3000,4000].includes(val))
             out.push({pc,kind:"ADD/SUB imm",val,word:w});
         }
       }
       return out;
     }
 
-    const targets=resolved.filter(m=>wantedDefs.has(m.defIndex));
+    const growthStoneNamed=resolved.filter(m=>{
+      const tn=m.type?.name||"";
+      const n=m.name||"";
+      return n.includes("GrowthStone") || n.includes("StoneTranscendence") || tn.includes("GrowthStone") || tn.includes("StoneTranscendence");
+    });
+    log.push("");
+    log.push("GrowthStone/StoneTranscendence named methods="+growthStoneNamed.length);
+    for(const m of growthStoneNamed){
+      log.push("  #"+m.defIndex+" "+m.full+" VA="+hex(m.va));
+    }
+    const targets=resolved.filter(m=>{
+      const tn=m.type?.name||"";
+      const n=m.name||"";
+      return wantedDefs.has(m.defIndex) ||
+        n.includes("UpgradeGrowthStone") ||
+        tn.includes("UpgradeGrowthStone") ||
+        n==="RequestStoneTranscendenceUpgrade";
+    });
     for(const m of targets){
       let pos=resolved.findIndex(x=>x.va===m.va), size=4096;
       if(pos>=0&&pos+1<resolved.length){
