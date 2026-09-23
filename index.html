@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 7</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 8</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -77,14 +77,30 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 
     const stringOffset=u32(v,24), stringSize=i32(v,28);
     const methodsOffset=u32(v,48), methodsSize=i32(v,52);
+    const fieldDefaultsOffset=u32(v,64), fieldDefaultsSize=i32(v,68);
+    const defaultDataOffset=u32(v,72), defaultDataSize=i32(v,76);
+    const fieldsOffset=u32(v,96), fieldsSize=i32(v,100);
     const typeDefsOffset=u32(v,160), typeDefsSize=i32(v,164);
     const imagesOffset=u32(v,168), imagesSize=i32(v,172);
-    const METHOD_SIZE=36, TYPE_SIZE=88, IMAGE_SIZE=40;
+    const METHOD_SIZE=36, FIELD_SIZE=12, FIELD_DEFAULT_SIZE=12, TYPE_SIZE=88, IMAGE_SIZE=40;
     if(methodsSize%METHOD_SIZE) throw new Error("v31 method struct 크기(36)와 methodsSize가 맞지 않음");
     if(typeDefsSize%TYPE_SIZE) throw new Error("v31 type struct 크기(88)와 typeDefinitionsSize가 맞지 않음");
     if(imagesSize%IMAGE_SIZE) throw new Error("v31 image struct 크기(40)와 imagesSize가 맞지 않음");
 
     const methodCount=methodsSize/METHOD_SIZE, typeCount=typeDefsSize/TYPE_SIZE, imageCount=imagesSize/IMAGE_SIZE;
+    const fieldCount=fieldsSize/FIELD_SIZE, fieldDefaultCount=fieldDefaultsSize/FIELD_DEFAULT_SIZE;
+    const fields=[];
+    for(let i=0;i<fieldCount;i++){
+      const o=fieldsOffset+i*FIELD_SIZE;
+      const nameIndex=u32(v,o), typeIndex=i32(v,o+4), token=u32(v,o+8);
+      fields.push({index:i,nameIndex,name:cstr(b,stringOffset+nameIndex),typeIndex,token});
+    }
+    const fieldDefaults=new Map();
+    for(let i=0;i<fieldDefaultCount;i++){
+      const o=fieldDefaultsOffset+i*FIELD_DEFAULT_SIZE;
+      const fieldIndex=i32(v,o), typeIndex=i32(v,o+4), dataIndex=i32(v,o+8);
+      fieldDefaults.set(fieldIndex,{fieldIndex,typeIndex,dataIndex});
+    }
     const targetNameIndices=new Map();
     for(const t of TARGETS){
       const hits=findAscii(b,stringOffset,stringSize,t);
@@ -129,7 +145,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       m.type=typeInfo(m.declaringType);
       m.image=imageForType(m.declaringType);
     }
-    return {version,methodCount,typeCount,imageCount,methods,allMethods,images};
+    return {version,methodCount,typeCount,imageCount,methods,allMethods,images,fields,fieldDefaults,defaultDataOffset,defaultDataSize,rawView:v,rawBytes:b};
   }
 
   function parseElf(buf){
@@ -451,6 +467,90 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
   }
 
 
+
+  function dumpGoldInitializerBlobs(meta,elf,log){
+    log.push("");
+    log.push("[Gold 초월 정적 초기값 직접 복원]");
+    const slotVAs=[
+      0x3DEABA8n, // 첫 int[8] : MaxMultiplierExponent
+      0x3DEABB0n, // 둘째 int[8] : MaxChapterForSlot
+      0x3DEABB8n, // 셋째 int[8] : StartChapterForSlot
+      0x3DEABC0n
+    ];
+    function fmtInts(dataOff){
+      const vals=[];
+      for(let i=0;i<8;i++){
+        const o=meta.defaultDataOffset+dataOff+i*4;
+        if(o+4>meta.rawView.byteLength) break;
+        vals.push(meta.rawView.getInt32(o,true));
+      }
+      return vals;
+    }
+    function fmtHex(dataOff,n=32){
+      const st=meta.defaultDataOffset+dataOff;
+      const ed=Math.min(st+n,meta.rawBytes.length);
+      return Array.from(meta.rawBytes.subarray(st,ed)).map(x=>x.toString(16).padStart(2,"0")).join(" ");
+    }
+    for(let si=0;si<slotVAs.length;si++){
+      const slot=slotVAs[si];
+      log.push("slot"+si+" @ "+hex(slot));
+      let encoded=0n;
+      try{ encoded=elf.readPtrVA(slot); log.push("  raw slot value: "+hex(encoded)); }catch(e){ log.push("  raw slot read error: "+e); }
+      let runtimePtr=0n, token=0, fieldName="";
+      try{
+        runtimePtr=elf.readPtrVA(encoded);
+        log.push("  deref1: "+hex(runtimePtr));
+        const fio=elf.vaToOff(runtimePtr);
+        const namePtr=elf.readPtrVA(runtimePtr);
+        try{fieldName=elf.readStrVA(namePtr);log.push("  FieldInfo.name: "+fieldName);}catch(e){}
+        const off=elf.v.getInt32(fio+24,true);
+        token=elf.v.getUint32(fio+28,true);
+        log.push("  FieldInfo.offset="+off+" token="+hex(BigInt(token),8));
+      }catch(e){
+        log.push("  runtime FieldInfo 직접 해석 불가(정상일 수 있음): "+String(e.message||e));
+      }
+
+      let candidates=[];
+      if(token){
+        candidates=meta.fields.filter(x=>x.token===token && (!fieldName||x.name===fieldName));
+        if(!candidates.length) candidates=meta.fields.filter(x=>x.token===token);
+      }
+      if(fieldName && !candidates.length) candidates=meta.fields.filter(x=>x.name===fieldName);
+      if(candidates.length){
+        for(const fld of candidates){
+          const dv=meta.fieldDefaults.get(fld.index);
+          log.push("  metadata field #"+fld.index+" "+fld.name+" token="+hex(BigInt(fld.token),8)+(dv?" dataIndex="+dv.dataIndex:" no-default"));
+          if(dv && dv.dataIndex>=0 && dv.dataIndex+32<=meta.defaultDataSize){
+            log.push("    int32[8] = ["+fmtInts(dv.dataIndex).join(", ")+"]");
+            log.push("    hex32 = "+fmtHex(dv.dataIndex,32));
+          }
+        }
+      }else{
+        log.push("  FieldInfo 매칭 없음 -> 후보 스캔 사용");
+      }
+    }
+
+    // Runtime metadata slot이 아직 인코딩 상태일 때를 대비한 후보 스캔.
+    // int[8] 초기화에 맞는 32-byte 정적 배열 중 작은 정수 조합만 출력한다.
+    let plausible=[];
+    for(const [fieldIndex,dv] of meta.fieldDefaults){
+      if(dv.dataIndex<0 || dv.dataIndex+32>meta.defaultDataSize) continue;
+      const vals=fmtInts(dv.dataIndex);
+      if(vals.length!==8) continue;
+      const small=vals.every(x=>Number.isInteger(x)&&Math.abs(x)<=100000);
+      const hasNonZero=vals.some(x=>x!==0);
+      const evenNonZero=[0,2,4,6].some(i=>vals[i]!==0);
+      if(small&&hasNonZero&&evenNonZero){
+        const fld=meta.fields[fieldIndex];
+        plausible.push({fieldIndex,name:fld?.name||"?",token:fld?.token||0,dataIndex:dv.dataIndex,vals});
+      }
+    }
+    log.push("  plausible int[8] initializer candidates: "+plausible.length);
+    for(const c of plausible.slice(0,250)){
+      log.push("    field#"+c.fieldIndex+" "+c.name+" token="+hex(BigInt(c.token),8)+" dataIndex="+c.dataIndex+" -> ["+c.vals.join(", ")+"]");
+    }
+  }
+
   function dumpRelatedMethods(meta,elf,modules,log){
     const modByName=new Map(modules.map(m=>[m.name,m]));
     const vaNames=new Map();
@@ -555,6 +655,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       log.push("");
       const modules=resolveFunctions(meta,elf,cr,log);
       annotateInternalCalls(meta,elf,modules,log);
+      dumpGoldInitializerBlobs(meta,elf,log);
       dumpRelatedMethods(meta,elf,modules,log);
       log.push("");
       log.push("[실제 함수 주소]");
@@ -583,6 +684,6 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
   });
 })();
 </script>
-<!-- build7 final recovery preview -->
+<!-- build8 exact initializer recovery -->
 </body>
 </html>
