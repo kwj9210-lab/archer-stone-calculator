@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 15</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 16</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -616,6 +616,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
     if(!addrInfo.size){ log.push("  추적 가능한 usage/slot 주소 없음"); return; }
 
+    const directRefAddrs=[...addrInfo.values()].flatMap(v=>v.map(x=>x.addr));
     const mod=modules.find(m=>m.name==="Assembly-CSharp.dll");
     if(!mod){ log.push("  Assembly-CSharp.dll module 없음"); return; }
 
@@ -632,6 +633,31 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       }catch(e){}
     }
     methods.sort((x,y)=>x.va<y.va?-1:x.va>y.va?1:0);
+
+    function ownerOfAddress(pc){
+      let lo=0,hi=methods.length-1,best=-1;
+      while(lo<=hi){
+        const mid=(lo+hi)>>1;
+        if(methods[mid].va<=pc){best=mid;lo=mid+1;} else hi=mid-1;
+      }
+      if(best<0) return null;
+      const m=methods[best];
+      const next=best+1<methods.length?methods[best+1].va:0n;
+      if(next && pc>=next) return null;
+      if(pc-m.va>65536n) return null;
+      return m;
+    }
+    log.push("");
+    log.push("[usage 직접 ref 주소 소유 메서드 build16]");
+    const directSeen=new Set();
+    for(const [addrKey,infos] of addrInfo){
+      const addr=BigInt(addrKey);
+      if(!elf.inExec(addr)) continue;
+      const m=ownerOfAddress(addr);
+      const names=[...new Set(infos.map(x=>x.name))].join("/");
+      log.push("  "+names+" ref="+hex(addr)+" -> "+(m?(m.full+" #"+m.defIndex+" VA="+hex(m.va)+" +0x"+(addr-m.va).toString(16)):"<owner 없음>"));
+      if(m) directSeen.add(m.defIndex);
+    }
 
     function sx(v,bits){
       const sign=1n<<BigInt(bits-1), mask=(1n<<BigInt(bits))-1n;
@@ -718,6 +744,12 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
     log.push("  코드 참조 hit="+hits.length+" / 메서드="+byMethod.size);
     const selected=[...byMethod.values()];
+    for(const defIndex of directSeen){
+      if(!selected.some(g=>g.m.defIndex===defIndex)){
+        const m=methods.find(x=>x.defIndex===defIndex);
+        if(m) selected.push({m,refs:[]});
+      }
+    }
     for(const g of selected){
       log.push("  "+g.m.full+" #"+g.m.defIndex+" VA="+hex(g.m.va));
       const seenRef=new Set();
