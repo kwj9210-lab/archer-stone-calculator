@@ -4,6 +4,7 @@ on:
     branches: [transcend-build16-20260923]
     paths:
       - "analysis/disasm_effect_name.py"
+      - "analysis/disasm_growthstone_cctor.py"
       - ".github/workflows/disasm-effect-name.yml"
   workflow_dispatch:
 permissions:
@@ -17,9 +18,10 @@ jobs:
         with: {python-version: "3.12"}
       - run: pip install capstone
       - run: python analysis/disasm_effect_name.py > analysis/disasm_effect_name.txt
+      - run: python analysis/disasm_growthstone_cctor.py > analysis/disasm_growthstone_cctor.txt
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add analysis/disasm_effect_name.txt
+          git add analysis/disasm_effect_name.txt analysis/disasm_growthstone_cctor.txt
           git commit -m "Disassemble effect name" || exit 0
           git push
