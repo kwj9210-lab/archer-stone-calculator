@@ -1,0 +1,51 @@
+name: Split target disassembly
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [transcend-build7-20260923]
+    paths: [".github/workflows/split-target-disasm.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          src=Path("analysis/build7_disassembly.txt").read_text().splitlines()
+          targets=[
+            "Game_grow.GetGoldTranscendMaxMultiplierExponent",
+            "Game_grow.CalculateGoldTranscendMultiplierAtLevel",
+            "Game_grow.GetTotalGoldTranscendenceAttackMultiplier",
+            "Game_grow..cctor",
+            "TranscendenceBalance.GetStageEquivalentMultiplier",
+            "TranscendenceBalance.GetSkyArtMultiplierAtLevel",
+            "TranscendenceBalance.GetPrecisionDefenseBonusAtLevel",
+            "TranscendenceBalance..cctor",
+          ]
+          outdir=Path("analysis/sections"); outdir.mkdir(parents=True,exist_ok=True)
+          for t in targets:
+            start=None
+            for i,line in enumerate(src):
+              if line.startswith(t+" VA="):
+                start=i-1; break
+            if start is None: continue
+            end=len(src)
+            for j in range(start+2,len(src)):
+              if src[j].startswith("="*20) and j+1<len(src) and " VA=" in src[j+1]:
+                end=j; break
+            safe=t.replace(".","_").replace("<","").replace(">","")
+            outdir.joinpath(safe+".txt").write_text("\n".join(src[start:end])+"\n")
+          PY
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add analysis/sections
+          git commit -m "Split target disassembly sections" || exit 0
+          git push
