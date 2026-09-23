@@ -18,7 +18,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
 </head>
 <body>
 <main>
-<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 13</small></h1>
+<h1>IL2CPP v31 초월 함수 분석 도구 <small style="font-size:12px;color:#91e6a7">build 14</small></h1>
 <p>파일은 브라우저 안에서만 읽습니다. 서버 업로드는 하지 않습니다. metadata v31 구조와 ARM64 ELF64를 기준으로 대상 함수의 method index/token, 모듈, 실제 함수 VA와 코드 바이트를 찾습니다.</p>
 
 <section class="panel">
@@ -581,6 +581,164 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
   }
 
+
+  function mapTargetStringLiteralOwners(meta,elf,modules,log){
+    log.push("");
+    log.push("[4종 이름 문자열 코드 참조 역추적 build14]");
+    const targets=["청람결정","성해공명","차원각인","영겁성핵"];
+    const v=meta.rawView,b=meta.rawBytes;
+    const litOff=v.getUint32(8,true), litSize=v.getInt32(12,true);
+    const litDataOff=v.getUint32(16,true), litDataSize=v.getInt32(20,true);
+    const dec=new TextDecoder();
+    const exact=new Map();
+    for(let i=0;i<litSize/8;i++){
+      const o=litOff+i*8, len=v.getUint32(o,true), di=v.getInt32(o+4,true);
+      if(di<0||len>100000||di+len>litDataSize) continue;
+      const txt=dec.decode(b.subarray(litDataOff+di,litDataOff+di+len));
+      if(targets.includes(txt)) exact.set(txt,i);
+    }
+    for(const t of targets) log.push("  "+t+" literal#"+(exact.has(t)?exact.get(t):"없음"));
+
+    const slotInfo=new Map();
+    for(const t of targets){
+      if(!exact.has(t)) continue;
+      const idx=exact.get(t);
+      const encoded=(5n<<29n)|BigInt(idx);
+      const usageVAs=elf.refs(encoded);
+      log.push("  "+t+" encoded="+hex(encoded)+" usageVAs="+usageVAs.length);
+      for(const u of usageVAs){
+        const slots=elf.refs(u);
+        log.push("    usage "+hex(u)+" <- global slots "+slots.map(hex).join(", "));
+        for(const slot of slots){
+          const k=slot.toString();
+          if(!slotInfo.has(k)) slotInfo.set(k,[]);
+          slotInfo.get(k).push({name:t,idx,usage:u,slot});
+        }
+      }
+    }
+    if(!slotInfo.size){
+      log.push("  문자열 metadata usage global slot을 찾지 못함");
+      return;
+    }
+
+    const mod=modules.find(m=>m.name==="Assembly-CSharp.dll");
+    if(!mod){ log.push("  Assembly-CSharp.dll module 없음"); return; }
+
+    const resolved=[];
+    const seenVA=new Set();
+    for(const am of meta.allMethods){
+      if(am.image?.name!=="Assembly-CSharp.dll") continue;
+      if(am.pointerIndex<0||am.pointerIndex>=mod.methodPointerCount) continue;
+      try{
+        const va=elf.readPtrVA(mod.methodPointers+BigInt(am.pointerIndex*8));
+        if(!va||!elf.inExec(va)) continue;
+        resolved.push({...am,va,full:(am.type?.name?am.type.name+".":"")+am.name});
+        seenVA.add(va.toString());
+      }catch(e){}
+    }
+    resolved.sort((a,b)=>a.va<b.va?-1:a.va>b.va?1:0);
+    const uniq=[];
+    let last=null;
+    for(const m of resolved){
+      if(last!==m.va.toString()){ uniq.push(m); last=m.va.toString(); }
+    }
+    function owner(pc){
+      let lo=0,hi=uniq.length-1,best=-1;
+      while(lo<=hi){
+        const mid=(lo+hi)>>1;
+        if(uniq[mid].va<=pc){best=mid;lo=mid+1;} else hi=mid-1;
+      }
+      if(best<0) return null;
+      const cur=uniq[best], next=best+1<uniq.length?uniq[best+1].va:0n;
+      if(next && pc>=next) return null;
+      if(pc-cur.va>65536n) return null;
+      return cur;
+    }
+    function signExtend(n,bits){
+      const top=1<<(bits-1);
+      return (n&top)?n-(1<<bits):n;
+    }
+
+    const hits=[];
+    for(const sec of elf.exec){
+      const start=sec.offset, end=Math.min(elf.buf.byteLength,sec.offset+sec.filesz);
+      const regs=new Array(31).fill(null);
+      for(let off=start;off+4<=end;off+=4){
+        const w=elf.v.getUint32(off,true)>>>0;
+        const pc=sec.va+BigInt(off-start);
+        if((w&0x9F000000)===0x90000000){
+          const rd=w&31;
+          const immlo=(w>>>29)&3, immhi=(w>>>5)&0x7ffff;
+          const imm21=signExtend((immhi<<2)|immlo,21);
+          const page=(pc&~0xfffn)+(BigInt(imm21)<<12n);
+          if(rd<31) regs[rd]={page,pc};
+          continue;
+        }
+        if((w&0xFFC00000)===0xF9400000){
+          const rn=(w>>>5)&31;
+          const a=rn<31?regs[rn]:null;
+          if(a && pc-a.pc<=40n){
+            const imm12=(w>>>10)&0xfff;
+            const slot=a.page+BigInt(imm12*8);
+            const info=slotInfo.get(slot.toString());
+            if(info){
+              const m=owner(pc);
+              hits.push({pc,slot,info,m});
+            }
+          }
+        }
+      }
+    }
+
+    const byMethod=new Map();
+    for(const h of hits){
+      const key=h.m?h.m.defIndex:"?";
+      if(!byMethod.has(key)) byMethod.set(key,{m:h.m,refs:[]});
+      byMethod.get(key).refs.push(h);
+    }
+    log.push("  코드 참조 hit="+hits.length+" / 메서드="+byMethod.size);
+    const selected=[];
+    for(const g of byMethod.values()){
+      const nm=g.m?g.m.full:"<owner unknown>";
+      log.push("  "+nm+(g.m?" #"+g.m.defIndex+" VA="+hex(g.m.va):""));
+      const uniqRef=new Set();
+      for(const h of g.refs){
+        const names=h.info.map(x=>x.name).join("/");
+        const k=names+"|"+h.slot.toString();
+        if(uniqRef.has(k)) continue; uniqRef.add(k);
+        log.push("    "+names+" via slot "+hex(h.slot)+" at "+hex(h.pc));
+      }
+      if(g.m) selected.push(g.m);
+    }
+
+    log.push("");
+    log.push("[4종 이름 참조 메서드 코드]");
+    for(const h of selected){
+      try{
+        const pos=uniq.findIndex(x=>x.va===h.va);
+        let size=2048;
+        if(pos>=0 && pos+1<uniq.length){
+          const d=Number(uniq[pos+1].va-h.va);
+          if(d>0&&d<=16384) size=d;
+        }
+        const off=elf.vaToOff(h.va);
+        size=Math.min(size,16384,elf.buf.byteLength-off);
+        const code=elf.b.subarray(off,off+size);
+        log.push(h.full+" #"+h.defIndex+" VA="+hex(h.va)+" bytes="+size);
+        const calls=decodeDirectCalls({functionVA:h.va,codeBytes:code});
+        for(const c of calls){
+          const callee=resolved.find(x=>x.va===c.target);
+          log.push("  call "+hex(c.at)+" -> "+hex(c.target)+(callee?" "+callee.full:""));
+        }
+        for(let i=0;i<code.length;i+=16){
+          const chunk=Array.from(code.subarray(i,i+16)).map(x=>x.toString(16).padStart(2,"0")).join(" ");
+          log.push((off+i).toString(16).padStart(8,"0")+": "+chunk);
+        }
+        log.push("");
+      }catch(e){ log.push(h.full+" extract error: "+String(e)); }
+    }
+  }
+
   function dumpGoldInitializerBlobs(meta,elf,log){
     log.push("");
     log.push("[Gold 초월 정적 초기값 직접 복원 build9]");
@@ -768,6 +926,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       const modules=resolveFunctions(meta,elf,cr,log);
       annotateInternalCalls(meta,elf,modules,log);
       diagnoseLive1500(meta,log);
+      mapTargetStringLiteralOwners(meta,elf,modules,log);
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
       log.push("[초월 관련 타입 필드/상수 build11]");
