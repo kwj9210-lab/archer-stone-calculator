@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   disasm:
@@ -21,68 +21,57 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install capstone
-      - name: Disassemble extracted ARM64 functions
+      - name: Build disassembly
         run: |
           python - <<'PY'
           import re
           from pathlib import Path
           from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
 
-          p = Path("analysis/archer_il2cpp_probe_report.txt")
-          text = p.read_text(encoding="utf-8")
-          md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-          md.detail = False
-
-          wanted = {
+          src = Path("analysis/archer_il2cpp_probe_report.txt").read_text(encoding="utf-8")
+          wanted = [
               "CalculateGoldTranscendMultiplierAtLevel",
               "GetTotalGoldTranscendenceAttackMultiplier",
               "GetGoldTranscendCostForTargetLevel",
               "GetGoldTranscendTotalCost",
               "GetTranscendenceCurrentEffectAtLevel",
-          }
-
-          current = None
-          base_va = None
-          chunks = []
-          funcs = {}
-
+          ]
+          funcs={}
+          cur=None;base=None;data=[]
           def flush():
-              global current, base_va, chunks
-              if current and base_va is not None and chunks:
-                  funcs[current] = (base_va, bytes(chunks))
-              current = None
-              base_va = None
-              chunks = []
-
-          for line in text.splitlines():
+              global cur,base,data
+              if cur and base is not None and data:
+                  funcs[cur]=(base,bytes(data))
+              cur=None;base=None;data=[]
+          for line in src.splitlines():
               if line in wanted:
-                  flush()
-                  current = line
-                  continue
-              if not current:
-                  continue
-              m = re.match(r"\s*VA:\s*(0x[0-9A-Fa-f]+)", line)
+                  flush(); cur=line; continue
+              if cur is None: continue
+              m=re.match(r"\s*VA:\s*(0x[0-9A-Fa-f]+)",line)
+              if m: base=int(m.group(1),16); continue
+              m=re.match(r"^[0-9A-Fa-f]{8}:\s*((?:[0-9A-Fa-f]{2}(?:\s+|$))+)",line)
               if m:
-                  base_va = int(m.group(1), 16)
-                  continue
-              m = re.match(r"^[0-9A-Fa-f]{8}:\s*((?:[0-9A-Fa-f]{2}(?:\s+|$))+)", line)
-              if m:
-                  chunks.extend(int(x,16) for x in m.group(1).split())
-                  continue
-              if line.startswith("Get") or line.startswith("Calculate"):
-                  flush()
+                  data.extend(int(x,16) for x in m.group(1).split()); continue
           flush()
 
-          for name,(va,code) in funcs.items():
-              print("\n" + "="*100)
-              print(name, hex(va), "bytes", len(code))
-              print("="*100)
-              for ins in md.disasm(code, va):
-                  extra = ""
+          md=Cs(CS_ARCH_ARM64,CS_MODE_ARM)
+          out=[]
+          for name in wanted:
+              va,code=funcs[name]
+              out += ["", "="*100, f"{name} VA={va:#x} bytes={len(code)}", "="*100]
+              for ins in md.disasm(code,va):
+                  extra=""
                   if ins.mnemonic in ("bl","b") and ins.op_str.startswith("#0x"):
-                      try:
-                          extra = f"    ; target={ins.op_str[1:]}"
-                      except Exception:
-                          pass
-                  print(f"{ins.address:016x}  {ins.mnemonic:8s} {ins.op_str}{extra}")
+                      extra=f" ; target={ins.op_str[1:]}"
+                  out.append(f"{ins.address:016x}  {ins.mnemonic:8s} {ins.op_str}{extra}")
+          Path("analysis/disassembly.txt").write_text("\n".join(out)+"\n",encoding="utf-8")
           PY
+      - name: Commit disassembly result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add analysis/disassembly.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Generate ARM64 transcend disassembly"
+            git push
+          fi
