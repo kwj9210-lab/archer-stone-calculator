@@ -79,8 +79,8 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     const methodsOffset=u32(v,48), methodsSize=i32(v,52);
     const typeDefsOffset=u32(v,160), typeDefsSize=i32(v,164);
     const imagesOffset=u32(v,168), imagesSize=i32(v,172);
-    const METHOD_SIZE=40, TYPE_SIZE=88, IMAGE_SIZE=40;
-    if(methodsSize%METHOD_SIZE) throw new Error("v31 method struct 크기(40)와 methodsSize가 맞지 않음");
+    const METHOD_SIZE=36, TYPE_SIZE=88, IMAGE_SIZE=40;
+    if(methodsSize%METHOD_SIZE) throw new Error("v31 method struct 크기(36)와 methodsSize가 맞지 않음");
     if(typeDefsSize%TYPE_SIZE) throw new Error("v31 type struct 크기(88)와 typeDefinitionsSize가 맞지 않음");
     if(imagesSize%IMAGE_SIZE) throw new Error("v31 image struct 크기(40)와 imagesSize가 맞지 않음");
 
@@ -197,24 +197,14 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
                   try{
                     const count=elf.readPtrVA(refva3-8n);
                     if(count===BigInt(imageCount)){
-                      const raw=refva3-112n;
-                      const v31=raw-16n;
+                      const cr=refva3-112n;
                       try{
-                        const cgCount=elf.readPtrVA(v31+120n);
-                        const cgPtr=elf.readPtrVA(v31+128n);
+                        const cgCount=elf.readPtrVA(cr+104n);
+                        const cgPtr=elf.readPtrVA(cr+112n);
                         elf.vaToOff(cgPtr);
                         if(cgCount>0n && cgCount<10000n){
-                          log.push("CodeRegistration(v31) 후보: "+hex(v31)+" / codeGenModules="+cgCount);
-                          return {va:v31,version:31,count:Number(cgCount),modulesPtr:cgPtr};
-                        }
-                      }catch(e){}
-                      try{
-                        const cgCount=elf.readPtrVA(raw+104n);
-                        const cgPtr=elf.readPtrVA(raw+112n);
-                        elf.vaToOff(cgPtr);
-                        if(cgCount>0n && cgCount<10000n){
-                          log.push("CodeRegistration(v29 호환 후보): "+hex(raw)+" / codeGenModules="+cgCount);
-                          return {va:raw,version:29,count:Number(cgCount),modulesPtr:cgPtr};
+                          log.push("CodeRegistration(v31) 후보: "+hex(cr)+" / codeGenModules="+cgCount);
+                          return {va:cr,version:31,count:Number(cgCount),modulesPtr:cgPtr};
                         }
                       }catch(e){}
                     }
