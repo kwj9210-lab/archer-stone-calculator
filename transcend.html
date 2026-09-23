@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>궁수키우기 초월석 시뮬레이터 - 현재 구현본</title>
+  <style>
+    :root {
+      --bg:#0f1117;
+      --panel:#171b24;
+      --card:#202635;
+      --text:#f2f4f8;
+      --muted:#aab3c5;
+      --line:#344055;
+      --accent:#7cc7ff;
+      --bad:#ff8a8a;
+      --good:#91e6a7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    h2 { font-size: 17px; margin: 0 0 10px; }
+    p { margin: 6px 0; color: var(--muted); }
+    .notice {
+      border: 1px solid var(--line);
+      background: #151923;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 10px 0 4px;
+    }
+    input, select, button {
+      width: 100%;
+      font-size: 16px;
+      color: var(--text);
+      background: #0f1320;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    button {
+      background: #20354a;
+      border-color: #3f6f9c;
+      cursor: pointer;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    button:hover { background: #284765; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+      text-align: right;
+      white-space: nowrap;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    .small { font-size: 12px; color: var(--muted); }
+    .ok { color: var(--good); }
+    .bad { color: var(--bad); }
+    .scroll { overflow-x: auto; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .card strong { display:block; font-size:14px; }
+    .card span { color:var(--muted); font-size:12px; }
+    @media (max-width: 760px) {
+      main { padding: 12px; }
+      .grid { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: 1fr 1fr; }
+      th, td { font-size: 13px; padding: 7px 5px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>궁수키우기 초월석 시뮬레이터 - 현재 구현본</h1>
+  <div class="notice">
+    <p><b>현재 상태:</b> 비용표와 조합 전수조사는 반영됨. 정확한 투력식은 아직 APK 분석 후 교체 필요.</p>
+    <p>기본 점수는 임시 가중치다. 사용자가 말한 “차원각인 올인이 높았다”는 실측을 확인하기 위해 차원각인 가중치를 높게 둔 상태.</p>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>입력</h2>
+      <label for="stones">보유 초월석</label>
+      <input id="stones" type="number" min="0" step="100" value="90100">
+
+      <label for="fixed">고정 MAX 항목</label>
+      <select id="fixed">
+        <option value="-1">없음</option>
+        <option value="0">청람결정 MAX 고정</option>
+        <option value="1">성해공명 MAX 고정</option>
+        <option value="2">차원각인 MAX 고정</option>
+        <option value="3">영겁성핵 MAX 고정</option>
+      </select>
+
+      <div class="cards">
+        <div class="card">
+          <strong>청람결정</strong>
+          <label for="lv0">현재 Lv</label>
+          <input id="lv0" type="number" min="0" max="1500" step="100" value="0">
+          <label for="w0">임시 가중치</label>
+          <input id="w0" type="number" min="0" step="0.1" value="1">
+        </div>
+        <div class="card">
+          <strong>성해공명</strong>
+          <label for="lv1">현재 Lv</label>
+          <input id="lv1" type="number" min="0" max="1500" step="100" value="0">
+          <label for="w1">임시 가중치</label>
+          <input id="w1" type="number" min="0" step="0.1" value="1.2">
+        </div>
+        <div class="card">
+          <strong>차원각인</strong>
+          <label for="lv2">현재 Lv</label>
+          <input id="lv2" type="number" min="0" max="1500" step="100" value="0">
+          <label for="w2">임시 가중치</label>
+          <input id="w2" type="number" min="0" step="0.1" value="2.4">
+        </div>
+        <div class="card">
+          <strong>영겁성핵</strong>
+          <label for="lv3">현재 Lv</label>
+          <input id="lv3" type="number" min="0" max="1500" step="100" value="0">
+          <label for="w3">임시 가중치</label>
+          <input id="w3" type="number" min="0" step="0.1" value="1.7">
+        </div>
+      </div>
+
+      <button id="run" type="button">전수조사 실행</button>
+      <p id="msg" class="small"></p>
+    </section>
+
+    <section class="panel">
+      <h2>확정 비용표</h2>
+      <div class="scroll">
+        <table id="costTable"></table>
+      </div>
+      <p class="small">100레벨 단위 비용. Lv.1500 MAX 총비용: 청람 50,500 / 성해 64,000 / 차원 96,500 / 영겁 110,500</p>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:14px">
+    <h2>결과</h2>
+    <div id="summary" class="small">아직 계산 전.</div>
+    <div class="scroll">
+      <table id="resultTable"></table>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const names = ["청람결정", "성해공명", "차원각인", "영겁성핵"];
+  const costs = [
+    [500,1000,2000,3000,4000,4000,4000,4000,4000,4000,4000,4000,4000,4000,4000],
+    [1000,1500,2500,4000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000],
+    [1500,2500,4000,6000,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500],
+    [2000,3000,5000,7000,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500]
+  ];
+
+  function fmt(n){ return Math.round(n).toLocaleString("ko-KR"); }
+  function clampLevel(v){
+    v = Number(v);
+    if (!Number.isFinite(v)) return 0;
+    v = Math.max(0, Math.min(1500, v));
+    return Math.floor(v / 100) * 100;
+  }
+  function costFromTo(row, fromLv, toLv){
+    fromLv = clampLevel(fromLv);
+    toLv = clampLevel(toLv);
+    if (toLv < fromLv) return Infinity;
+    let start = fromLv / 100;
+    let end = toLv / 100;
+    let total = 0;
+    for (let i=start; i<end; i++) total += costs[row][i] || 0;
+    return total;
+  }
+  function maxCost(row){ return costFromTo(row, 0, 1500); }
+
+  // TODO: 정확한 APK 효과식 복원 후 이 함수를 교체해야 한다.
+  // 현재는 임시 점수식이다. 차원각인 가중치를 높게 둬 사용자 실측과 비교하기 쉽게 했다.
+  function calcScore(levels, weights){
+    let score = 0;
+    for (let i=0; i<4; i++){
+      const lv = levels[i];
+      const step = lv / 100;
+      const curve = step * (1 + step * 0.035);
+      score += curve * weights[i];
+    }
+    return score;
+  }
+
+  function renderCostTable(){
+    const table = document.getElementById("costTable");
+    let html = "<thead><tr><th>구간</th>";
+    names.forEach(n => html += "<th>" + n + "</th>");
+    html += "</tr></thead><tbody>";
+    for (let b=0;b<15;b++){
+      html += "<tr><td>Lv." + (b*100) + "→" + ((b+1)*100) + "</td>";
+      for (let r=0;r<4;r++) html += "<td>" + fmt(costs[r][b]) + "</td>";
+      html += "</tr>";
+    }
+    html += "<tr><td><b>MAX 총비용</b></td>";
+    for (let r=0;r<4;r++) html += "<td><b>" + fmt(maxCost(r)) + "</b></td>";
+    html += "</tr></tbody>";
+    table.innerHTML = html;
+  }
+
+  function run(){
+    const stones = Math.max(0, Math.floor(Number(document.getElementById("stones").value) || 0));
+    const fixed = Number(document.getElementById("fixed").value);
+    const current = [0,1,2,3].map(i => clampLevel(document.getElementById("lv"+i).value));
+    const weights = [0,1,2,3].map(i => Math.max(0, Number(document.getElementById("w"+i).value) || 0));
+    const msg = document.getElementById("msg");
+    const results = [];
+
+    let baseCost = 0;
+    let baseLevels = current.slice();
+
+    if (fixed >= 0) {
+      const c = costFromTo(fixed, baseLevels[fixed], 1500);
+      baseCost += c;
+      baseLevels[fixed] = 1500;
+    }
+
+    if (baseCost > stones) {
+      msg.innerHTML = '<span class="bad">고정 MAX 비용이 보유 초월석보다 큼. 필요 ' + fmt(baseCost) + ' / 보유 ' + fmt(stones) + '</span>';
+      document.getElementById("summary").textContent = "계산 불가";
+      document.getElementById("resultTable").innerHTML = "";
+      return;
+    }
+
+    const remain = stones - baseCost;
+
+    for (let a = baseLevels[0]; a <= 1500; a += 100) {
+      if (a < baseLevels[0]) continue;
+      if (fixed === 0 && a !== 1500) continue;
+      const ca = costFromTo(0, baseLevels[0], a);
+      if (ca > remain) continue;
+
+      for (let b = baseLevels[1]; b <= 1500; b += 100) {
+        if (fixed === 1 && b !== 1500) continue;
+        const cb = ca + costFromTo(1, baseLevels[1], b);
+        if (cb > remain) continue;
+
+        for (let c = baseLevels[2]; c <= 1500; c += 100) {
+          if (fixed === 2 && c !== 1500) continue;
+          const cc = cb + costFromTo(2, baseLevels[2], c);
+          if (cc > remain) continue;
+
+          for (let d = baseLevels[3]; d <= 1500; d += 100) {
+            if (fixed === 3 && d !== 1500) continue;
+            const spendExtra = cc + costFromTo(3, baseLevels[3], d);
+            if (spendExtra > remain) continue;
+
+            const levels = [a,b,c,d];
+            const spend = baseCost + spendExtra;
+            results.push({
+              levels,
+              spend,
+              left: stones - spend,
+              score: calcScore(levels, weights)
+            });
+          }
+        }
+      }
+    }
+
+    results.sort((x,y) => {
+      if (y.score !== x.score) return y.score - x.score;
+      return x.left - y.left;
+    });
+
+    msg.innerHTML = '<span class="ok">계산 완료. 가능한 조합 ' + fmt(results.length) + '개</span>';
+    const best = results[0];
+
+    if (!best) {
+      document.getElementById("summary").textContent = "가능한 조합 없음";
+      document.getElementById("resultTable").innerHTML = "";
+      return;
+    }
+
+    document.getElementById("summary").innerHTML =
+      "1위: " + names.map((n,i)=> n + " Lv." + best.levels[i]).join(" / ") +
+      " · 사용 " + fmt(best.spend) + " · 잔여 " + fmt(best.left) +
+      " · 임시점수 " + best.score.toFixed(3);
+
+    let html = "<thead><tr><th>순위</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th><th>사용</th><th>잔여</th><th>임시점수</th></tr></thead><tbody>";
+    results.slice(0, 50).forEach((r, idx) => {
+      html += "<tr><td>" + (idx+1) + "</td>";
+      r.levels.forEach(lv => html += "<td>Lv." + lv + "</td>");
+      html += "<td>" + fmt(r.spend) + "</td><td>" + fmt(r.left) + "</td><td>" + r.score.toFixed(3) + "</td></tr>";
+    });
+    html += "</tbody>";
+    document.getElementById("resultTable").innerHTML = html;
+  }
+
+  renderCostTable();
+  document.getElementById("run").addEventListener("click", run);
+  run();
+})();
+</script>
+</body>
+</html>
