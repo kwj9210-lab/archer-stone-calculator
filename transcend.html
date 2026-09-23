@@ -165,7 +165,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
 
     // 같은 전투력(게임 표시상 동일) 후보를 놓치지 않도록
     // CD 조합을 예산별로 여러 개 보관한다.
-    const K=step===1 ? (budget<=170000 ? 24 : 12) : 8;
+    const K=step===1 ? 6 : 4;
     const width=budget+1, total=width*K;
     const cdScore=new Float64Array(total); cdScore.fill(-Infinity);
     const cdC=new Uint16Array(total), cdD=new Uint16Array(total);
@@ -199,34 +199,37 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
       }
     }
 
-    // 정확한 비용 x의 후보 + x-1까지의 후보를 합쳐
-    // "이 예산 이하" 상위 K개를 유지한다.
-    const temp=[];
+    // 정확한 비용 x의 후보와 x-1 이하 후보를 작은 K개만 병합한다.
+    // 객체 생성/정렬을 매 예산마다 하지 않아 모바일에서도 빠르게 동작한다.
+    const tmpS=new Float64Array(K), tmpC=new Uint16Array(K), tmpD=new Uint16Array(K);
     for(let x=1;x<=budget;x++){
-      temp.length=0;
       const cur=x*K, prev=(x-1)*K;
-      for(let j=0;j<K;j++){
-        if(cdScore[cur+j]>-Infinity)temp.push({s:cdScore[cur+j],c:cdC[cur+j],d:cdD[cur+j]});
-        if(cdScore[prev+j]>-Infinity)temp.push({s:cdScore[prev+j],c:cdC[prev+j],d:cdD[prev+j]});
-      }
-      temp.sort((u,v)=>{
-        const ds=v.s-u.s;
-        if(Math.abs(ds)>EPS)return ds;
-        const uc=levelCost[2][u.c]+levelCost[3][u.d];
-        const vc=levelCost[2][v.c]+levelCost[3][v.d];
-        if(uc!==vc)return uc-vc;
-        return u.c!==v.c ? v.c-u.c : v.d-u.d;
-      });
-      const seen=new Set();
       let w=0;
-      for(const t of temp){
-        const key=t.c+","+t.d;
-        if(seen.has(key))continue;
-        seen.add(key);
-        cdScore[cur+w]=t.s; cdC[cur+w]=t.c; cdD[cur+w]=t.d;
-        w++; if(w>=K)break;
+      for(let pick=0;pick<K;pick++){
+        let bestS=-Infinity,bestC=0,bestD=0,bestUsed=0;
+        for(let src=0;src<2;src++){
+          const base=src===0?cur:prev;
+          for(let j=0;j<K;j++){
+            const sc=cdScore[base+j]; if(sc===-Infinity)continue;
+            const c=cdC[base+j],d=cdD[base+j];
+            let dup=false;
+            for(let q=0;q<w;q++)if(tmpC[q]===c&&tmpD[q]===d){dup=true;break;}
+            if(dup)continue;
+            const used=levelCost[2][c]+levelCost[3][d];
+            if(bestS===-Infinity || sc>bestS+EPS ||
+              (Math.abs(sc-bestS)<=EPS && (used<bestUsed ||
+               (used===bestUsed && (c>bestC || (c===bestC&&d>bestD)))))){
+              bestS=sc;bestC=c;bestD=d;bestUsed=used;
+            }
+          }
+        }
+        if(bestS===-Infinity)break;
+        tmpS[w]=bestS;tmpC[w]=bestC;tmpD[w]=bestD;w++;
       }
-      while(w<K){cdScore[cur+w]=-Infinity;cdC[cur+w]=0;cdD[cur+w]=0;w++;}
+      for(let j=0;j<K;j++){
+        if(j<w){cdScore[cur+j]=tmpS[j];cdC[cur+j]=tmpC[j];cdD[cur+j]=tmpD[j];}
+        else{cdScore[cur+j]=-Infinity;cdC[cur+j]=0;cdD[cur+j]=0;}
+      }
     }
 
     const aList=levelsFor(fixed[0],step), bList=levelsFor(fixed[1],step);
@@ -385,7 +388,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
     for(let i=0;i<4;i++)document.getElementById("fix"+i).checked=false;
   });
   document.getElementById("run").addEventListener("click",run);
-  renderCostTable(); updatePoolPreview(); run();
+  renderCostTable(); updatePoolPreview(); document.getElementById("status").textContent="값을 확인한 뒤 ‘최적 배분 계산’을 눌러주세요.";
 })();
 </script>
 </body>
