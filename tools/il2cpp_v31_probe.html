@@ -739,6 +739,69 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
     }
   }
 
+
+  function scanKnownUserCostPatterns(meta,elf,modules,log){
+    log.push("");
+    log.push("[사용자 확정 4종 비용 패턴 역추적 build14]");
+    const pats=[
+      ["청람결정",[500,1000,2000,3000,...Array(11).fill(4000)]],
+      ["성해공명",[1000,1500,2500,4000,...Array(11).fill(5000)]],
+      ["차원각인",[1500,2500,4000,6000,...Array(11).fill(7500)]],
+      ["영겁성핵",[2000,3000,5000,7000,...Array(11).fill(8500)]]
+    ];
+    function bytesFor(vals){
+      const a=new Uint8Array(vals.length*4),v=new DataView(a.buffer);
+      vals.forEach((x,i)=>v.setInt32(i*4,x,true)); return a;
+    }
+    function hitsIn(bytes,pat,start=0,end=bytes.length,max=50){
+      const out=[];
+      outer: for(let i=start;i+pat.length<=end;i++){
+        if(bytes[i]!==pat[0]) continue;
+        for(let j=1;j<pat.length;j++) if(bytes[i+j]!==pat[j]) continue outer;
+        out.push(i); if(out.length>=max) break;
+      }
+      return out;
+    }
+    const defaults=[...meta.fieldDefaults.values()].filter(x=>x.dataIndex>=0).sort((a,b)=>a.dataIndex-b.dataIndex);
+    function fieldForMetaOffset(abs){
+      const rel=abs-meta.defaultDataOffset;
+      if(rel<0||rel>=meta.defaultDataSize) return null;
+      let best=null;
+      for(const d of defaults){
+        if(d.dataIndex<=rel) best=d; else break;
+      }
+      if(!best) return null;
+      const fld=meta.fields[best.fieldIndex];
+      let owner=null;
+      for(const t of meta.typeDefs){
+        if(t.firstFieldIdx>=0 && best.fieldIndex>=t.firstFieldIdx && best.fieldIndex<t.firstFieldIdx+t.fieldCount){owner=t;break;}
+      }
+      return {rel,best,fld,owner,delta:rel-best.dataIndex};
+    }
+    for(const [name,vals] of pats){
+      const full=bytesFor(vals), first5=bytesFor(vals.slice(0,5));
+      const mh=hitsIn(meta.rawBytes,full);
+      const m5=mh.length?[]:hitsIn(meta.rawBytes,first5);
+      log.push("  "+name+" metadata fullHits="+mh.length+" first5Hits="+m5.length);
+      for(const off of [...mh,...m5].slice(0,20)){
+        const x=fieldForMetaOffset(off);
+        log.push("    meta off="+hex(BigInt(off))+(x?" defaultRel="+x.rel+" nearest="+(x.owner?x.owner.name+".":"")+(x.fld?.name||"?")+" field#"+x.best.fieldIndex+" delta="+x.delta:""));
+      }
+      let eh=[];
+      for(const sec of elf.segs){
+        const hs=hitsIn(elf.b,full,sec.offset,Math.min(elf.b.length,sec.offset+sec.filesz),20);
+        for(const off of hs) eh.push(sec.va+BigInt(off-sec.offset));
+      }
+      if(!eh.length){
+        for(const sec of elf.segs){
+          const hs=hitsIn(elf.b,first5,sec.offset,Math.min(elf.b.length,sec.offset+sec.filesz),20);
+          for(const off of hs) eh.push(sec.va+BigInt(off-sec.offset));
+        }
+      }
+      log.push("    ELF pattern VAs="+eh.slice(0,30).map(hex).join(", "));
+    }
+  }
+
   function dumpGoldInitializerBlobs(meta,elf,log){
     log.push("");
     log.push("[Gold 초월 정적 초기값 직접 복원 build9]");
@@ -927,6 +990,7 @@ a{color:#8ccfff}@media(max-width:700px){.row{grid-template-columns:1fr}main{padd
       annotateInternalCalls(meta,elf,modules,log);
       diagnoseLive1500(meta,log);
       mapTargetStringLiteralOwners(meta,elf,modules,log);
+      scanKnownUserCostPatterns(meta,elf,modules,log);
       dumpGoldInitializerBlobs(meta,elf,log);
       log.push("");
       log.push("[초월 관련 타입 필드/상수 build11]");
