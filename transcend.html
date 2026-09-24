@@ -14,7 +14,18 @@ input,select,button{font:inherit}input,select{width:100%;min-height:44px;backgro
 button{min-height:44px;border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#06111b;font-weight:800;cursor:pointer}.secondary{background:#283346;color:var(--text);font-weight:650}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 130px}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;gap:8px;align-items:center;background:#111722;border:1px solid var(--line);border-radius:10px;padding:9px}.check input{width:auto;min-height:auto}
 .result-main{background:linear-gradient(180deg,#202b3a,#1a222f);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}.bestline{font-size:18px;font-weight:800;margin-bottom:8px}
-.numbers{display:flex;gap:14px;flex-wrap:wrap;font-size:14px}.numbers b{color:var(--good)}.targets{display:grid;gap:10px;margin-top:12px}.joint-card{background:#111722;border:1px solid var(--line);border-radius:13px;padding:11px}.joint-rank{font-weight:800;color:var(--accent);margin-bottom:8px}.joint-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.joint-foot{margin-top:8px;color:var(--muted);font-size:12px}
+.numbers{display:flex;gap:14px;flex-wrap:wrap;font-size:14px}.numbers b{color:var(--good)}.targets{display:grid;gap:10px;margin-top:12px}.joint-card{background:#111722;border:1px solid var(--line);border-radius:13px;padding:11px}.joint-rank{font-weight:800;color:var(--accent);margin-bottom:8px}
+.joint-rank.featured{
+  color:#d8ff3f;
+  text-shadow:0 0 5px rgba(216,255,63,.95),0 0 12px rgba(216,255,63,.7),0 0 22px rgba(216,255,63,.45);
+  animation:rankSparkle 1.15s ease-in-out infinite alternate;
+}
+@keyframes rankSparkle{
+  0%{filter:brightness(1);text-shadow:0 0 4px rgba(216,255,63,.8),0 0 9px rgba(216,255,63,.5),0 0 16px rgba(216,255,63,.3)}
+  55%{filter:brightness(1.35);text-shadow:0 0 7px rgba(245,255,150,1),0 0 15px rgba(216,255,63,.9),0 0 28px rgba(216,255,63,.55)}
+  100%{filter:brightness(1.08);text-shadow:0 0 5px rgba(216,255,63,.9),0 0 12px rgba(216,255,63,.65),0 0 20px rgba(216,255,63,.4)}
+}
+@media (prefers-reduced-motion:reduce){.joint-rank.featured{animation:none}}.joint-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.joint-foot{margin-top:8px;color:var(--muted);font-size:12px}
 .target{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px}.target .name{font-size:12px;color:var(--muted)}.target .lv{font-size:20px;font-weight:800;margin-top:2px}
 
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:8px 7px;border-bottom:1px solid var(--line);text-align:right;font-size:13px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#cfd7e5;font-weight:700}
@@ -315,7 +326,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
 
     document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
       '<div class="joint-card">'+
-        '<div class="joint-rank">'+(ordered.length>1?'공동 1위':'1위')+(idx===0&&ordered.length>1?' · 잔여 최대':'')+'</div>'+
+        '<div class="joint-rank'+(idx===0&&ordered.length>1?' featured':'')+'">'+(ordered.length>1?'공동 1위':'1위')+(idx===0&&ordered.length>1?' · 잔여 최대':'')+'</div>'+
         '<div class="joint-levels">'+r.levels.map((lv,i)=>
           '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
         ).join("")+'</div>'+
