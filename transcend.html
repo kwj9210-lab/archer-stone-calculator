@@ -13,11 +13,10 @@ h1{font-size:23px;margin:0 0 7px}h2{font-size:17px;margin:0 0 12px}.muted,.small
 input,select,button{font:inherit}input,select{width:100%;min-height:44px;background:#111722;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:16px}
 button{min-height:44px;border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#06111b;font-weight:800;cursor:pointer}.secondary{background:#283346;color:var(--text);font-weight:650}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 130px}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;gap:8px;align-items:center;background:#111722;border:1px solid var(--line);border-radius:10px;padding:9px}.check input{width:auto;min-height:auto}
-.current-fields{display:none;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.current-fields.on{display:block}.lvgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .result-main{background:linear-gradient(180deg,#202b3a,#1a222f);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}.bestline{font-size:18px;font-weight:800;margin-bottom:8px}
-.numbers{display:flex;gap:14px;flex-wrap:wrap;font-size:14px}.numbers b{color:var(--good)}.targets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.numbers{display:flex;gap:14px;flex-wrap:wrap;font-size:14px}.numbers b{color:var(--good)}.targets{display:grid;gap:10px;margin-top:12px}.joint-card{background:#111722;border:1px solid var(--line);border-radius:13px;padding:11px}.joint-rank{font-weight:800;color:var(--accent);margin-bottom:8px}.joint-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.joint-foot{margin-top:8px;color:var(--muted);font-size:12px}
 .target{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px}.target .name{font-size:12px;color:var(--muted)}.target .lv{font-size:20px;font-weight:800;margin-top:2px}
-.compare{margin-top:12px;padding:11px;border-radius:12px;background:#111722;border:1px solid var(--line);font-size:13px}.arrow{color:var(--accent);font-weight:800}
+
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:8px 7px;border-bottom:1px solid var(--line);text-align:right;font-size:13px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#cfd7e5;font-weight:700}
 details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:700}.status{min-height:20px;margin-top:10px}.ok{color:var(--good)}.bad{color:var(--bad)}
 .badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#203247;color:#bde1ff;font-size:12px;margin-bottom:7px}
@@ -37,12 +36,11 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
   input,select{min-height:46px;padding:10px 11px;font-size:16px}
   button{width:100%;min-height:48px;font-size:16px;touch-action:manipulation}
   .row{display:block}
-  .lvgrid{grid-template-columns:1fr 1fr;gap:7px}
   .result-main{padding:12px;margin-bottom:9px}
   .bestline{font-size:17px;margin-bottom:7px}
   .numbers{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:12px}
   .numbers span{min-width:0}
-  .targets{grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+  .targets{gap:7px;margin-top:9px}.joint-levels{grid-template-columns:1fr 1fr;gap:7px}
   .target{padding:10px;border-radius:10px}
   .target .name{font-size:11px}
   .target .lv{font-size:19px;line-height:1.2}
@@ -52,34 +50,18 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
   details{margin-top:7px}
   summary{min-height:42px;display:flex;align-items:center}
   .scroll{margin:0 -3px;padding:0 3px}
-  #rankTable{min-width:0}
-  #rankTable thead{display:none}
-  #rankTable tbody{display:grid;gap:7px}
-  #rankTable tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px;background:#111722;border:1px solid var(--line);border-radius:10px;padding:9px}
-  #rankTable td{display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;padding:2px 0;font-size:12px;text-align:right;white-space:normal;min-width:0}
-  #rankTable td:first-child{grid-column:1/-1;font-weight:800;color:var(--accent);padding-bottom:5px;margin-bottom:2px;border-bottom:1px solid #2b3545}
-  #rankTable td:nth-child(2)::before{content:"청람";color:var(--muted)}
-  #rankTable td:nth-child(3)::before{content:"성해";color:var(--muted)}
-  #rankTable td:nth-child(4)::before{content:"차원";color:var(--muted)}
-  #rankTable td:nth-child(5)::before{content:"영겁";color:var(--muted)}
-  #rankTable td:nth-child(6)::before{content:"사용";color:var(--muted)}
-  #rankTable td:nth-child(7)::before{content:"잔여";color:var(--muted)}
   #costTable{min-width:600px}
   #costTable th,#costTable td{font-size:11px;padding:7px 5px}
 }
 @media(max-width:430px){
   main{padding-left:7px;padding-right:7px}
   .hero,.panel{padding:11px}
-  .lvgrid{gap:6px}
-  .lvgrid .field label{font-size:11px}
-  .lvgrid input{padding-left:8px;padding-right:8px}
   .numbers{grid-template-columns:1fr 1fr}
-  .targets{grid-template-columns:1fr 1fr}
+  .joint-levels{grid-template-columns:1fr 1fr}
   .target .lv{font-size:18px}
 }
 @media(max-width:350px){
-  .lvgrid{grid-template-columns:1fr}
-  .targets{grid-template-columns:1fr 1fr}
+  .joint-levels{grid-template-columns:1fr 1fr}
   #rankTable tr{grid-template-columns:1fr}
   #rankTable td:first-child{grid-column:1}
 }
@@ -97,48 +79,23 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
   <section class="panel">
     <h2>입력</h2>
     <div class="field">
-      <label for="mode">초월석 입력 방식</label>
-      <select id="mode">
-        <option value="total">초기화 후 총 초월석 직접 입력</option>
-        <option value="current">현재 잔여량 + 현재 레벨로 총량 계산</option>
-      </select>
-    </div>
-    <div id="totalBox" class="field">
-      <label for="stones">초기화 후 총 초월석</label>
+      <label for="stones">보유 초월석</label>
       <input id="stones" type="number" min="0" step="1" value="130400">
-    </div>
-    <div id="currentBox" class="current-fields">
-      <div class="field">
-        <label for="remain">현재 남은 초월석</label>
-        <input id="remain" type="number" min="0" step="1" value="48900">
-      </div>
-      <div class="lvgrid">
-        <div class="field"><label for="cur0">청람 현재 Lv</label><input id="cur0" type="number" min="0" max="1500" step="1" value="1200"></div>
-        <div class="field"><label for="cur1">성해 현재 Lv</label><input id="cur1" type="number" min="0" max="1500" step="1" value="600"></div>
-        <div class="field"><label for="cur2">차원 현재 Lv</label><input id="cur2" type="number" min="0" max="1500" step="1" value="400"></div>
-        <div class="field"><label for="cur3">영겁 현재 Lv</label><input id="cur3" type="number" min="0" max="1500" step="1" value="300"></div>
-      </div>
-      <div id="poolPreview" class="small"></div>
     </div>
     <div class="row">
       <button id="run" type="button">최적 배분 계산</button>
     </div>
     <div id="status" class="status small" aria-live="polite"></div>
-    <p class="small">동일 전투력으로 판단되는 조합은 초월석을 덜 쓰는 쪽을 우선합니다. 별도 고정 조건 없이 네 항목 전체를 자동으로 최적 배분합니다. 100레벨 사이 효과는 실측 구간값을 기준으로 1레벨 단위 보간합니다.</p>
+    <p class="small">입력한 초월석으로 네 항목 전체를 자동 최적 배분합니다. 같은 최고 전투력이 여러 조합이면 모두 공동 1위로 표시합니다.</p>
   </section>
 
   <div class="stack">
     <section class="panel">
-      <h2>최종 추천</h2>
+      <h2>공동 1위 결과</h2>
       <div id="best" class="result-main"></div>
       <div id="targets" class="targets"></div>
-      <div id="compare" class="compare"></div>
     </section>
 
-    <section class="panel">
-      <h2>상위 후보</h2>
-      <div class="scroll"><table id="rankTable"></table></div>
-    </section>
   </div>
 </div>
 
@@ -317,22 +274,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
   }
 
   function getPool(){
-    if(document.getElementById("mode").value==="total"){
-      return Math.max(0,Math.floor(Number(document.getElementById("stones").value)||0));
-    }
-    const remain=Math.max(0,Math.floor(Number(document.getElementById("remain").value)||0));
-    let spent=0;
-    for(let i=0;i<4;i++)spent+=levelCost[i][clampLv(document.getElementById("cur"+i).value)];
-    return remain+spent;
-  }
-
-  function updatePoolPreview(){
-    const box=document.getElementById("poolPreview");
-    if(document.getElementById("mode").value!=="current"){box.textContent="";return;}
-    const remain=Math.max(0,Math.floor(Number(document.getElementById("remain").value)||0));
-    let spent=0;
-    for(let i=0;i<4;i++)spent+=levelCost[i][clampLv(document.getElementById("cur"+i).value)];
-    box.textContent="현재까지 사용 "+fmt(spent)+" + 잔여 "+fmt(remain)+" = 초기화 후 총 "+fmt(spent+remain);
+    return Math.max(0,Math.floor(Number(document.getElementById("stones").value)||0));
   }
 
   function renderCostTable(){
@@ -350,56 +292,36 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
     document.getElementById("costTable").innerHTML=h;
   }
 
-  function renderResult(pool,exact,coarse){
+  function renderResult(pool,exact){
     const b=exact.best;
     if(!b){
-      document.getElementById("best").innerHTML='<span class="bad">조건을 만족하는 조합이 없습니다.</span>';
+      document.getElementById("best").innerHTML='<span class="bad">계산 가능한 조합이 없습니다.</span>';
       document.getElementById("targets").innerHTML="";
-      document.getElementById("compare").innerHTML="";
-      document.getElementById("rankTable").innerHTML="";
       return;
     }
 
     const rawMax=Math.max(...exact.top.map(r=>r.score),b.score);
     const joint=exact.top.filter(r=>rawMax-r.score<=EPS);
-    const jointBest=joint.reduce((x,y)=>!x||y.left>x.left?y:x,null);
-    const shown=jointBest||b;
+    const ordered=joint.slice().sort((x,y)=>{
+      if(y.left!==x.left)return y.left-x.left;
+      for(let i=0;i<4;i++)if(y.levels[i]!==x.levels[i])return y.levels[i]-x.levels[i];
+      return 0;
+    });
+    const shown=ordered[0]||b;
 
     document.getElementById("best").innerHTML=
-      '<div class="bestline">'+(joint.length>1?'공동 1위 중 잔여 최대 추천':'최고 전투력 배분')+'</div>'+
-      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(shown.used)+'</b></span><span>잔여 <b>'+fmt(shown.left)+'</b></span>'+
-      (joint.length>1?'<span>공동 1위 <b>'+joint.length+'개</b></span>':'')+'</div>';
+      '<div class="bestline">'+(ordered.length>1?'공동 1위 '+ordered.length+'개':'최고 효율 1위')+'</div>'+
+      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(shown.used)+'</b></span><span>잔여 <b>'+fmt(shown.left)+'</b></span></div>';
 
-    document.getElementById("targets").innerHTML=shown.levels.map((lv,i)=>
-      '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
+    document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
+      '<div class="joint-card">'+
+        '<div class="joint-rank">'+(ordered.length>1?'공동 1위':'1위')+(idx===0&&ordered.length>1?' · 잔여 최대':'')+'</div>'+
+        '<div class="joint-levels">'+r.levels.map((lv,i)=>
+          '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
+        ).join("")+'</div>'+
+        '<div class="joint-foot">사용 '+fmt(r.used)+' · 잔여 '+fmt(r.left)+'</div>'+
+      '</div>'
     ).join("");
-
-    if(coarse.best){
-      const c=coarse.best;
-      const same=c.levels.every((x,i)=>x===shown.levels[i]);
-      document.getElementById("compare").innerHTML=(joint.length>1
-        ? '<b>공동 1위 '+joint.length+'개</b> · 게임 표시 전투력이 같은 범위로 판정됨.<br>그중 잔여 초월석이 가장 많은 조합을 대표 추천으로 표시합니다.<br>'
-        : '')+
-        (same
-          ? '100레벨 단위 결과와 잔여 재투자 결과가 동일합니다.'
-          : '<b>잔여 재투자 포함 재최적화</b><br>'+
-            shortNames.map((n,i)=>n+' Lv.'+c.levels[i]).join(' / ')+' · 잔여 '+fmt(c.left)+
-            '<br><span class="arrow">→</span> '+
-            shortNames.map((n,i)=>n+' Lv.'+shown.levels[i]).join(' / ')+' · 잔여 '+fmt(shown.left));
-    }
-
-    let h="<thead><tr><th>순위</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th><th>사용</th><th>잔여</th></tr></thead><tbody>";
-    let jointCount=0;
-    exact.top.forEach((r,idx)=>{
-      const isJoint=rawMax-r.score<=EPS;
-      if(isJoint)jointCount++;
-      const rank=isJoint ? "공동 1위" : (joint.length + (idx-joint.length) + 1)+"위";
-      h+="<tr><td>"+rank+"</td>";
-      r.levels.forEach(lv=>h+="<td>Lv."+lv+"</td>");
-      h+="<td>"+fmt(r.used)+"</td><td>"+fmt(r.left)+"</td></tr>";
-    });
-    h+="</tbody>";
-    document.getElementById("rankTable").innerHTML=h;
   }
 
   function run(){
@@ -410,27 +332,18 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
     const calcPool=Math.min(pool,TOTAL_MAX);
     button.disabled=true; status.textContent="1레벨 단위까지 전수조사 중...";
     setTimeout(()=>{
-      const coarse=optimize(calcPool,fixed,100,5);
       const exact=optimize(calcPool,fixed,1,50);
       if(pool>TOTAL_MAX && exact.best){
-        exact.best.left+=pool-TOTAL_MAX; exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
-        if(coarse.best)coarse.best.left+=pool-TOTAL_MAX;
+        exact.best.left+=pool-TOTAL_MAX;
+        exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
       }
-      renderResult(pool,exact,coarse);
+      renderResult(pool,exact);
       status.innerHTML='<span class="ok">계산 완료. 잔여 초월석까지 1레벨 단위로 반영했습니다.</span>';
       button.disabled=false;
     },20);
   }
-
-  document.getElementById("mode").addEventListener("change",e=>{
-    const current=e.target.value==="current";
-    document.getElementById("currentBox").classList.toggle("on",current);
-    document.getElementById("totalBox").style.display=current?"none":"block";
-    updatePoolPreview();
-  });
-  ["remain","cur0","cur1","cur2","cur3"].forEach(id=>document.getElementById(id).addEventListener("input",updatePoolPreview));
   document.getElementById("run").addEventListener("click",run);
-  renderCostTable(); updatePoolPreview(); document.getElementById("status").textContent="값을 확인한 뒤 ‘최적 배분 계산’을 눌러주세요.";
+  renderCostTable(); document.getElementById("status").textContent="초월석을 입력한 뒤 ‘최적 배분 계산’을 눌러주세요.";
 })();
 </script>
 </body>
