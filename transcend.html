@@ -326,7 +326,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
 
     document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
       '<div class="joint-card">'+
-        '<div class="joint-rank'+(idx===0&&ordered.length>1?' featured':'')+'">'+(ordered.length>1?'공동 1위':'1위')+(idx===0&&ordered.length>1?' · 잔여 최대':'')+'</div>'+
+        '<div class="joint-rank'+(idx===0?' featured':'')+'">'+(ordered.length>1?'공동 1위':'최고 효율 1위')+(idx===0&&ordered.length>1?' · 잔여 최대':'')+'</div>'+
         '<div class="joint-levels">'+r.levels.map((lv,i)=>
           '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
         ).join("")+'</div>'+
