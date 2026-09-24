@@ -4,100 +4,266 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>궁수키우기 초월석 최종 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d1016;--panel:#171c25;--card:#202735;--line:#344156;--text:#f3f5f8;--muted:#aeb7c7;--accent:#7dc8ff;--good:#9ee7b0;--bad:#ff9a9a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.45}
-main{max-width:1120px;margin:0 auto;padding:18px}.hero,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}.hero{margin-bottom:14px}
-h1{font-size:23px;margin:0 0 7px}h2{font-size:17px;margin:0 0 12px}.muted,.small{color:var(--muted);font-size:13px}
-.input-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-.input-head h2{margin:0}
+:root{
+  --bg:#0a0d12;
+  --surface:#11161d;
+  --surface-2:#171d26;
+  --surface-3:#0d1218;
+  --line:#29323e;
+  --line-soft:#202832;
+  --text:#f4f6f8;
+  --muted:#919cab;
+  --accent:#67b7ff;
+  --accent-strong:#2f93eb;
+  --good:#b9efc5;
+  --lime:#dcff47;
+  --bad:#ff8d8d;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Noto Sans KR",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.5;
+}
+button,input,summary{font:inherit}
+main{width:min(980px,100%);margin:0 auto;padding:28px 18px 42px}
+
+.site-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  padding:4px 2px 18px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:18px;
+}
+.site-head h1{
+  margin:0;
+  font-family:"Black Han Sans","Noto Sans KR",sans-serif;
+  font-size:34px;
+  font-weight:400;
+  letter-spacing:.2px;
+  line-height:1.12;
+}
+.site-head .submark{color:var(--muted);font-size:12px;white-space:nowrap;padding-bottom:3px}
+
+.workspace{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+.panel{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:18px;
+}
+.input-panel{position:sticky;top:14px}
+.input-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+.input-head h2,.result-panel h2,.cost-panel h2{margin:0;font-size:17px;letter-spacing:-.2px}
+
 .help-details{margin:0;position:relative}
-.help-details summary{list-style:none;min-height:auto;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#111722;color:var(--accent);font-size:14px;font-weight:800;cursor:pointer;user-select:none}
+.help-details summary{
+  list-style:none;
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:7px 12px;
+  border:1px solid #3a4655;
+  border-radius:8px;
+  background:transparent;
+  color:#c8d0da;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  user-select:none;
+}
 .help-details summary::-webkit-details-marker{display:none}
-.help-details summary::after{content:" ▾";font-size:10px}
-.help-details[open] summary::after{content:" ▴"}
-.help-box{position:absolute;right:0;top:calc(100% + 7px);z-index:30;width:300px;max-width:calc(100vw - 38px);padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#111722;box-shadow:0 10px 28px rgba(0,0,0,.35);color:var(--muted);font-size:12px;line-height:1.55}
-.help-box div+div{margin-top:5px}
-.grid{display:grid;grid-template-columns:360px 1fr;gap:14px}.stack{display:grid;gap:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
-input,select,button{font:inherit}input,select{width:100%;min-height:44px;background:#111722;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:16px}
-button{min-height:44px;border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#06111b;font-weight:800;cursor:pointer}.secondary{background:#283346;color:var(--text);font-weight:650}
-.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1 1 130px}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;gap:8px;align-items:center;background:#111722;border:1px solid var(--line);border-radius:10px;padding:9px}.check input{width:auto;min-height:auto}
-.result-main{background:linear-gradient(180deg,#202b3a,#1a222f);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}.bestline{font-size:18px;font-weight:800;margin-bottom:8px}
-.numbers{display:flex;gap:14px;flex-wrap:wrap;font-size:14px}.numbers b{color:var(--good)}.targets{display:grid;gap:10px;margin-top:12px}.joint-card{background:#111722;border:1px solid var(--line);border-radius:13px;padding:11px}.joint-rank{font-weight:800;color:var(--accent);margin-bottom:8px}
+.help-details summary::after{content:"＋";margin-left:7px;color:var(--accent);font-size:15px;line-height:1}
+.help-details[open] summary::after{content:"－"}
+.help-box{
+  position:absolute;
+  right:0;
+  top:calc(100% + 8px);
+  z-index:20;
+  width:320px;
+  max-width:calc(100vw - 36px);
+  padding:13px 14px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#0e131a;
+  box-shadow:0 14px 34px rgba(0,0,0,.36);
+  color:#b1bac6;
+  font-size:12px;
+  line-height:1.65;
+}
+.help-box div+div{margin-top:6px}
+
+.field{margin-bottom:12px}
+.field label{display:block;margin-bottom:7px;color:#aeb7c3;font-size:12px;font-weight:600}
+input{
+  width:100%;
+  min-height:50px;
+  padding:11px 12px;
+  border:1px solid #374250;
+  border-radius:8px;
+  outline:none;
+  background:#0b1016;
+  color:var(--text);
+  font-size:17px;
+  font-weight:700;
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+input::placeholder{color:#66717f;font-weight:500}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(103,183,255,.12)}
+
+.row{display:block}
+button{
+  width:100%;
+  min-height:50px;
+  border:0;
+  border-radius:8px;
+  padding:11px 14px;
+  background:var(--accent);
+  color:#06111a;
+  font-size:15px;
+  font-weight:800;
+  cursor:pointer;
+  transition:background .15s ease,transform .05s ease;
+  touch-action:manipulation;
+}
+button:hover{background:#7bc3ff}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.55;cursor:wait}
+
+.status{min-height:18px;margin-top:10px;font-size:12px}
+.small{color:var(--muted);font-size:12px}
+.input-note{margin:12px 0 0;color:#7f8a98;font-size:11.5px;line-height:1.55}
+.ok{color:var(--good)}.bad{color:var(--bad)}
+
+.result-panel{min-height:240px}
+.result-panel h2{margin-bottom:14px}
+.result-main{
+  margin-bottom:10px;
+  padding:13px 14px;
+  border-left:3px solid var(--accent);
+  background:var(--surface-3);
+}
+.result-empty{
+  color:#778290;
+  font-size:13px;
+  line-height:1.6;
+}
+.bestline{font-size:17px;font-weight:800;margin-bottom:7px}
+.numbers{display:flex;gap:16px;flex-wrap:wrap;color:#a9b3bf;font-size:12.5px}
+.numbers b{color:#fff;font-weight:800}
+
+.targets{display:grid;gap:9px}
+.joint-card{
+  padding:12px;
+  border:1px solid var(--line-soft);
+  border-radius:10px;
+  background:#0e131a;
+}
+.joint-rank{
+  margin-bottom:9px;
+  color:var(--accent);
+  font-size:14px;
+  font-weight:800;
+}
 .joint-rank.featured{
-  color:#d8ff3f;
-  text-shadow:0 0 5px rgba(216,255,63,.95),0 0 12px rgba(216,255,63,.7),0 0 22px rgba(216,255,63,.45);
+  color:var(--lime);
+  text-shadow:0 0 5px rgba(220,255,71,.9),0 0 12px rgba(220,255,71,.58),0 0 20px rgba(220,255,71,.32);
   animation:rankSparkle 1.15s ease-in-out infinite alternate;
 }
 @keyframes rankSparkle{
-  0%{filter:brightness(1);text-shadow:0 0 4px rgba(216,255,63,.8),0 0 9px rgba(216,255,63,.5),0 0 16px rgba(216,255,63,.3)}
-  55%{filter:brightness(1.35);text-shadow:0 0 7px rgba(245,255,150,1),0 0 15px rgba(216,255,63,.9),0 0 28px rgba(216,255,63,.55)}
-  100%{filter:brightness(1.08);text-shadow:0 0 5px rgba(216,255,63,.9),0 0 12px rgba(216,255,63,.65),0 0 20px rgba(216,255,63,.4)}
+  0%{filter:brightness(1);text-shadow:0 0 4px rgba(220,255,71,.75),0 0 9px rgba(220,255,71,.45)}
+  55%{filter:brightness(1.32);text-shadow:0 0 7px rgba(244,255,166,1),0 0 15px rgba(220,255,71,.86),0 0 25px rgba(220,255,71,.5)}
+  100%{filter:brightness(1.05);text-shadow:0 0 5px rgba(220,255,71,.88),0 0 11px rgba(220,255,71,.55)}
 }
-@media (prefers-reduced-motion:reduce){.joint-rank.featured{animation:none}}.joint-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.joint-foot{margin-top:8px;color:var(--muted);font-size:12px}
-.target{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px}.target .name{font-size:12px;color:var(--muted)}.target .lv{font-size:20px;font-weight:800;margin-top:2px}
+@media (prefers-reduced-motion:reduce){.joint-rank.featured{animation:none}}
 
-.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:8px 7px;border-bottom:1px solid var(--line);text-align:right;font-size:13px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#cfd7e5;font-weight:700}
-details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:700}.status{min-height:20px;margin-top:10px}.ok{color:var(--good)}.bad{color:var(--bad)}
-@media(max-width:820px){
-  body{background:#0b0e13;overflow-x:hidden}
-  main{padding:10px 8px 28px}
-  .grid{grid-template-columns:1fr;gap:10px}
-  .stack{gap:10px}
-  .hero,.panel{padding:13px;border-radius:13px}
-  .hero{margin-bottom:10px}
-  h1{font-size:20px;line-height:1.25}
-  h2{font-size:16px;margin-bottom:10px}
-  .input-head{margin-bottom:10px}
-  .help-details summary{padding:7px 13px;font-size:13px}
-  .help-box{width:min(300px,calc(100vw - 30px));font-size:11.5px}
-  .muted,.small{font-size:12px;line-height:1.5}
-  .field{margin-bottom:10px}
-  .field label{font-size:12px}
-  input,select{min-height:46px;padding:10px 11px;font-size:16px}
-  button{width:100%;min-height:48px;font-size:16px;touch-action:manipulation}
-  .row{display:block}
-  .result-main{padding:12px;margin-bottom:9px}
-  .bestline{font-size:17px;margin-bottom:7px}
-  .numbers{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:12px}
-  .numbers span{min-width:0}
-  .targets{gap:7px;margin-top:9px}.joint-levels{grid-template-columns:1fr 1fr;gap:7px}
-  .target{padding:10px;border-radius:10px}
+.joint-levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.target{
+  min-width:0;
+  padding:10px 9px 9px;
+  border-top:2px solid #334357;
+  background:var(--surface-2);
+}
+.target .name{color:#8d98a6;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.target .lv{margin-top:2px;font-size:19px;font-weight:800;letter-spacing:-.3px}
+.target .small{margin-top:1px;font-size:10px;color:#707c8b}
+.joint-foot{margin-top:8px;color:#778290;font-size:11px}
+
+.cost-panel{
+  margin-top:16px;
+  background:transparent;
+  border:1px solid var(--line-soft);
+  border-radius:10px;
+  padding:14px 16px;
+}
+.cost-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cost-summary{margin-top:6px;color:#85909d;font-size:11.5px}
+details.cost-details{margin-top:10px}
+.cost-details summary{
+  cursor:pointer;
+  color:#a9cce9;
+  font-size:12px;
+  font-weight:700;
+  list-style:none;
+}
+.cost-details summary::-webkit-details-marker{display:none}
+.cost-details summary::after{content:" 열기";color:#667483;font-weight:500}
+.cost-details[open] summary::after{content:" 닫기"}
+
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin-top:8px}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th,td{padding:8px 7px;border-bottom:1px solid var(--line-soft);text-align:right;font-size:11.5px;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:#aab4c1;font-weight:700}
+td{color:#8e99a7}
+
+@media(max-width:760px){
+  main{padding:18px 10px 30px}
+  .site-head{align-items:flex-start;padding:2px 2px 14px;margin-bottom:12px}
+  .site-head h1{font-size:26px;line-height:1.15}
+  .site-head .submark{display:none}
+  .workspace{grid-template-columns:1fr;gap:10px}
+  .panel{padding:14px;border-radius:10px}
+  .input-panel{position:static}
+  .input-head{margin-bottom:14px}
+  .help-details summary{min-height:40px;padding:8px 13px;font-size:14px}
+  .help-box{width:min(330px,calc(100vw - 24px));font-size:12px}
+  input{min-height:50px}
+  button{min-height:50px}
+  .result-panel{min-height:0}
+  .joint-levels{grid-template-columns:1fr 1fr}
+  .target{padding:10px}
   .target .name{font-size:11px}
-  .target .lv{font-size:19px;line-height:1.2}
-  .target .small{font-size:10.5px}
-  .compare{margin-top:9px;padding:10px;font-size:12px;line-height:1.55}
-  .status{margin-top:8px;min-height:18px}
-  details{margin-top:7px}
-  summary{min-height:42px;display:flex;align-items:center}
-  .scroll{margin:0 -3px;padding:0 3px}
-  #costTable{min-width:600px}
-  #costTable th,#costTable td{font-size:11px;padding:7px 5px}
+  .target .lv{font-size:20px}
+  .numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;font-size:11.5px}
+  .cost-panel{margin-top:10px;padding:13px}
 }
-@media(max-width:430px){
-  main{padding-left:7px;padding-right:7px}
-  .hero,.panel{padding:11px}
+@media(max-width:380px){
+  .site-head h1{font-size:23px}
   .numbers{grid-template-columns:1fr 1fr}
-  .joint-levels{grid-template-columns:1fr 1fr}
-  .target .lv{font-size:18px}
-}
-@media(max-width:350px){
-  .joint-levels{grid-template-columns:1fr 1fr}
-  #rankTable tr{grid-template-columns:1fr}
-  #rankTable td:first-child{grid-column:1}
 }
 </style>
 </head>
 <body>
 <main>
-<section class="hero">
+<header class="site-head">
   <h1>궁수키우기 초월석 최종 시뮬레이터</h1>
-</section>
+  <div class="submark">Lv.0–1500</div>
+</header>
 
-<div class="grid">
-  <section class="panel">
+<div class="workspace">
+  <section class="panel input-panel">
     <div class="input-head">
-      <h2>입력</h2>
+      <h2>초월석 입력</h2>
       <details class="help-details">
         <summary>사용방법</summary>
         <div class="help-box">
@@ -108,32 +274,36 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
         </div>
       </details>
     </div>
+
     <div class="field">
       <label for="stones">보유 초월석</label>
-      <input id="stones" type="number" min="0" step="1" value="" placeholder="보유 초월석 입력">
+      <input id="stones" type="number" min="0" step="1" value="" placeholder="수량 입력">
     </div>
+
     <div class="row">
       <button id="run" type="button">최적 배분 계산</button>
     </div>
-    <div id="status" class="status small" aria-live="polite"></div>
-    <p class="small">입력한 초월석으로 네 항목 전체를 자동 최적 배분합니다. 같은 최고 전투력이 여러 조합이면 모두 공동 1위로 표시합니다.</p>
+
+    <div id="status" class="status" aria-live="polite"></div>
+    <p class="input-note">입력한 초월석 전체를 기준으로 네 항목을 자동 계산합니다.</p>
   </section>
 
-  <div class="stack">
-    <section class="panel">
-      <h2>공동 1위 결과</h2>
-      <div id="best" class="result-main"></div>
-      <div id="targets" class="targets"></div>
-    </section>
-
-  </div>
+  <section class="panel result-panel">
+    <h2>최적 배분 결과</h2>
+    <div id="best" class="result-main">
+      <div class="result-empty">초월석 수량을 입력하면 여기에 결과가 표시됩니다.</div>
+    </div>
+    <div id="targets" class="targets"></div>
+  </section>
 </div>
 
-<section class="panel" style="margin-top:14px">
-  <h2>비용 기준</h2>
-  <div class="small">Lv.1500 MAX 총비용: 청람 50,500 / 성해 64,000 / 차원 96,500 / 영겁 110,500</div>
-  <details>
-    <summary>100레벨 구간별 비용 보기</summary>
+<section class="cost-panel">
+  <div class="cost-head">
+    <h2>비용 기준</h2>
+  </div>
+  <div class="cost-summary">Lv.1500 MAX · 청람 50,500 / 성해 64,000 / 차원 96,500 / 영겁 110,500</div>
+  <details class="cost-details">
+    <summary>100레벨 구간별 비용</summary>
     <div class="scroll"><table id="costTable"></table></div>
   </details>
 </section>
@@ -356,6 +526,8 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
 
   function run(){
     const status=document.getElementById("status"), button=document.getElementById("run");
+    const raw=document.getElementById("stones").value.trim();
+    if(raw===""){status.innerHTML='<span class="bad">보유 초월석을 입력해 주세요.</span>';return;}
     let pool=getPool();
     if(!Number.isFinite(pool)||pool<0){status.innerHTML='<span class="bad">초월석 값을 확인해 주세요.</span>';return;}
     const fixed=[false,false,false,false];
@@ -373,7 +545,8 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
     },20);
   }
   document.getElementById("run").addEventListener("click",run);
-  renderCostTable(); document.getElementById("status").textContent="초월석을 입력한 뒤 ‘최적 배분 계산’을 눌러주세요.";
+  document.getElementById("stones").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
+  renderCostTable(); document.getElementById("status").textContent="";
 })();
 </script>
 </body>
