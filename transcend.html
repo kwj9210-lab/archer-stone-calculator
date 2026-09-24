@@ -9,6 +9,15 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.45}
 main{max-width:1120px;margin:0 auto;padding:18px}.hero,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}.hero{margin-bottom:14px}
 h1{font-size:23px;margin:0 0 7px}h2{font-size:17px;margin:0 0 12px}.muted,.small{color:var(--muted);font-size:13px}
+.input-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.input-head h2{margin:0}
+.help-details{margin:0;position:relative}
+.help-details summary{list-style:none;min-height:auto;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:#111722;color:var(--accent);font-size:12px;font-weight:800;cursor:pointer;user-select:none}
+.help-details summary::-webkit-details-marker{display:none}
+.help-details summary::after{content:" ▾";font-size:10px}
+.help-details[open] summary::after{content:" ▴"}
+.help-box{position:absolute;right:0;top:calc(100% + 7px);z-index:30;width:300px;max-width:calc(100vw - 38px);padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#111722;box-shadow:0 10px 28px rgba(0,0,0,.35);color:var(--muted);font-size:12px;line-height:1.55}
+.help-box div+div{margin-top:5px}
 .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}.stack{display:grid;gap:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
 input,select,button{font:inherit}input,select{width:100%;min-height:44px;background:#111722;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:16px}
 button{min-height:44px;border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#06111b;font-weight:800;cursor:pointer}.secondary{background:#283346;color:var(--text);font-weight:650}
@@ -40,6 +49,9 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
   .hero{margin-bottom:10px}
   h1{font-size:20px;line-height:1.25}
   h2{font-size:16px;margin-bottom:10px}
+  .input-head{margin-bottom:10px}
+  .help-details summary{padding:5px 9px;font-size:11px}
+  .help-box{width:min(300px,calc(100vw - 30px));font-size:11.5px}
   .badge{font-size:11px;margin-bottom:6px}
   .muted,.small{font-size:12px;line-height:1.5}
   .field{margin-bottom:10px}
@@ -88,7 +100,18 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:70
 
 <div class="grid">
   <section class="panel">
-    <h2>입력</h2>
+    <div class="input-head">
+      <h2>입력</h2>
+      <details class="help-details">
+        <summary>사용방법</summary>
+        <div class="help-box">
+          <div>1. 게임에서 초월석을 초기화한 뒤 총 보유량을 확인합니다.</div>
+          <div>2. 보유 초월석 수량을 입력하고 ‘최적 배분 계산’을 누릅니다.</div>
+          <div>3. 결과에 표시된 청람·성해·차원·영겁 레벨대로 올리면 됩니다.</div>
+          <div>4. 공동 1위가 여러 개면 모두 같은 최고 효율 범위이며, ‘잔여 최대’ 조합을 우선 표시합니다.</div>
+        </div>
+      </details>
+    </div>
     <div class="field">
       <label for="stones">보유 초월석</label>
       <input id="stones" type="number" min="0" step="1" value="" placeholder="보유 초월석 입력">
