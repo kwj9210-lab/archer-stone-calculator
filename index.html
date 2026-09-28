@@ -133,7 +133,7 @@ button{cursor:pointer}.minor{min-height:40px;padding:8px 12px;border:1px solid v
 <label>숙련도 단계<select id="masteryLevel"></select></label>
 <label>숙련도 배율<input id="masteryMult" type="number" min="0.01" step="0.25" value="5.00"></label>
 </div>
-<div class="note">1단계 ×1.50부터 단계당 +0.25배로 25단계까지 넣었습니다. 이후 단계가 추가되면 배율을 직접 입력할 수 있습니다.</div>
+<div class="note">1단계 ×1.50부터 단계당 +0.25배로 50단계까지 넣었습니다.</div>
 </section>
 
 <section class="card result-card">
@@ -250,7 +250,7 @@ function calc(){
  var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
  el('summary').innerHTML='보유 '+c.name+' 반영 후 필요한 재료: <b>'+req+'</b><br>신규 제작 과정: '+(craft||'추가 제작 없음')+(remain?'<br>남는 입력 '+c.name+': '+remain:'');
 }
-for(var lv=1;lv<=25;lv++){var o=document.createElement('option');o.value=lv;o.textContent=lv+'단계 · ×'+(1.25+.25*lv).toFixed(2);if(lv===15)o.selected=true;el('masteryLevel').appendChild(o)}
+for(var lv=1;lv<=50;lv++){var o=document.createElement('option');o.value=lv;o.textContent=lv+'단계 · ×'+(1.25+.25*lv).toFixed(2);if(lv===15)o.selected=true;el('masteryLevel').appendChild(o)}
 el('masteryLevel').addEventListener('change',function(){el('masteryMult').value=(1.25+.25*Number(this.value)).toFixed(2);calc()});
 el('masteryMult').addEventListener('input',calc);el('ticketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
 el('clearStones').addEventListener('click',function(){state[type].stones=Array(10).fill(0);render()});
