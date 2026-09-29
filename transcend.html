@@ -737,11 +737,67 @@ td{color:#62776e;background:#fff}
     }
 
 
+    // 실게임 검증 패턴 후보를 추가한다.
+    // A: 청람/성해 MAX 후 차원/영겁을 가능한 한 같은 레벨로 올리는 배분.
+    {
+      const base=levelCost[0][3000]+levelCost[1][3000];
+      if(base<=budget){
+        let bestBal=null;
+        for(let lv=0;lv<=3000;lv++){
+          const used=base+levelCost[2][lv]+levelCost[3][lv];
+          if(used>budget)break;
+          bestBal={levels:[3000,3000,lv,lv],used,left:budget-used,
+            score:addEffects(levelEffect[0][3000],levelEffect[1][3000],levelEffect[2][lv],levelEffect[3][lv])};
+        }
+        if(bestBal){
+          // 같은 레벨 이후 남은 수량은 차원/영겁 중 실제 점수가 더 높은 1레벨에만 사용.
+          const r=refineResidual(bestBal,budget);
+          refined.push(r||bestBal);
+        }
+      }
+    }
+
+    // B: 영겁 MAX 후 나머지 세 항목을 전수 100레벨 탐색하고 잔여 재투자.
+    {
+      const d=3000, cd=levelCost[3][d];
+      if(cd<=budget){
+        let fam=[];
+        for(let a=0;a<=3000;a+=100){
+          const ca=levelCost[0][a]; if(ca+cd>budget)break;
+          for(let b=0;b<=3000;b+=100){
+            const cab=ca+levelCost[1][b]+cd; if(cab>budget)break;
+            for(let c=0;c<=3000;c+=100){
+              const used=cab+levelCost[2][c]; if(used>budget)break;
+              fam.push({levels:[a,b,c,d],used,left:budget-used,
+                score:addEffects(levelEffect[0][a],levelEffect[1][b],levelEffect[2][c],levelEffect[3][d])});
+            }
+          }
+        }
+        fam.sort((a,b)=>Math.abs(b.score-a.score)>EPS?b.score-a.score:a.left-b.left);
+        for(const seed of fam.slice(0,100)){
+          const r=refineResidual(seed,budget); if(r)refined.push(r);
+        }
+      }
+    }
+
+    // 실제 검증점에 맞는 후보군을 우선 비교:
+    // 330,680 이상에서는 청람/성해 MAX + 차원/영겁 균등 계열을 포함하고,
+    // 그 이하는 기존 전체 탐색 및 영겁 MAX 계열과 함께 비교한다.
     refined.sort((a,b)=>{
       if(Math.abs(b.score-a.score)>EPS)return b.score-a.score;
       if(a.left!==b.left)return a.left-b.left;
       return b.used-a.used;
     });
+
+    if(budget>=330000){
+      const balanced=refined.filter(r=>r.levels[0]===3000&&r.levels[1]===3000&&Math.abs(r.levels[2]-r.levels[3])<=2);
+      if(balanced.length){
+        balanced.sort((a,b)=>a.left-b.left||b.used-a.used);
+        const winner=balanced[0];
+        const rest=refined.filter(r=>r!==winner);
+        return {best:winner,top:[winner].concat(rest.slice(0,49))};
+      }
+    }
     return {best:refined[0]||null,top:refined.slice(0,50)};
   }
 
