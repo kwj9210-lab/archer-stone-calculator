@@ -32,9 +32,14 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 </section>
 <section class="card" id="planCard">
 <h2 style="font-size:17px;margin:0 0 10px">최소 각인석 제작 플랜</h2>
-<div id="planIntro" class="sub" style="margin:0 0 10px">내 관통·명중과 목표 층을 입력하면 부족한 수치를 채우는 최소 개수 조합을 계산합니다.</div>
-<div id="planResult" class="lookupResult" style="display:block;line-height:1.65">관통·명중을 입력해 주세요.</div>
-<div class="note">슬롯 상한: 마석 10개 · 경화석 11개 · 생명석 10개. 참고자료의 전설/신화/태초/불멸 수치로 계산하며, 우선 각인석 개수를 최소화하고 같은 개수에서는 낮은 등급 조합을 우선합니다.</div>
+<div id="planIntro" class="sub" style="margin:0 0 10px">현재 관통·명중과 목표 층을 입력하면 추가 각인석으로 채울 수 있는지 계산합니다.</div>
+<div class="inputs" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px">
+<label>현재 관통<input id="planPen" inputmode="numeric" placeholder="예: 7803"></label>
+<label>현재 명중<input id="planAcc" inputmode="numeric" placeholder="예: 18941"></label>
+<label>목표 층<input id="planFloor" inputmode="numeric" value="1500" placeholder="500~1500"></label>
+</div>
+<div id="planResult" class="lookupResult" style="display:block;line-height:1.65">현재 관통·명중을 입력해 주세요.</div>
+<div class="note">슬롯 상한: 마석 10개 · 경화석 11개 · 생명석 10개. 입력한 현재 수치에 새로 장착할 각인석의 관통·명중을 더해 판정합니다. 참고자료의 전설/신화/태초/불멸 수치를 사용합니다.</div>
 </section>
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
@@ -123,14 +128,19 @@ function planText(q){
  return bits.length?'<div class="planLine"><b>'+x.name+'</b> · '+bits.join(' · ')+'</div>':'';
 }
 function updatePlan(){
- const p=num(document.getElementById('pen').value),a=num(document.getElementById('acc').value),f=num(document.getElementById('lookupFloor').value);
+ const p=num(document.getElementById('planPen').value),a=num(document.getElementById('planAcc').value),f=num(document.getElementById('planFloor').value);
  const box=document.getElementById('planResult');
- if(!p&&!a){box.innerHTML='관통·명중을 입력해 주세요.';return}
+ if(!p&&!a){box.innerHTML='현재 관통·명중을 입력해 주세요.';return}
  if(f<500||f>1500){box.innerHTML='목표 층수를 500~1500 사이로 입력해 주세요.';return}
  const [rp,ra]=req(f),dp=Math.max(0,rp-p),da=Math.max(0,ra-a);
  if(dp===0&&da===0){box.innerHTML='<span class="ok"><b>'+f+'층은 추가 제작 없이 관통·명중 조건 충족</b></span>';return}
  const b=bestPlan(dp,da);
- if(!b){box.innerHTML='<span class="bad"><b>현재 슬롯 상한으로 부족 수치를 채울 수 없습니다.</b></span><br>부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da);return}
+ if(!b){
+ const maxP=10*85+11*255+10*170,maxA=10*85+11*170+10*255;
+ const afterP=p+maxP,afterA=a+maxA;
+ box.innerHTML='<span class="bad"><b>'+f+'층은 현재 참고자료의 각인석만으로 도달 불가</b></span><br>필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br>현재 부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br>전부 불멸 장착 시 최대 추가 · 관통 '+fmt(maxP)+' / 명중 '+fmt(maxA)+'<br>최대 장착 후 · 관통 '+fmt(afterP)+' / 명중 '+fmt(afterA);
+ return
+}
  box.innerHTML='<b>'+f+'층까지 부족</b> · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br><b>최소 '+b.cnt+'개 제작</b> · 추가 관통 '+fmt(b.p)+' / 명중 '+fmt(b.a)+b.parts.map(planText).join('');
 }
 const lf=document.getElementById('lookupFloor'),lr=document.getElementById('lookupResult');
@@ -140,7 +150,7 @@ function lookup(){
  if(f<500||f>1500){lr.textContent='500~1500층 사이로 입력해 주세요.';return}
  const [p,a]=req(f);lr.textContent=f+'층 필요 · 관통 '+fmt(p)+' / 명중 '+fmt(a);
 }
-lf.addEventListener('input',()=>{lookup();updatePlan()});
-['pen','acc'].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
+lf.addEventListener('input',lookup);
+['planPen','planAcc','planFloor'].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
 lookup();updatePlan();
 </script></body></html>
