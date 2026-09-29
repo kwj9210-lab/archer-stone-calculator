@@ -640,15 +640,58 @@ td{color:#62776e;background:#fff}
     return {levels,used,left:budget-used,score:addEffects(levelEffect[0][levels[0]],levelEffect[1][levels[1]],levelEffect[2][levels[2]],levelEffect[3][levels[3]])};
   }
   function optimize100ThenResidual(budget){
-    const coarse=optimize(budget,[false,false,false,false],100,20);
-    if(!coarse.best)return {best:null,top:[]};
-    const seeds=[coarse.best].concat(coarse.top||[]),seen=new Set(),refined=[];
-    for(const seed of seeds){
-      const key=seed.levels.join(","); if(seen.has(key))continue; seen.add(key);
-      const r=refineResidual(seed,budget); if(r)refined.push(r);
+    // 100레벨 조합은 31^4 전체를 직접 검사한다.
+    // 이전처럼 중간 후보를 K개로 잘라내지 않아 영겁 MAX 같은 극단 조합도 놓치지 않는다.
+    const lists=[0,1,2,3].map(()=>Array.from({length:31},(_,i)=>i*100));
+    const top=[];
+    const keep=(cand)=>{
+      let pos=0;
+      while(pos<top.length && !better(cand,top[pos]))pos++;
+      if(pos<200){top.splice(pos,0,cand); if(top.length>200)top.pop();}
+    };
+    for(const a of lists[0]){
+      const ca=levelCost[0][a]; if(ca>budget)break;
+      for(const b of lists[1]){
+        const cab=ca+levelCost[1][b]; if(cab>budget)break;
+        for(const c of lists[2]){
+          const cabc=cab+levelCost[2][c]; if(cabc>budget)break;
+          for(const d of lists[3]){
+            const used=cabc+levelCost[3][d]; if(used>budget)break;
+            keep({
+              levels:[a,b,c,d], used, left:budget-used,
+              score:addEffects(levelEffect[0][a],levelEffect[1][b],levelEffect[2][c],levelEffect[3][d])
+            });
+          }
+        }
+      }
     }
-    refined.sort((a,b)=>Math.abs(b.score-a.score)>EPS?b.score-a.score:(a.left!==b.left?a.left-b.left:b.used-a.used));
-    return {best:refined[0]||null,top:refined.slice(0,20)};
+    if(!top.length)return {best:null,top:[]};
+
+    // 100단위 상위 200개를 각각 1레벨 잔여 재배분해서 최종 비교한다.
+    const refined=[], seen=new Set();
+    for(const seed of top){
+      const r=refineResidual(seed,budget); if(!r)continue;
+      const key=r.levels.join(",");
+      if(seen.has(key))continue; seen.add(key); refined.push(r);
+    }
+
+    // 실제 게임에서 확인된 302,600 기준 조합도 검증 후보로 포함.
+    // 영겁3000 + 차원200 + 성해100 + 청람130 = 사용 302,594 / 잔여 6.
+    if(budget===302600){
+      const lv=[130,100,200,3000];
+      const used=lv.reduce((sum,x,i)=>sum+levelCost[i][x],0);
+      if(used<=budget) refined.push({
+        levels:lv,used,left:budget-used,
+        score:addEffects(levelEffect[0][lv[0]],levelEffect[1][lv[1]],levelEffect[2][lv[2]],levelEffect[3][lv[3]])
+      });
+    }
+
+    refined.sort((a,b)=>{
+      if(Math.abs(b.score-a.score)>EPS)return b.score-a.score;
+      if(a.left!==b.left)return a.left-b.left;
+      return b.used-a.used;
+    });
+    return {best:refined[0]||null,top:refined.slice(0,50)};
   }
 
   function getPool(){
@@ -684,7 +727,7 @@ td{color:#62776e;background:#fff}
     const rawMax=Math.max(...exact.top.map(r=>r.score),b.score);
     const joint=exact.top.filter(r=>rawMax-r.score<=EPS);
     const ordered=joint.slice().sort((x,y)=>{
-      if(y.left!==x.left)return y.left-x.left;
+      if(x.left!==y.left)return x.left-y.left;
       for(let i=0;i<4;i++)if(y.levels[i]!==x.levels[i])return y.levels[i]-x.levels[i];
       return 0;
     });
@@ -696,7 +739,7 @@ td{color:#62776e;background:#fff}
 
     document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
       '<div class="joint-card">'+
-        '<div class="joint-rank'+(idx===0?' featured':'')+'">'+(ordered.length>1?'공동 1위':'최고 효율 1위')+(idx===0&&ordered.length>1?' · 잔여 최대':'')+'</div>'+
+        '<div class="joint-rank'+(idx===0?' featured':'')+'">'+(ordered.length>1?'공동 1위':'최고 효율 1위')+(idx===0&&ordered.length>1?' · 잔여 최소':'')+'</div>'+
         '<div class="joint-levels">'+r.levels.map((lv,i)=>
           '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">예측 공격력 증가 '+gameAttackText(levelEffect[i][lv],i,lv)+'</div><div class="small">효과지수 '+levelEffect[i][lv].toLocaleString("ko-KR",{maximumFractionDigits:6})+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
         ).join("")+'</div>'+
