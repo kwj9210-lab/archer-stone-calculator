@@ -21,7 +21,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 </head>
 <body><main>
 <h1>초월의 탑</h1>
-<div class="sub">APK 0.1.85 기준 · 900~1500층 관통/명중</div>
+<div class="sub">APK 0.1.85 기준 · 500~1500층 관통/명중</div>
 <section class="card">
 <div class="inputs">
 <label>내 관통<input id="pen" inputmode="numeric" placeholder="예: 6000"></label>
@@ -35,7 +35,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 </div>
 </section>
 <details id="list">
-<summary>900층부터 필요 관통·명중 수치 보기</summary>
+<summary>500층부터 필요 관통·명중 수치 보기</summary>
 <div class="tableWrap"><table><thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th></tr></thead><tbody id="rows"></tbody></table></div>
 </details>
 <div class="note">필요 관통은 보스 Block, 필요 명중은 보스 Evasion 값으로 계산. 공격력·생존·제한시간은 제외한 관통/명중 조건만 판정한다.</div>
@@ -55,15 +55,15 @@ function req(f){
  return [lerpInt(f,A2,B2),lerpInt(f,A2,E2)];
 }
 const rows=document.getElementById('rows');
-for(let f=900;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
+for(let f=500;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
 function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
 function update(){
  const p=num(document.getElementById('pen').value),a=num(document.getElementById('acc').value);
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  if(!p&&!a){floor.textContent='관통·명중을 입력하세요';need.textContent='';return}
- let best=899;
- for(let f=900;f<=1500;f++){const [rp,ra]=req(f);if(p>=rp&&a>=ra)best=f;else break}
- if(best<900){floor.textContent='900층 미만';const [rp,ra]=req(900);need.textContent='900층 필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra);return}
+ let best=499;
+ for(let f=500;f<=1500;f++){const [rp,ra]=req(f);if(p>=rp&&a>=ra)best=f;else break}
+ if(best<500){floor.textContent='500층 미만';const [rp,ra]=req(500);need.textContent='500층 필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra);return}
  floor.textContent=best===1500?'1500층까지 가능':best+'층';
  const tr=document.getElementById('f'+best);if(tr)tr.classList.add('hit');
  if(best<1500){const [np,na]=req(best+1);need.textContent=(best+1)+'층 필요 · 관통 '+fmt(np)+' / 명중 '+fmt(na)}
@@ -74,7 +74,7 @@ const lf=document.getElementById('lookupFloor'),lr=document.getElementById('look
 function lookup(){
  const f=num(lf.value);
  if(!f){lr.textContent='층수를 입력하면 필요 관통·명중이 표시됩니다.';return}
- if(f<900||f>1500){lr.textContent='900~1500층 사이로 입력해 주세요.';return}
+ if(f<500||f>1500){lr.textContent='500~1500층 사이로 입력해 주세요.';return}
  const [p,a]=req(f);lr.textContent=f+'층 필요 · 관통 '+fmt(p)+' / 명중 '+fmt(a);
 }
 lf.addEventListener('input',lookup);
