@@ -22,14 +22,6 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <body><main>
 <h1>초월의 탑</h1>
 <div class="sub">APK 0.1.85 기준 · 500~1500층 관통/명중</div>
-<section class="card">
-<div class="inputs">
-<label>내 관통<input id="pen" inputmode="numeric" placeholder="예: 6000"></label>
-<label>내 명중<input id="acc" inputmode="numeric" placeholder="예: 17500"></label>
-</div>
-<div class="floorLookup"><label>목표 층수<input id="lookupFloor" inputmode="numeric" value="1500" placeholder="예: 1250"></label><div id="lookupResult" class="lookupResult">목표 층의 필요 관통·명중이 표시됩니다.</div></div>
-<div class="result" id="resultBox" hidden><div id="floor"></div><div id="need" class="need"></div></div>
-</section>
 <section class="card" id="planCard">
 <h2 style="font-size:17px;margin:0 0 10px">최소 각인석 제작 플랜</h2>
 <div id="planIntro" class="sub" style="margin:0 0 10px">현재 관통·명중과 목표 층을 입력하면 추가 각인석으로 채울 수 있는지 계산합니다.</div>
@@ -39,7 +31,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <label>목표 층<input id="planFloor" inputmode="numeric" value="1500" placeholder="500~1500"></label>
 </div>
 <div id="planResult" class="lookupResult" style="display:block;line-height:1.65">현재 관통·명중을 입력해 주세요.</div>
-<div class="note">슬롯 상한: 마석 10개 · 경화석 11개 · 생명석 10개. 입력한 현재 수치에 새로 장착할 각인석의 관통·명중을 더해 판정합니다. 참고자료의 전설/신화/태초/불멸 수치를 사용합니다.</div>
+<div class="note">슬롯 상한: 마석 10개 · 경화석 11개 · 생명석 10개. APK의 초월 관통·명중 보너스(+273%, 100레벨 이상)를 적용한 뒤 각인석 수치를 같은 방식으로 반영합니다. 참고자료의 전설/신화/태초/불멸 수치를 사용합니다.</div>
 </section>
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
@@ -64,19 +56,7 @@ function req(f){
 const rows=document.getElementById('rows');
 for(let f=500;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
 function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
-function update(){
- const p=num(document.getElementById('pen').value),a=num(document.getElementById('acc').value);
- document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
- const box=document.getElementById('resultBox');if(!p&&!a){box.hidden=true;floor.textContent='';need.textContent='';return}box.hidden=false
- let best=499;
- for(let f=500;f<=1500;f++){const [rp,ra]=req(f);if(p>=rp&&a>=ra)best=f;else break}
- if(best<500){floor.textContent='500층 미만';const [rp,ra]=req(500);need.textContent='500층 필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra);return}
- floor.textContent=best===1500?'1500층까지 가능':best+'층';
- const tr=document.getElementById('f'+best);if(tr)tr.classList.add('hit');
- if(best<1500){const [np,na]=req(best+1);need.textContent=(best+1)+'층 필요 · 관통 '+fmt(np)+' / 명중 '+fmt(na)}
- else need.textContent='1500층 필요 · 관통 '+fmt(req(1500)[0])+' / 명중 '+fmt(req(1500)[1]);
-}
-['pen','acc'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+const TOWER_STAT_MULT=3.73;
 const STONES={
  M:{name:'마석',cap:10,v:[[52,52,'전설'],[62,62,'신화'],[73,73,'태초'],[85,85,'불멸']]},
  H:{name:'경화석',cap:11,v:[[156,104,'전설'],[186,124,'신화'],[219,146,'태초'],[255,170,'불멸']]},
@@ -132,25 +112,18 @@ function updatePlan(){
  const box=document.getElementById('planResult');
  if(!p&&!a){box.innerHTML='현재 관통·명중을 입력해 주세요.';return}
  if(f<500||f>1500){box.innerHTML='목표 층수를 500~1500 사이로 입력해 주세요.';return}
- const [rp,ra]=req(f),dp=Math.max(0,rp-p),da=Math.max(0,ra-a);
- if(dp===0&&da===0){box.innerHTML='<span class="ok"><b>'+f+'층은 추가 제작 없이 관통·명중 조건 충족</b></span>';return}
+ const [rp,ra]=req(f),baseP=p*TOWER_STAT_MULT,baseA=a*TOWER_STAT_MULT,dp=Math.max(0,rp-baseP),da=Math.max(0,ra-baseA);
+ if(dp===0&&da===0){box.innerHTML='<span class="ok"><b>'+f+'층은 추가 제작 없이 관통·명중 조건 충족</b></span><br>초월탑 적용 · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA);return}
  const b=bestPlan(dp,da);
  if(!b){
- const maxP=10*85+11*255+10*170,maxA=10*85+11*170+10*255;
- const afterP=p+maxP,afterA=a+maxA;
+ const maxRawP=10*85+11*255+10*170,maxRawA=10*85+11*170+10*255;
+ const maxP=maxRawP*TOWER_STAT_MULT,maxA=maxRawA*TOWER_STAT_MULT;
+ const afterP=baseP+maxP,afterA=baseA+maxA;
  box.innerHTML='<span class="bad"><b>'+f+'층은 현재 참고자료의 각인석만으로 도달 불가</b></span><br>필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br>현재 부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br>전부 불멸 장착 시 최대 추가 · 관통 '+fmt(maxP)+' / 명중 '+fmt(maxA)+'<br>최대 장착 후 · 관통 '+fmt(afterP)+' / 명중 '+fmt(afterA);
  return
 }
- box.innerHTML='<b>'+f+'층까지 부족</b> · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br><b>최소 '+b.cnt+'개 제작</b> · 추가 관통 '+fmt(b.p)+' / 명중 '+fmt(b.a)+b.parts.map(planText).join('');
+ box.innerHTML='<b>'+f+'층 필요</b> · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br><b>초월탑 적용 현재치</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>최소 '+b.cnt+'개 조합</b> · 추가 관통 '+fmt(b.p*TOWER_STAT_MULT)+' / 명중 '+fmt(b.a*TOWER_STAT_MULT)+b.parts.map(planText).join('');
 }
-const lf=document.getElementById('lookupFloor'),lr=document.getElementById('lookupResult');
-function lookup(){
- const f=num(lf.value);
- if(!f){lr.textContent='층수를 입력하면 필요 관통·명중이 표시됩니다.';return}
- if(f<500||f>1500){lr.textContent='500~1500층 사이로 입력해 주세요.';return}
- const [p,a]=req(f);lr.textContent=f+'층 필요 · 관통 '+fmt(p)+' / 명중 '+fmt(a);
-}
-lf.addEventListener('input',lookup);
 ['planPen','planAcc','planFloor'].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
-lookup();updatePlan();
+updatePlan();
 </script></body></html>
