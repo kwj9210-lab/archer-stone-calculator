@@ -28,11 +28,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <label>내 명중<input id="acc" inputmode="numeric" placeholder="예: 17500"></label>
 </div>
 <div class="floorLookup"><label>층수 조회<input id="lookupFloor" inputmode="numeric" placeholder="예: 1250"></label><div id="lookupResult" class="lookupResult">층수를 입력하면 필요 관통·명중이 표시됩니다.</div></div>
-<div class="result">
-<div class="small">관통·명중 기준 가능 최고층</div>
-<div id="floor">수치 입력</div>
-<div id="need" class="need"></div>
-</div>
+<div class="result" id="resultBox" hidden><div id="floor"></div><div id="need" class="need"></div></div>
 </section>
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
