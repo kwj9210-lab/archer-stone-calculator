@@ -112,9 +112,9 @@ function updatePlan(){
  const box=document.getElementById('planResult');
  if(!p&&!a){box.innerHTML='현재 관통·명중을 입력해 주세요.';return}
  if(f<500||f>1500){box.innerHTML='목표 층수를 500~1500 사이로 입력해 주세요.';return}
- const [rp,ra]=req(f),baseP=p*TOWER_STAT_MULT,baseA=a*TOWER_STAT_MULT,dp=Math.max(0,rp-baseP),da=Math.max(0,ra-baseA);
+ const [rp,ra]=req(f),baseP=p*TOWER_STAT_MULT,baseA=a*TOWER_STAT_MULT,dp=Math.max(0,rp-baseP),da=Math.max(0,ra-baseA),needRawP=dp/TOWER_STAT_MULT,needRawA=da/TOWER_STAT_MULT;
  if(dp===0&&da===0){box.innerHTML='<span class="ok"><b>'+f+'층은 추가 제작 없이 관통·명중 조건 충족</b></span><br>초월탑 적용 · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA);return}
- const b=bestPlan(dp,da);
+ const b=bestPlan(needRawP,needRawA);
  if(!b){
  const maxRawP=10*85+11*255+10*170,maxRawA=10*85+11*170+10*255;
  const maxP=maxRawP*TOWER_STAT_MULT,maxA=maxRawA*TOWER_STAT_MULT;
