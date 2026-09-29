@@ -630,6 +630,19 @@ td{color:#62776e;background:#fff}
       if(pick<0)break;
       levels[pick]++;used+=pickCost;
     }
+
+    // 안전망: 남은 수량으로 올릴 수 있는 항목이 있으면 절대 종료하지 않는다.
+    // 공격력 효율 계산에서 수치 오차가 생겨도 사용 가능한 초월석은 계속 사용한다.
+    while(used<budget && guard++<20000){
+      let pick=-1, cheapest=Infinity;
+      for(let i=0;i<4;i++){
+        const lv=levels[i]; if(lv>=3000)continue;
+        const c=levelCost[i][lv+1]-levelCost[i][lv];
+        if(c>0 && used+c<=budget && c<cheapest){pick=i;cheapest=c;}
+      }
+      if(pick<0)break;
+      levels[pick]++; used+=cheapest;
+    }
     return {levels,used,left:budget-used,score:addEffects(levelEffect[0][levels[0]],levelEffect[1][levels[1]],levelEffect[2][levels[2]],levelEffect[3][levels[3]])};
   }
   function optimize100ThenResidual(budget){
@@ -715,10 +728,19 @@ td{color:#62776e;background:#fff}
       return 0;
     });
     const shown=ordered[0]||b;
+    let minNext=Infinity;
+    for(let i=0;i<4;i++){
+      const lv=shown.levels[i];
+      if(lv<3000){
+        const c=levelCost[i][lv+1]-levelCost[i][lv];
+        if(c>0)minNext=Math.min(minNext,c);
+      }
+    }
 
     document.getElementById("best").innerHTML=
       '<div class="bestline">'+(ordered.length>1?'공동 1위 '+ordered.length+'개':'최고 효율 1위')+'</div>'+
-      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(shown.used)+'</b></span><span>잔여 <b>'+fmt(shown.left)+'</b></span></div>';
+      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(shown.used)+'</b></span><span>잔여 <b>'+fmt(shown.left)+'</b></span></div>'+
+      (shown.left>0 && minNext<Infinity && shown.left<minNext?'<div class="small">잔여 '+fmt(shown.left)+'개는 다음 1레벨 최소 비용 '+fmt(minNext)+'개보다 적어 사용 불가</div>':'');
 
     document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
       '<div class="joint-card">'+
