@@ -60,7 +60,7 @@ function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
 function update(){
  const p=num(document.getElementById('pen').value),a=num(document.getElementById('acc').value);
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
- if(!p&&!a){floor.textContent='관통·명중을 입력하세요';need.textContent='';return}
+ const box=document.getElementById('resultBox');if(!p&&!a){box.hidden=true;floor.textContent='';need.textContent='';return}box.hidden=false
  let best=499;
  for(let f=500;f<=1500;f++){const [rp,ra]=req(f);if(p>=rp&&a>=ra)best=f;else break}
  if(best<500){floor.textContent='500층 미만';const [rp,ra]=req(500);need.textContent='500층 필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra);return}
