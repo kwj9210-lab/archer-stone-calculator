@@ -408,6 +408,19 @@ td{color:#62776e;background:#fff}
     for(let b=15;b<30;b++) costs[i][b]=levelCost[i][(b+1)*100]-levelCost[i][b*100];
   }
 
+  // APK BuildExpandedCosts에서 확인한 Lv.1501~3000 실제 x1 비용식.
+  (function applyApkExpandedCosts(){
+    const base=[40,50,75,85];
+    for(let i=0;i<4;i++){
+      let sum=levelCost[i][1500];
+      for(let lv=1501;lv<=3000;lv++){
+        const n=lv-1500, b=base[i];
+        sum+=b+Math.floor((b*n*(n+6000))/11250000);
+        levelCost[i][lv]=sum;
+      }
+    }
+  })();
+
   // 공격력 효과는 확보된 100레벨 기준점 사이를 레벨별 선형 보간한다.
   const levelEffect=effect.map(row=>{
     const a=new Float64Array(3001);
