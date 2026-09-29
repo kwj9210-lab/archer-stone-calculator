@@ -31,7 +31,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <label>목표 층<input id="planFloor" inputmode="numeric" value="1500" placeholder="500~1500"></label>
 </div>
 <div id="planResult" class="lookupResult" style="display:block;line-height:1.65">현재 관통·명중을 입력해 주세요.</div>
-<div class="note">슬롯 상한: 마석 10개 · 경화석 11개 · 생명석 10개. APK의 초월 관통·명중 보너스(+273%, 100레벨 이상)를 적용한 뒤 각인석 수치를 같은 방식으로 반영합니다. 참고자료의 전설/신화/태초/불멸 수치를 사용합니다.</div>
+<div class="note">슬롯 상한: 마석 10개 · 경화석 11개 · 생명석 10개. 현재 관통·명중에 각인석 표시 수치를 그대로 1:1 가산해 판정합니다. 마석은 실제 장착값(불멸 1개+태초 5개 = 관통·명중 +450)으로 검증했습니다. 참고자료의 전설/신화/태초/불멸 수치를 사용합니다.</div>
 </section>
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
@@ -56,7 +56,6 @@ function req(f){
 const rows=document.getElementById('rows');
 for(let f=500;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
 function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
-const TOWER_STAT_MULT=3.73;
 const STONES={
  M:{name:'마석',cap:10,v:[[52,52,'전설',844343],[62,62,'신화',3479099],[73,73,'태초',14170714],[85,85,'불멸',63040860]]},
  H:{name:'경화석',cap:11,v:[[156,104,'전설',519551],[186,124,'신화',3643683],[219,146,'태초',19292964],[255,170,'불멸',100763016]]},
@@ -112,17 +111,16 @@ function updatePlan(){
  const box=document.getElementById('planResult');
  if(!p&&!a){box.innerHTML='현재 관통·명중을 입력해 주세요.';return}
  if(f<500||f>1500){box.innerHTML='목표 층수를 500~1500 사이로 입력해 주세요.';return}
- const [rp,ra]=req(f),baseP=p*TOWER_STAT_MULT,baseA=a*TOWER_STAT_MULT,dp=Math.max(0,rp-baseP),da=Math.max(0,ra-baseA),needRawP=dp/TOWER_STAT_MULT,needRawA=da/TOWER_STAT_MULT;
- if(dp===0&&da===0){box.innerHTML='<span class="ok"><b>'+f+'층은 추가 제작 없이 관통·명중 조건 충족</b></span><br>초월탑 적용 · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA);return}
- const b=bestPlan(needRawP,needRawA);
+ const [rp,ra]=req(f),baseP=p,baseA=a,dp=Math.max(0,rp-baseP),da=Math.max(0,ra-baseA);
+ if(dp===0&&da===0){box.innerHTML='<span class="ok"><b>'+f+'층은 추가 제작 없이 관통·명중 조건 충족</b></span><br>현재 수치 · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA);return}
+ const b=bestPlan(dp,da);
  if(!b){
- const maxRawP=10*85+11*255+10*170,maxRawA=10*85+11*170+10*255;
- const maxP=maxRawP*TOWER_STAT_MULT,maxA=maxRawA*TOWER_STAT_MULT;
+ const maxP=10*85+11*255+10*170,maxA=10*85+11*170+10*255;
  const afterP=baseP+maxP,afterA=baseA+maxA;
  box.innerHTML='<span class="bad"><b>'+f+'층은 현재 참고자료의 각인석만으로 도달 불가</b></span><br>필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br>현재 부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br>전부 불멸 장착 시 최대 추가 · 관통 '+fmt(maxP)+' / 명중 '+fmt(maxA)+'<br>최대 장착 후 · 관통 '+fmt(afterP)+' / 명중 '+fmt(afterA);
  return
 }
- box.innerHTML='<b>'+f+'층 필요</b> · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br><b>초월탑 적용 현재치</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>입장권 최소 조합 · '+b.cnt+'개</b> · 예상 입장권 약 '+fmt(Math.ceil(b.cost/10000)*10000)+'장<br>추가 관통 '+fmt(b.p*TOWER_STAT_MULT)+' / 명중 '+fmt(b.a*TOWER_STAT_MULT)+b.parts.map(planText).join('');
+ box.innerHTML='<b>'+f+'층 필요</b> · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br><b>현재 수치</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>입장권 최소 조합 · '+b.cnt+'개</b> · 예상 입장권 약 '+fmt(Math.ceil(b.cost/10000)*10000)+'장<br>추가 관통 '+fmt(b.p)+' / 명중 '+fmt(b.a)+b.parts.map(planText).join('');
 }
 ['planPen','planAcc','planFloor'].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
 updatePlan();
