@@ -605,51 +605,75 @@ td{color:#62776e;background:#fff}
     }
     return {levels,used,left:budget-used,score:addEffects(levelEffect[0][levels[0]],levelEffect[1][levels[1]],levelEffect[2][levels[2]],levelEffect[3][levels[3]])};
   }
-  async function optimizeExact(budget,onProgress){
+  function optimizeFast(budget){
     budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
-    // CD 모든 조합에서 각 비용별 최고 효과를 저장한 뒤, 예산 이하 prefix 최고를 만든다.
-    const bestScore=new Float64Array(budget+1); bestScore.fill(-Infinity);
-    const bestC=new Uint16Array(budget+1), bestD=new Uint16Array(budget+1);
-    for(let c=0;c<=3000;c++){
-      const cc=levelCost[2][c]; if(cc>budget)break;
-      for(let d=0;d<=3000;d++){
-        const cost=cc+levelCost[3][d]; if(cost>budget)break;
-        const score=levelEffect[2][c]+levelEffect[3][d];
-        if(score>bestScore[cost]+EPS){
-          bestScore[cost]=score; bestC[cost]=c; bestD[cost]=d;
+    // APK 효과는 구간별 선형/볼록 구조라 최고점은 각 초월석의 비용 경계 주변에 생긴다.
+    // 100레벨 전 구간을 먼저 전수 비교하고, 상위 후보 주변만 x1로 정확 재탐색한다.
+    const coarse=[];
+    const keep=c=>{
+      let p=0;
+      while(p<coarse.length && !better(c,coarse[p]))p++;
+      if(p<160){coarse.splice(p,0,c);if(coarse.length>160)coarse.pop();}
+    };
+    for(let a=0;a<=3000;a+=100){
+      const ca=levelCost[0][a];if(ca>budget)break;
+      for(let bb=0;bb<=3000;bb+=100){
+        const cab=ca+levelCost[1][bb];if(cab>budget)break;
+        for(let c=0;c<=3000;c+=100){
+          const cabc=cab+levelCost[2][c];if(cabc>budget)break;
+          // 영겁은 남은 예산으로 가능한 최고 100단위 레벨부터 확인
+          let lo=0,hi=30;
+          while(lo<hi){const m=Math.ceil((lo+hi)/2);if(cabc+levelCost[3][m*100]<=budget)lo=m;else hi=m-1;}
+          for(let q=Math.max(0,lo-2);q<=lo;q++){
+            const d=q*100,used=cabc+levelCost[3][d];
+            keep({levels:[a,bb,c,d],used,left:budget-used,
+              score:levelEffect[0][a]+levelEffect[1][bb]+levelEffect[2][c]+levelEffect[3][d]});
+          }
         }
       }
-      if((c&63)===63){
-        if(onProgress)onProgress(Math.min(45,Math.round(c/3000*45)));
-        await new Promise(requestAnimationFrame);
-      }
     }
-    for(let x=1;x<=budget;x++){
-      if(bestScore[x-1]>bestScore[x]+EPS){
-        bestScore[x]=bestScore[x-1]; bestC[x]=bestC[x-1]; bestD[x]=bestD[x-1];
-      }
-      if((x&16383)===0) await new Promise(requestAnimationFrame);
-    }
-
     let best=null;
-    for(let a=0;a<=3000;a++){
-      const ca=levelCost[0][a]; if(ca>budget)break;
-      for(let b=0;b<=3000;b++){
-        const ab=ca+levelCost[1][b]; if(ab>budget)break;
-        const rem=budget-ab, cds=bestScore[rem];
-        if(cds===-Infinity)continue;
-        const c=bestC[rem], d=bestD[rem];
-        const used=ab+levelCost[2][c]+levelCost[3][d];
-        const cand={levels:[a,b,c,d],used,left:budget-used,
-          score:levelEffect[0][a]+levelEffect[1][b]+cds};
-        if(better(cand,best))best=cand;
+    // 각 coarse 후보에서 네 축을 ±110레벨 범위로 좌표 탐색.
+    // 한 축을 바꿀 때마다 남은 예산으로 다른 축을 이분탐색해 경계까지 채운다.
+    for(const seed of coarse){
+      let cur=seed;
+      let changed=true,round=0;
+      while(changed&&round++<8){
+        changed=false;
+        for(let i=0;i<4;i++){
+          const base=cur.levels.slice();
+          const from=Math.max(0,base[i]-110),to=Math.min(3000,base[i]+110);
+          let local=cur;
+          for(let lv=from;lv<=to;lv++){
+            const levels=base.slice();levels[i]=lv;
+            let used=0,score=0;
+            for(let k=0;k<4;k++){used+=levelCost[k][levels[k]];score+=levelEffect[k][levels[k]];}
+            if(used<=budget){
+              const cand={levels,used,left:budget-used,score};
+              if(better(cand,local))local=cand;
+            }
+          }
+          if(better(local,cur)){cur=local;changed=true;}
+        }
       }
-      if((a&63)===63){
-        if(onProgress)onProgress(50+Math.min(49,Math.round(a/3000*49)));
-        await new Promise(requestAnimationFrame);
-      }
+      if(better(cur,best))best=cur;
     }
-    if(onProgress)onProgress(100);
+    // 남은 예산으로 가능한 단일 레벨 상승을 전부 비교해 끝까지 보정.
+    let guard=0;
+    while(best&&guard++<12000){
+      let pick=null;
+      for(let i=0;i<4;i++){
+        const lv=best.levels[i];if(lv>=3000)continue;
+        const cost=levelCost[i][lv+1]-levelCost[i][lv];
+        if(best.used+cost>budget)continue;
+        const gain=levelEffect[i][lv+1]-levelEffect[i][lv];
+        const cand={levels:best.levels.slice(),used:best.used+cost,left:budget-best.used-cost,score:best.score+gain};
+        cand.levels[i]++;
+        if(better(cand,pick))pick=cand;
+      }
+      if(!pick)break;
+      best=pick;
+    }
     return {best,top:best?[best]:[],base100:null};
   }
   function getPool(){
@@ -725,21 +749,21 @@ td{color:#62776e;background:#fff}
     if(!Number.isFinite(pool)||pool<0){status.innerHTML='<span class="bad">초월석 값을 확인해 주세요.</span>';return;}
     const fixed=[false,false,false,false];
     const calcPool=Math.min(pool,TOTAL_MAX);
-    button.disabled=true; status.textContent="전체 조합을 비교해 최적 배분 계산 중...";
+    button.disabled=true; status.textContent="최적 배분 계산 중...";
     setTimeout(()=>{
-      optimizeExact(calcPool,p=>{status.textContent="전체 조합 계산 중... "+p+"%";}).then(exact=>{
-      if(pool>TOTAL_MAX && exact.best){
-        exact.best.left+=pool-TOTAL_MAX;
-        exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
-      }
-      renderResult(pool,exact);
-      status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식으로 전체 조합을 비교했습니다.</span>';
-      button.disabled=false;
-      }).catch(err=>{
+      try{
+        const exact=optimizeFast(calcPool);
+        if(pool>TOTAL_MAX && exact.best){
+          exact.best.left+=pool-TOTAL_MAX;
+          exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
+        }
+        renderResult(pool,exact);
+        status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식 기준 최적 배분입니다.</span>';
+      }catch(err){
         console.error(err);
         status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
-        button.disabled=false;
-      });
+      }
+      button.disabled=false;
     },20);
   }
   document.getElementById("run").addEventListener("click",run);
