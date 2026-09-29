@@ -385,7 +385,8 @@ function calc(){
    var sweepText=r.fixed
      ? '10만회 소탕 '+fmt(sweep100k)+'회'
      : '10만회 소탕 '+fmt(sweep100k)+'회 · 100만회 소탕 '+fmt(runs?Math.ceil(runs/1000000):0)+'회';
-   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">1만회 예상: '+fmt(per10k)+'</div><div class="line">10만회 예상: '+fmt(per100k)+'</div><div class="strong">'+sweepText+'</div><div class="line">필요 소탕량: '+fmt(runs)+'회</div></div>';
+   var approx100k=Math.round(per100k/100000);
+   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmt(approx100k)+'만)</span></div><div class="strong">'+sweepText+'</div></div>';
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line warn">소탕 기준값 미확인</div></div>';
   }
