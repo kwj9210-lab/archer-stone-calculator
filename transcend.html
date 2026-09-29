@@ -320,7 +320,7 @@ td{color:#62776e;background:#fff}
           <div>1. 게임에서 초월석을 초기화한 뒤 총 보유량을 확인합니다.</div>
           <div>2. 보유 초월석 수량을 입력하고 ‘최적 배분 계산’을 누릅니다.</div>
           <div>3. 결과에 표시된 청람·성해·차원·영겁 레벨대로 올리면 됩니다.</div>
-          <div>4. 공동 최고가 여러 개면 모두 같은 최고 효율 범위이며, ‘잔여 최대’ 조합을 우선 표시합니다.</div>
+          <div>4. APK에서 복원한 비용·효과식을 기준으로 전체 조합을 비교해 최고 전투력 배분을 표시합니다.</div>
         </div>
       </details>
     </div>
@@ -371,88 +371,39 @@ td{color:#62776e;background:#fff}
     [2000,3000,5000,7000,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8685,9150,9633,10132,10646,11173,11720,12277,12852,13442,14047,14669,15300,15952,16616]
   ];
 
-  // 영상에서 직접 읽은 100레벨 단위 공격력 증가값을 게임 큰수 표기 순서로 수치화한 내부 효과값.
-  // 공격력 배율은 곱연산이므로 이 대수 지수는 합산해서 비교할 수 있다.
-  const effect=[
-    [0,149998.125,299996.25,449942.375,599990.5,748638.624996999977,899988.75,1199985,1499981.25,1799925.5,2099973.75,2399970,2699966.25,3199908,3699953.75,4199947.5,4699941.25,5199935,5699928.75,6199922.5,6699916.25,7199910,7699903.75,8199897.5,8699891.25,9199885,9699878.75,10199872.5,10699866.25,11199860,11699853.75],
-    [0,299996.25,524993.4375,712491.09375,912488.593746999977,1099986.25,1287483.90625,1662479.21875,2037474.53125,2412469.84375,2787465.15625,3162460.46875,3537455.78125,4162447.96875,4787440.15625,5412432.34375,6037424.53125,6662416.71875,7287408.90625,7912401.09375,8537393.28125,9162385.46875,9787377.65625,10412369.843800000846,11037362.031300000846,11662354.218800000846,12287346.406300000846,12912338.593800000846,13537330.781300000846,14162322.968800000846,14787315.156300000846],
-    [0,449942.375,824989.6875,1124986.18862999999,1424982.1875,1706228.671869999962,1987475.15625,2549968.125,3112461.09375,3674954.0625,4237447.03125,4799940,5362432.96875,6299907.25,7237409.753560000099,8174897.8125,9137917.73293309845,10152612.007430132478,11220647.032237224281,12343690.201943743974,13523407.41362760216,14761465.562702551484,16059531.295016143471,16673496.952201217413,17344060.468667589128,18064189.978626146913,18826853.616287775338,19625019.51586337015,20451655.811563815922,21299730.637600000948,22237218.696600001305],
-    [0,599990.5,1049986.875,1424982.1875,1774977.8125,2093723.828119999962,2412469.84375,3049960.875,3687453.90625,4324945.9375,4962437.96875,5599930,6237422.03125,7299909,8362395.46875,9424882.191290000454,10487368.913799999282,11549855.636399999261,12612342.35889999941,13674829.081499999389,15486526.402111284435,16889658.971068248153,18360800.134351626039,18987886.757238332182,21514663.705007649958,23201163.842937778682,24963228.036304540932,26802745.150386504829,28721656.050461553037,30721693.601805225015,32804902.669700134546]
-  ];
-
-  // APK 비용식 복원.
-  // Lv.1~1500은 100레벨 구간 내 x1 비용이 고정이며,
-  // Lv.1501~3000은 GrowthStoneTranscendence.BuildExpandedCosts의 정수식을 그대로 사용한다.
-  const baseCost=[40,50,75,85];
-  const levelCost=costs.map((row,stoneIndex)=>{
-    const a=new Int32Array(3001);
-    let sum=0;
-    a[0]=0;
-    for(let lv=1;lv<=1500;lv++){
-      const b=Math.floor((lv-1)/100);
-      sum+=Math.floor(row[b]/100);
-      a[lv]=sum;
-    }
-    const B=baseCost[stoneIndex];
-    for(let lv=1501;lv<=3000;lv++){
-      const n=lv-1500;
-      const one=B+Math.floor(B*n*(n+6000)/11250000);
-      sum+=one;
-      a[lv]=sum;
-    }
-    return a;
-  });
-
-  // 화면의 100레벨 구간표도 APK x1 누적값으로 갱신한다.
-  for(let i=0;i<4;i++){
-    for(let b=15;b<30;b++) costs[i][b]=levelCost[i][(b+1)*100]-levelCost[i][b*100];
+  // APK CalculateStoneTranscendMultiplierAtLevel 복원값.
+  // 비교에는 최종 BigNumber 변환 전의 d8 값만 쓰면 된다. 최종 변환은 단조증가라 최적 조합 순서는 동일하다.
+  function oneCost(stone,level){
+    if(level<1||level>3000)return 0;
+    return levelCost[stone][level]-levelCost[stone][level-1];
   }
-
-  // APK BuildExpandedCosts에서 확인한 Lv.1501~3000 실제 x1 비용식.
-  (function applyApkExpandedCosts(){
-    const base=[40,50,75,85];
-    for(let i=0;i<4;i++){
-      let sum=levelCost[i][1500];
-      for(let lv=1501;lv<=3000;lv++){
-        const n=lv-1500, b=base[i];
-        sum+=b+Math.floor((b*n*(n+6000))/11250000);
-        levelCost[i][lv]=sum;
-      }
+  function apkEffect(stone,level){
+    level=Math.max(0,Math.min(3000,Math.floor(level)));
+    let v=0;
+    const upto=Math.min(level,1500);
+    const seg=[[0,100],[100,200],[200,300],[300,400],[400,600],[600,1200],[1200,1500]];
+    for(const [a,b] of seg){
+      if(upto<=a)break;
+      const n=Math.min(upto,b)-a;
+      const coeff=a<600?0.0375:(a<1200?0.075:0.125);
+      // TotalCost(stone,a,a+1) / TotalCost(청람,a,a+1)
+      const lv=a+1;
+      v+=coeff*n*(oneCost(stone,lv)/oneCost(0,lv));
     }
-  })();
-
-  // 공격력 효과는 확보된 100레벨 기준점 사이를 레벨별 선형 보간한다.
-  const levelEffect=effect.map(row=>{
+    if(level>1500){
+      const m=level-1500;
+      const t1=m*(m+1)/2;
+      const t2=m*(m+1)*(2*m+1)/6;
+      const ref=oneCost(stone,1500);
+      v+=(m+(6000*t1+t2)/11250000)*(ref/320);
+    }
+    return v;
+  }
+  const levelEffect=Array.from({length:4},(_,i)=>{
     const a=new Float64Array(3001);
-    for(let b=0;b<30;b++){
-      const v0=row[b], v1=row[b+1];
-      for(let j=0;j<100;j++) a[b*100+j]=v0+(v1-v0)*(j/100);
-    }
-    a[3000]=row[30];
+    for(let lv=0;lv<=3000;lv++)a[lv]=apkEffect(i,lv);
     return a;
   });
-
-  // 실제 게임 공격력 실측 앵커 (330,680 검증 화면)
-  // 청람 Lv3000 +20AGFXPF 6598AGFXPE%
-  // 성해 Lv3000 +1AOXKDF 6806AOXKDE%
-  // 차원 Lv310  +1BMRNN 7782BMRNM%
-  // 영겁 Lv310  +10CEASD%
-  // 기존 고레벨 extrapolation보다 실측값을 우선한다.
-  levelEffect[0][3000]=15202309.828781528;
-  levelEffect[1][3000]=19165385.55636609;
-  levelEffect[2][310]=1154985.5624951515;
-  levelEffect[3][310]=1459981.75;
-
-  // Lv.2900~3000 청람/성해는 새 실측 MAX값까지 다시 연결한다.
-  for(const i of [0,1]){
-    const v0=levelEffect[i][2900], v1=levelEffect[i][3000];
-    for(let lv=2901;lv<3000;lv++) levelEffect[i][lv]=v0+(v1-v0)*((lv-2900)/100);
-  }
-
-  // 차원각인 x1 실측 공격력 보정
-  // Lv.2103 현재 / Lv.2104(화면의 다음 공격력) 실제 게임값
-  levelEffect[2][2103]=14799526.0986113;
-  levelEffect[2][2104]=14812224.953206956;
 
   const TOTAL_MAX=levelCost.reduce((s,a)=>s+a[3000],0);
   const EPS=1e-9;
@@ -654,60 +605,42 @@ td{color:#62776e;background:#fff}
     }
     return {levels,used,left:budget-used,score:addEffects(levelEffect[0][levels[0]],levelEffect[1][levels[1]],levelEffect[2][levels[2]],levelEffect[3][levels[3]])};
   }
-  function optimize100ThenResidual(budget){
-    // 1단계: 100레벨 단위만으로 최적 조합을 확정한다.
-    // 이 단계에서는 x1 추정비용을 전혀 사용하지 않는다.
-    const top100=[];
-    const keep=(cand)=>{
-      let pos=0;
-      while(pos<top100.length && !better(cand,top100[pos]))pos++;
-      if(pos<100){top100.splice(pos,0,cand); if(top100.length>100)top100.pop();}
-    };
-
-    for(let a=0;a<=3000;a+=100){
-      const ca=levelCost[0][a]; if(ca>budget)break;
-      for(let bb=0;bb<=3000;bb+=100){
-        const cab=ca+levelCost[1][bb]; if(cab>budget)break;
-        for(let c=0;c<=3000;c+=100){
-          const cabc=cab+levelCost[2][c]; if(cabc>budget)break;
-          for(let d=0;d<=3000;d+=100){
-            const used=cabc+levelCost[3][d]; if(used>budget)break;
-            keep({
-              levels:[a,bb,c,d],used,left:budget-used,
-              score:addEffects(levelEffect[0][a],levelEffect[1][bb],levelEffect[2][c],levelEffect[3][d])
-            });
-          }
+  function optimizeExact(budget){
+    budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
+    // CD 모든 조합에서 각 비용별 최고 효과를 저장한 뒤, 예산 이하 prefix 최고를 만든다.
+    const bestScore=new Float64Array(budget+1); bestScore.fill(-Infinity);
+    const bestC=new Uint16Array(budget+1), bestD=new Uint16Array(budget+1);
+    for(let c=0;c<=3000;c++){
+      const cc=levelCost[2][c]; if(cc>budget)break;
+      for(let d=0;d<=3000;d++){
+        const cost=cc+levelCost[3][d]; if(cost>budget)break;
+        const score=levelEffect[2][c]+levelEffect[3][d];
+        if(score>bestScore[cost]+EPS){
+          bestScore[cost]=score; bestC[cost]=c; bestD[cost]=d;
         }
       }
     }
-    if(!top100.length)return {best:null,top:[],base100:null};
+    for(let x=1;x<=budget;x++){
+      if(bestScore[x-1]>bestScore[x]+EPS){
+        bestScore[x]=bestScore[x-1]; bestC[x]=bestC[x-1]; bestD[x]=bestD[x-1];
+      }
+    }
 
-    // 2단계: 상위 100레벨 후보를 모두 1레벨 단위로 재투자해 비교한다.
-    // 예전처럼 첫 후보 하나를 고정하거나 330k대 균등배분을 강제하지 않는다.
-    // 현재 확보된 비용/효과 데이터 안에서는 실제 점수가 가장 높은 조합을 선택한다.
-    let best=null, bestBase=null;
-    const refinedTop=[];
-    for(const base of top100){
-      const r=refineResidual(base,budget) || base;
-      if(better(r,best)){ best=r; bestBase=base; }
-      refinedTop.push(r);
+    let best=null;
+    for(let a=0;a<=3000;a++){
+      const ca=levelCost[0][a]; if(ca>budget)break;
+      for(let b=0;b<=3000;b++){
+        const ab=ca+levelCost[1][b]; if(ab>budget)break;
+        const rem=budget-ab, cds=bestScore[rem];
+        if(cds===-Infinity)continue;
+        const c=bestC[rem], d=bestD[rem];
+        const used=ab+levelCost[2][c]+levelCost[3][d];
+        const cand={levels:[a,b,c,d],used,left:budget-used,
+          score:levelEffect[0][a]+levelEffect[1][b]+cds};
+        if(better(cand,best))best=cand;
+      }
     }
-    refinedTop.sort((x,y)=>{
-      if(Math.abs(y.score-x.score)>EPS)return y.score-x.score;
-      if(x.used!==y.used)return x.used-y.used;
-      for(let i=0;i<4;i++)if(x.levels[i]!==y.levels[i])return y.levels[i]-x.levels[i];
-      return 0;
-    });
-    const unique=[];
-    const seen=new Set();
-    for(const r of refinedTop){
-      const k=r.levels.join(",");
-      if(seen.has(k))continue;
-      seen.add(k); unique.push(r);
-      if(unique.length>=20)break;
-    }
-    best.base100=bestBase;
-    return {best,top:unique,base100:bestBase};
+    return {best,top:best?[best]:[],base100:null};
   }
   function getPool(){
     return Math.max(0,Math.floor(Number(document.getElementById("stones").value)||0));
@@ -782,15 +715,15 @@ td{color:#62776e;background:#fff}
     if(!Number.isFinite(pool)||pool<0){status.innerHTML='<span class="bad">초월석 값을 확인해 주세요.</span>';return;}
     const fixed=[false,false,false,false];
     const calcPool=Math.min(pool,TOTAL_MAX);
-    button.disabled=true; status.textContent="상위 후보 전체를 비교해 최적 배분 계산 중...";
+    button.disabled=true; status.textContent="전체 조합을 비교해 최적 배분 계산 중...";
     setTimeout(()=>{
-      const exact=optimize100ThenResidual(calcPool);
+      const exact=optimizeExact(calcPool);
       if(pool>TOTAL_MAX && exact.best){
         exact.best.left+=pool-TOTAL_MAX;
         exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
       }
       renderResult(pool,exact);
-      status.innerHTML='<span class="ok">계산 완료. 100레벨 상위 후보 전체를 1레벨 단위까지 재계산해 가장 높은 조합을 선택했습니다.</span>';
+      status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식으로 전체 조합을 비교했습니다.</span>';
       button.disabled=false;
     },20);
   }
