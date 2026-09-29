@@ -628,74 +628,45 @@ td{color:#62776e;background:#fff}
     }
     return {levels,used,left:budget-used,score:addEffects(levelEffect[0][levels[0]],levelEffect[1][levels[1]],levelEffect[2][levels[2]],levelEffect[3][levels[3]])};
   }
-  function optimizeFast(budget){
+  function optimizeExact(budget){
     budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
-    // APK 효과는 구간별 선형/볼록 구조라 최고점은 각 초월석의 비용 경계 주변에 생긴다.
-    // 100레벨 전 구간을 먼저 전수 비교하고, 상위 후보 주변만 x1로 정확 재탐색한다.
-    const coarse=[];
-    const keep=c=>{
-      let p=0;
-      while(p<coarse.length && !better(c,coarse[p]))p++;
-      if(p<160){coarse.splice(p,0,c);if(coarse.length>160)coarse.pop();}
-    };
-    for(let a=0;a<=3000;a+=100){
-      const ca=levelCost[0][a];if(ca>budget)break;
-      for(let bb=0;bb<=3000;bb+=100){
-        const cab=ca+levelCost[1][bb];if(cab>budget)break;
-        for(let c=0;c<=3000;c+=100){
-          const cabc=cab+levelCost[2][c];if(cabc>budget)break;
-          // 영겁은 남은 예산으로 가능한 최고 100단위 레벨부터 확인
-          let lo=0,hi=30;
-          while(lo<hi){const m=Math.ceil((lo+hi)/2);if(cabc+levelCost[3][m*100]<=budget)lo=m;else hi=m-1;}
-          for(let q=Math.max(0,lo-2);q<=lo;q++){
-            const d=q*100,used=cabc+levelCost[3][d];
-            keep({levels:[a,bb,c,d],used,left:budget-used,
-              score:levelEffect[0][a]+levelEffect[1][bb]+levelEffect[2][c]+levelEffect[3][d]});
-          }
+    // 정확한 meet-in-the-middle 전역탐색.
+    // (차원,영겁)의 모든 가능한 조합을 비용별 최고 효과로 압축한 뒤,
+    // (청람,성해)의 모든 조합과 결합한다.
+    const bestScore=new Float64Array(budget+1);
+    bestScore.fill(-Infinity);
+    const bestC=new Uint16Array(budget+1), bestD=new Uint16Array(budget+1);
+    for(let c=0;c<=3000;c++){
+      const cc=levelCost[2][c]; if(cc>budget)break;
+      const ec=levelEffect[2][c];
+      for(let d=0;d<=3000;d++){
+        const used=cc+levelCost[3][d]; if(used>budget)break;
+        const score=ec+levelEffect[3][d];
+        if(score>bestScore[used]+EPS){
+          bestScore[used]=score; bestC[used]=c; bestD[used]=d;
         }
+      }
+    }
+    // 비용 x 이하에서 얻을 수 있는 최고 (차원,영겁) 조합.
+    for(let x=1;x<=budget;x++){
+      if(bestScore[x-1]>bestScore[x]+EPS){
+        bestScore[x]=bestScore[x-1]; bestC[x]=bestC[x-1]; bestD[x]=bestD[x-1];
       }
     }
     let best=null;
-    // 각 coarse 후보에서 네 축을 ±110레벨 범위로 좌표 탐색.
-    // 한 축을 바꿀 때마다 남은 예산으로 다른 축을 이분탐색해 경계까지 채운다.
-    for(const seed of coarse){
-      let cur=seed;
-      let changed=true,round=0;
-      while(changed&&round++<8){
-        changed=false;
-        for(let i=0;i<4;i++){
-          const base=cur.levels.slice();
-          const from=Math.max(0,base[i]-110),to=Math.min(3000,base[i]+110);
-          let local=cur;
-          for(let lv=from;lv<=to;lv++){
-            const levels=base.slice();levels[i]=lv;
-            let used=0,score=0;
-            for(let k=0;k<4;k++){used+=levelCost[k][levels[k]];score+=levelEffect[k][levels[k]];}
-            if(used<=budget){
-              const cand={levels,used,left:budget-used,score};
-              if(better(cand,local))local=cand;
-            }
-          }
-          if(better(local,cur)){cur=local;changed=true;}
-        }
+    for(let aa=0;aa<=3000;aa++){
+      const ca=levelCost[0][aa]; if(ca>budget)break;
+      const ea=levelEffect[0][aa];
+      for(let bb=0;bb<=3000;bb++){
+        const ab=ca+levelCost[1][bb]; if(ab>budget)break;
+        const rem=budget-ab;
+        if(!Number.isFinite(bestScore[rem]))continue;
+        const c=bestC[rem], d=bestD[rem];
+        const used=ab+levelCost[2][c]+levelCost[3][d];
+        const cand={levels:[aa,bb,c,d],used,left:budget-used,
+          score:ea+levelEffect[1][bb]+bestScore[rem]};
+        if(better(cand,best))best=cand;
       }
-      if(better(cur,best))best=cur;
-    }
-    // 남은 예산으로 가능한 단일 레벨 상승을 전부 비교해 끝까지 보정.
-    let guard=0;
-    while(best&&guard++<12000){
-      let pick=null;
-      for(let i=0;i<4;i++){
-        const lv=best.levels[i];if(lv>=3000)continue;
-        const cost=levelCost[i][lv+1]-levelCost[i][lv];
-        if(best.used+cost>budget)continue;
-        const gain=levelEffect[i][lv+1]-levelEffect[i][lv];
-        const cand={levels:best.levels.slice(),used:best.used+cost,left:budget-best.used-cost,score:best.score+gain};
-        cand.levels[i]++;
-        if(better(cand,pick))pick=cand;
-      }
-      if(!pick)break;
-      best=pick;
     }
     return {best,top:best?[best]:[],base100:null};
   }
@@ -775,13 +746,13 @@ td{color:#62776e;background:#fff}
     button.disabled=true; status.textContent="최적 배분 계산 중...";
     setTimeout(()=>{
       try{
-        const exact=optimizeFast(calcPool);
+        const exact=optimizeExact(calcPool);
         if(pool>TOTAL_MAX && exact.best){
           exact.best.left+=pool-TOTAL_MAX;
           exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
         }
         renderResult(pool,exact);
-        status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식 기준 최적 배분입니다.</span>';
+        status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식 전체 조합 기준 최고 전투력 배분입니다.</span>';
       }catch(err){
         console.error(err);
         status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
