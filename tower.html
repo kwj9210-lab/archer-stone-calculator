@@ -58,17 +58,17 @@ for(let f=500;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('t
 function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
 const TOWER_STAT_MULT=3.73;
 const STONES={
- M:{name:'마석',cap:10,v:[[52,52,'전설'],[62,62,'신화'],[73,73,'태초'],[85,85,'불멸']]},
- H:{name:'경화석',cap:11,v:[[156,104,'전설'],[186,124,'신화'],[219,146,'태초'],[255,170,'불멸']]},
- L:{name:'생명석',cap:10,v:[[104,156,'전설'],[124,186,'신화'],[146,219,'태초'],[170,255,'불멸']]}
+ M:{name:'마석',cap:10,v:[[52,52,'전설',844343],[62,62,'신화',3479099],[73,73,'태초',14170714],[85,85,'불멸',63040860]]},
+ H:{name:'경화석',cap:11,v:[[156,104,'전설',519551],[186,124,'신화',3643683],[219,146,'태초',19292964],[255,170,'불멸',100763016]]},
+ L:{name:'생명석',cap:10,v:[[104,156,'전설',776982],[124,186,'신화',3792940],[146,219,'태초',17288462],[170,255,'불멸',79737347]]}
 };
 function categoryPlans(cat){
  const x=STONES[cat],out=[];
  for(let a=0;a<=x.cap;a++)for(let b=0;b<=x.cap-a;b++)for(let d=0;d<=x.cap-a-b;d++)for(let e=0;e<=x.cap-a-b-d;e++){
    const arr=[a,b,d,e],cnt=a+b+d+e;
-   let p=0,ac=0,rank=0;
-   for(let i=0;i<4;i++){p+=arr[i]*x.v[i][0];ac+=arr[i]*x.v[i][1];rank+=arr[i]*(i+1)}
-   out.push({cat:cat,cnt:cnt,p:p,a:ac,rank:rank,arr:arr});
+   let p=0,ac=0,rank=0,cost=0;
+   for(let i=0;i<4;i++){p+=arr[i]*x.v[i][0];ac+=arr[i]*x.v[i][1];rank+=arr[i]*(i+1);cost+=arr[i]*x.v[i][3]}
+   out.push({cat:cat,cnt:cnt,p:p,a:ac,rank:rank,cost:cost,arr:arr});
  }
  return out;
 }
@@ -81,7 +81,7 @@ function bestPlan(dp,da){
    const map=new Map();
    for(const q of list){
      const kp=Math.min(q.p,Math.max(0,dp)),ka=Math.min(q.a,Math.max(0,da)),k=kp+'|'+ka+'|'+q.cnt;
-     const old=map.get(k); if(!old||q.rank<old.rank)map.set(k,q);
+     const old=map.get(k); if(!old||q.cost<old.cost||(q.cost===old.cost&&q.rank<old.rank))map.set(k,q);
    }
    return [...map.values()];
  }
@@ -89,16 +89,16 @@ function bestPlan(dp,da){
  // M+H를 먼저 압축
  const mhMap=new Map();
  for(const x of m)for(const y of h){
-   const p=x.p+y.p,a=x.a+y.a,cnt=x.cnt+y.cnt,rank=x.rank+y.rank;
-   const kp=Math.min(p,Math.max(0,dp)),ka=Math.min(a,Math.max(0,da)),k=kp+'|'+ka+'|'+cnt;
-   const old=mhMap.get(k);if(!old||rank<old.rank)mhMap.set(k,{p,a,cnt,rank,parts:[x,y]});
+   const p=x.p+y.p,a=x.a+y.a,cnt=x.cnt+y.cnt,rank=x.rank+y.rank,cost=x.cost+y.cost;
+   const kp=Math.min(p,Math.max(0,dp)),ka=Math.min(a,Math.max(0,da)),k=kp+'|'+ka;
+   const old=mhMap.get(k);if(!old||cost<old.cost||(cost===old.cost&&rank<old.rank))mhMap.set(k,{p,a,cnt,rank,cost,parts:[x,y]});
  }
  const mh=[...mhMap.values()];
  for(const x of mh)for(const y of l){
    const p=x.p+y.p,a=x.a+y.a;if(p<dp||a<da)continue;
-   const z={p,a,cnt:x.cnt+y.cnt,rank:x.rank+y.rank,parts:x.parts.concat(y)};
+   const z={p,a,cnt:x.cnt+y.cnt,rank:x.rank+y.rank,cost:x.cost+y.cost,parts:x.parts.concat(y)};
    const over=(p-dp)+(a-da),bestOver=best?((best.p-dp)+(best.a-da)):Infinity;
-   if(!best||z.cnt<best.cnt||(z.cnt===best.cnt&&(z.rank<best.rank||(z.rank===best.rank&&over<bestOver))))best=z;
+   if(!best||z.cost<best.cost||(z.cost===best.cost&&(z.cnt<best.cnt||(z.cnt===best.cnt&&over<bestOver))))best=z;
  }
  return best;
 }
@@ -122,7 +122,7 @@ function updatePlan(){
  box.innerHTML='<span class="bad"><b>'+f+'층은 현재 참고자료의 각인석만으로 도달 불가</b></span><br>필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br>현재 부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br>전부 불멸 장착 시 최대 추가 · 관통 '+fmt(maxP)+' / 명중 '+fmt(maxA)+'<br>최대 장착 후 · 관통 '+fmt(afterP)+' / 명중 '+fmt(afterA);
  return
 }
- box.innerHTML='<b>'+f+'층 필요</b> · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br><b>초월탑 적용 현재치</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>최소 '+b.cnt+'개 조합</b> · 추가 관통 '+fmt(b.p*TOWER_STAT_MULT)+' / 명중 '+fmt(b.a*TOWER_STAT_MULT)+b.parts.map(planText).join('');
+ box.innerHTML='<b>'+f+'층 필요</b> · 관통 '+fmt(rp)+' / 명중 '+fmt(ra)+'<br><b>초월탑 적용 현재치</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>입장권 최소 조합 · '+b.cnt+'개</b> · 예상 입장권 약 '+fmt(Math.ceil(b.cost/10000)*10000)+'장<br>추가 관통 '+fmt(b.p*TOWER_STAT_MULT)+' / 명중 '+fmt(b.a*TOWER_STAT_MULT)+b.parts.map(planText).join('');
 }
 ['planPen','planAcc','planFloor'].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
 updatePlan();
