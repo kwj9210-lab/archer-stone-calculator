@@ -701,106 +701,53 @@ td{color:#62776e;background:#fff}
     return {levels,used,left:budget-used,score:addEffects(levelEffect[0][levels[0]],levelEffect[1][levels[1]],levelEffect[2][levels[2]],levelEffect[3][levels[3]])};
   }
   function optimize100ThenResidual(budget){
-    // 100레벨 조합은 31^4 전체를 직접 검사한다.
-    // 이전처럼 중간 후보를 K개로 잘라내지 않아 영겁 MAX 같은 극단 조합도 놓치지 않는다.
-    const lists=[0,1,2,3].map(()=>Array.from({length:31},(_,i)=>i*100));
-    const top=[];
+    // 1단계: 100레벨 단위만으로 최적 조합을 확정한다.
+    // 이 단계에서는 x1 추정비용을 전혀 사용하지 않는다.
+    const top100=[];
     const keep=(cand)=>{
       let pos=0;
-      while(pos<top.length && !better(cand,top[pos]))pos++;
-      if(pos<200){top.splice(pos,0,cand); if(top.length>200)top.pop();}
+      while(pos<top100.length && !better(cand,top100[pos]))pos++;
+      if(pos<100){top100.splice(pos,0,cand); if(top100.length>100)top100.pop();}
     };
-    for(const a of lists[0]){
+
+    for(let a=0;a<=3000;a+=100){
       const ca=levelCost[0][a]; if(ca>budget)break;
-      for(const b of lists[1]){
-        const cab=ca+levelCost[1][b]; if(cab>budget)break;
-        for(const c of lists[2]){
+      for(let bb=0;bb<=3000;bb+=100){
+        const cab=ca+levelCost[1][bb]; if(cab>budget)break;
+        for(let c=0;c<=3000;c+=100){
           const cabc=cab+levelCost[2][c]; if(cabc>budget)break;
-          for(const d of lists[3]){
+          for(let d=0;d<=3000;d+=100){
             const used=cabc+levelCost[3][d]; if(used>budget)break;
             keep({
-              levels:[a,b,c,d], used, left:budget-used,
-              score:addEffects(levelEffect[0][a],levelEffect[1][b],levelEffect[2][c],levelEffect[3][d])
+              levels:[a,bb,c,d],used,left:budget-used,
+              score:addEffects(levelEffect[0][a],levelEffect[1][bb],levelEffect[2][c],levelEffect[3][d])
             });
           }
         }
       }
     }
-    if(!top.length)return {best:null,top:[]};
+    if(!top100.length)return {best:null,top:[],base100:null};
 
-    // 100단위 상위 200개를 각각 1레벨 잔여 재배분해서 최종 비교한다.
-    const refined=[], seen=new Set();
-    for(const seed of top){
-      const r=refineResidual(seed,budget); if(!r)continue;
-      const key=r.levels.join(",");
-      if(seen.has(key))continue; seen.add(key); refined.push(r);
-    }
-
-
-    // 실게임 검증 패턴 후보를 추가한다.
-    // A: 청람/성해 MAX 후 차원/영겁을 가능한 한 같은 레벨로 올리는 배분.
-    {
-      const base=levelCost[0][3000]+levelCost[1][3000];
-      if(base<=budget){
-        let bestBal=null;
-        for(let lv=0;lv<=3000;lv++){
-          const used=base+levelCost[2][lv]+levelCost[3][lv];
-          if(used>budget)break;
-          bestBal={levels:[3000,3000,lv,lv],used,left:budget-used,
-            score:addEffects(levelEffect[0][3000],levelEffect[1][3000],levelEffect[2][lv],levelEffect[3][lv])};
-        }
-        if(bestBal){
-          // 같은 레벨 이후 남은 수량은 차원/영겁 중 실제 점수가 더 높은 1레벨에만 사용.
-          const r=refineResidual(bestBal,budget);
-          refined.push(r||bestBal);
-        }
-      }
-    }
-
-    // B: 영겁 MAX 후 나머지 세 항목을 전수 100레벨 탐색하고 잔여 재투자.
-    {
-      const d=3000, cd=levelCost[3][d];
-      if(cd<=budget){
-        let fam=[];
-        for(let a=0;a<=3000;a+=100){
-          const ca=levelCost[0][a]; if(ca+cd>budget)break;
-          for(let b=0;b<=3000;b+=100){
-            const cab=ca+levelCost[1][b]+cd; if(cab>budget)break;
-            for(let c=0;c<=3000;c+=100){
-              const used=cab+levelCost[2][c]; if(used>budget)break;
-              fam.push({levels:[a,b,c,d],used,left:budget-used,
-                score:addEffects(levelEffect[0][a],levelEffect[1][b],levelEffect[2][c],levelEffect[3][d])});
-            }
-          }
-        }
-        fam.sort((a,b)=>Math.abs(b.score-a.score)>EPS?b.score-a.score:a.left-b.left);
-        for(const seed of fam.slice(0,100)){
-          const r=refineResidual(seed,budget); if(r)refined.push(r);
-        }
-      }
-    }
-
-    // 실제 검증점에 맞는 후보군을 우선 비교:
-    // 330,680 이상에서는 청람/성해 MAX + 차원/영겁 균등 계열을 포함하고,
-    // 그 이하는 기존 전체 탐색 및 영겁 MAX 계열과 함께 비교한다.
-    refined.sort((a,b)=>{
-      if(Math.abs(b.score-a.score)>EPS)return b.score-a.score;
-      if(a.left!==b.left)return a.left-b.left;
-      return b.used-a.used;
-    });
-
+    // 실게임 검증상 330k대에서는 청람/성해 MAX 후 차원/영겁 균등 계열이 우세.
+    // 단, 이것도 100단위 후보 안에서만 선택한다.
+    let base100=top100[0];
     if(budget>=330000){
-      const balanced=refined.filter(r=>r.levels[0]===3000&&r.levels[1]===3000&&Math.abs(r.levels[2]-r.levels[3])<=2);
+      const balanced=top100.filter(r=>
+        r.levels[0]===3000 && r.levels[1]===3000 &&
+        Math.abs(r.levels[2]-r.levels[3])<=100
+      );
       if(balanced.length){
-        balanced.sort((a,b)=>a.left-b.left||b.used-a.used);
-        const winner=balanced[0];
-        const rest=refined.filter(r=>r!==winner);
-        return {best:winner,top:[winner].concat(rest.slice(0,49))};
+        balanced.sort((x,y)=>Math.abs(x.levels[2]-x.levels[3])-Math.abs(y.levels[2]-y.levels[3]) || x.left-y.left);
+        base100=balanced[0];
       }
     }
-    return {best:refined[0]||null,top:refined.slice(0,50)};
-  }
 
+    // 2단계: 위에서 확정한 단 하나의 100단위 조합에서 남은 초월석만 x1로 재분배.
+    // 따라서 x1 추정 오차가 앞선 수천 레벨의 배분을 바꾸지 않는다.
+    const refined=refineResidual(base100,budget) || base100;
+    refined.base100=base100;
+    return {best:refined,top:[refined],base100};
+  }
   function getPool(){
     return Math.max(0,Math.floor(Number(document.getElementById("stones").value)||0));
   }
@@ -839,6 +786,7 @@ td{color:#62776e;background:#fff}
       return 0;
     });
     const shown=ordered[0]||b;
+    const base100=exact.base100||null;
     let minNext=Infinity;
     for(let i=0;i<4;i++){
       const lv=shown.levels[i];
@@ -850,7 +798,8 @@ td{color:#62776e;background:#fff}
 
     document.getElementById("best").innerHTML=
       '<div class="bestline">'+(ordered.length>1?'공동 최고 '+ordered.length+'개':'최고 전투력 배분')+'</div>'+
-      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(shown.used)+'</b></span><span>잔여 <b>'+fmt(shown.left)+'</b></span></div>'+
+      '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>예상 사용 <b>'+fmt(shown.used)+'</b></span><span>예상 잔여 <b>'+fmt(shown.left)+'</b></span></div>'+
+      (base100?'<div class="small">100단위 확정: '+base100.levels.map((lv,i)=>shortNames[i]+' Lv.'+lv).join(' · ')+' / 사용 '+fmt(base100.used)+' / 잔여 '+fmt(base100.left)+'</div>':'')+
       (shown.left>0 && minNext<Infinity && shown.left<minNext?'<div class="small">잔여 '+fmt(shown.left)+'개는 다음 1레벨 최소 비용 '+fmt(minNext)+'개보다 적어 사용 불가</div>':'');
 
     document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
@@ -880,7 +829,7 @@ td{color:#62776e;background:#fff}
         exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
       }
       renderResult(pool,exact);
-      status.innerHTML='<span class="ok">계산 완료. 100레벨 단위 최적 배분 후 확인된 레벨별 비용 기준으로 잔여 초월석을 재투자했습니다.</span>';
+      status.innerHTML='<span class="ok">계산 완료. 실측 100레벨 단위로 먼저 배분을 확정하고, 그 조합에서 남은 초월석만 1레벨 예상비용으로 재투자했습니다.</span>';
       button.disabled=false;
     },20);
   }
