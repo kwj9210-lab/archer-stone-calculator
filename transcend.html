@@ -728,25 +728,32 @@ td{color:#62776e;background:#fff}
     }
     if(!top100.length)return {best:null,top:[],base100:null};
 
-    // 실게임 검증상 330k대에서는 청람/성해 MAX 후 차원/영겁 균등 계열이 우세.
-    // 단, 이것도 100단위 후보 안에서만 선택한다.
-    let base100=top100[0];
-    if(budget>=330000){
-      const balanced=top100.filter(r=>
-        r.levels[0]===3000 && r.levels[1]===3000 &&
-        Math.abs(r.levels[2]-r.levels[3])<=100
-      );
-      if(balanced.length){
-        balanced.sort((x,y)=>Math.abs(x.levels[2]-x.levels[3])-Math.abs(y.levels[2]-y.levels[3]) || x.left-y.left);
-        base100=balanced[0];
-      }
+    // 2단계: 상위 100레벨 후보를 모두 1레벨 단위로 재투자해 비교한다.
+    // 예전처럼 첫 후보 하나를 고정하거나 330k대 균등배분을 강제하지 않는다.
+    // 현재 확보된 비용/효과 데이터 안에서는 실제 점수가 가장 높은 조합을 선택한다.
+    let best=null, bestBase=null;
+    const refinedTop=[];
+    for(const base of top100){
+      const r=refineResidual(base,budget) || base;
+      if(better(r,best)){ best=r; bestBase=base; }
+      refinedTop.push(r);
     }
-
-    // 2단계: 위에서 확정한 단 하나의 100단위 조합에서 남은 초월석만 x1로 재분배.
-    // 따라서 x1 추정 오차가 앞선 수천 레벨의 배분을 바꾸지 않는다.
-    const refined=refineResidual(base100,budget) || base100;
-    refined.base100=base100;
-    return {best:refined,top:[refined],base100};
+    refinedTop.sort((x,y)=>{
+      if(Math.abs(y.score-x.score)>EPS)return y.score-x.score;
+      if(x.used!==y.used)return x.used-y.used;
+      for(let i=0;i<4;i++)if(x.levels[i]!==y.levels[i])return y.levels[i]-x.levels[i];
+      return 0;
+    });
+    const unique=[];
+    const seen=new Set();
+    for(const r of refinedTop){
+      const k=r.levels.join(",");
+      if(seen.has(k))continue;
+      seen.add(k); unique.push(r);
+      if(unique.length>=20)break;
+    }
+    best.base100=bestBase;
+    return {best,top:unique,base100:bestBase};
   }
   function getPool(){
     return Math.max(0,Math.floor(Number(document.getElementById("stones").value)||0));
@@ -821,7 +828,7 @@ td{color:#62776e;background:#fff}
     if(!Number.isFinite(pool)||pool<0){status.innerHTML='<span class="bad">초월석 값을 확인해 주세요.</span>';return;}
     const fixed=[false,false,false,false];
     const calcPool=Math.min(pool,TOTAL_MAX);
-    button.disabled=true; status.textContent="100레벨 단위 최적 배분 후 잔여 초월석 재투자 중...";
+    button.disabled=true; status.textContent="상위 후보 전체를 비교해 최적 배분 계산 중...";
     setTimeout(()=>{
       const exact=optimize100ThenResidual(calcPool);
       if(pool>TOTAL_MAX && exact.best){
@@ -829,7 +836,7 @@ td{color:#62776e;background:#fff}
         exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
       }
       renderResult(pool,exact);
-      status.innerHTML='<span class="ok">계산 완료. 실측 100레벨 단위로 먼저 배분을 확정하고, 그 조합에서 남은 초월석만 1레벨 예상비용으로 재투자했습니다.</span>';
+      status.innerHTML='<span class="ok">계산 완료. 100레벨 상위 후보 전체를 1레벨 단위까지 재계산해 가장 높은 조합을 선택했습니다.</span>';
       button.disabled=false;
     },20);
   }
