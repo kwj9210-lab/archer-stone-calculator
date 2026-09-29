@@ -395,7 +395,7 @@ function calc(){
      if(hundredK)parts.push('10만회 소탕 '+fmt(hundredK)+'회');
      sweepText=parts.length?parts.join(' · '):'소탕 0회';
    }
-   var approx100k=Math.round(per100k/100000);
+   var approx100k=Math.round(per100k/10000);
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmt(approx100k)+'만)</span></div><div class="strong">'+sweepText+'</div></div>';
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line warn">소탕 기준값 미확인</div></div>';
