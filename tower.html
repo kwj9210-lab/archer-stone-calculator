@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>초월의 탑 관통·명중 계산기</title>
+<style>
+:root{--bg:#f4fff8;--card:#fff;--line:#cfe9d9;--text:#29463b;--muted:#71867c;--accent:#35c98c;--strong:#198b64}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#f4fff8,#fff9ea);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+main{width:min(760px,100%);margin:auto;padding:22px 14px 50px}
+h1{font-size:24px;margin:0 0 6px}.sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 8px 22px rgba(69,126,98,.09);margin-bottom:14px}
+.inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:13px;font-weight:800}input{width:100%;margin-top:6px;border:1px solid #b9ddc8;border-radius:12px;padding:13px;font-size:18px;font-weight:800;color:var(--text);background:#fbfffc;outline:none}input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.12)}
+.result{text-align:center;padding:18px 8px 10px}.result .small{font-size:13px;color:var(--muted)}#floor{font-size:38px;font-weight:950;color:var(--strong);line-height:1.15;margin:4px 0}.need{font-size:14px;font-weight:750}
+details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}summary{cursor:pointer;padding:15px 16px;font-weight:900;list-style:none}summary::-webkit-details-marker{display:none}summary:after{content:"＋";float:right;color:var(--strong)}details[open] summary:after{content:"－"}
+.tableWrap{max-height:62vh;overflow:auto;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 8px;border-bottom:1px solid #e4f1e9;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:center}thead th{position:sticky;top:0;background:#effbf4;z-index:1}tr.hit{background:#e8fff2;font-weight:900}
+.note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.5}
+@media(max-width:520px){main{padding:16px 10px 40px}h1{font-size:21px}.card{padding:13px}.inputs{gap:7px}input{font-size:16px;padding:11px}#floor{font-size:34px}th,td{padding:8px 5px;font-size:13px}}
+</style>
+</head>
+<body><main>
+<h1>초월의 탑</h1>
+<div class="sub">APK 0.1.85 기준 · 900~1500층 관통/명중</div>
+<section class="card">
+<div class="inputs">
+<label>내 관통<input id="pen" inputmode="numeric" placeholder="예: 6000"></label>
+<label>내 명중<input id="acc" inputmode="numeric" placeholder="예: 17500"></label>
+</div>
+<div class="result">
+<div class="small">관통·명중 기준 가능 최고층</div>
+<div id="floor">수치 입력</div>
+<div id="need" class="need"></div>
+</div>
+</section>
+<details id="list">
+<summary>900층부터 필요 관통·명중 수치 보기</summary>
+<div class="tableWrap"><table><thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th></tr></thead><tbody id="rows"></tbody></table></div>
+</details>
+<div class="note">필요 관통은 보스 Block, 필요 명중은 보스 Evasion 값으로 계산. 공격력·생존·제한시간은 제외한 관통/명중 조건만 판정한다.</div>
+</main>
+<script>
+const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
+const A1=[500,600,700,800,900,1000], B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
+const A2=[1000,1100,1200,1300,1400,1500], B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
+function lerpInt(f,floors,vals){
+ if(f<=floors[0])return vals[0]; if(f>=floors[floors.length-1])return vals[vals.length-1];
+ let i=0; while(i+1<floors.length && f>floors[i+1])i++;
+ const span=floors[i+1]-floors[i], t=f-floors[i], d=vals[i+1]-vals[i];
+ return vals[i]+Math.trunc((d*t+Math.trunc(span/2))/span);
+}
+function req(f){
+ if(f<=1000)return [lerpInt(f,A1,B1),lerpInt(f,A1,E1)];
+ return [lerpInt(f,A2,B2),lerpInt(f,A2,E2)];
+}
+const rows=document.getElementById('rows');
+for(let f=900;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
+function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
+function update(){
+ const p=num(document.getElementById('pen').value),a=num(document.getElementById('acc').value);
+ document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
+ if(!p&&!a){floor.textContent='수치 입력';need.textContent='';return}
+ let best=899;
+ for(let f=900;f<=1500;f++){const [rp,ra]=req(f);if(p>=rp&&a>=ra)best=f;else break}
+ if(best<900){floor.textContent='900층 미만';const [rp,ra]=req(900);need.textContent='900층 필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra);return}
+ floor.textContent=best===1500?'1500층까지 가능':best+'층';
+ const tr=document.getElementById('f'+best);if(tr)tr.classList.add('hit');
+ if(best<1500){const [np,na]=req(best+1);need.textContent=(best+1)+'층 필요 · 관통 '+fmt(np)+' / 명중 '+fmt(na)}
+ else need.textContent='1500층 필요 · 관통 '+fmt(req(1500)[0])+' / 명중 '+fmt(req(1500)[1]);
+}
+['pen','acc'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+</script></body></html>
