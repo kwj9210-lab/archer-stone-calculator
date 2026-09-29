@@ -474,7 +474,7 @@ td{color:#62776e;background:#fff}
     if(!b)return true;
     const d=a.score-b.score;
     if(Math.abs(d)>EPS)return d>0;
-    if(a.used!==b.used)return a.used<b.used;
+    if(a.used!==b.used)return a.used>b.used;
     for(let i=0;i<4;i++)if(a.levels[i]!==b.levels[i])return a.levels[i]>b.levels[i];
     return false;
   };
@@ -630,45 +630,73 @@ td{color:#62776e;background:#fff}
   }
   function optimizeExact(budget){
     budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
-    // 정확한 meet-in-the-middle 전역탐색.
-    // (차원,영겁)의 모든 가능한 조합을 비용별 최고 효과로 압축한 뒤,
-    // (청람,성해)의 모든 조합과 결합한다.
-    const bestScore=new Float64Array(budget+1);
-    bestScore.fill(-Infinity);
-    const bestC=new Uint16Array(budget+1), bestD=new Uint16Array(budget+1);
-    for(let c=0;c<=3000;c++){
-      const cc=levelCost[2][c]; if(cc>budget)break;
-      const ec=levelEffect[2][c];
-      for(let d=0;d<=3000;d++){
-        const used=cc+levelCost[3][d]; if(used>budget)break;
-        const score=ec+levelEffect[3][d];
-        if(score>bestScore[used]+EPS){
-          bestScore[used]=score; bestC[used]=c; bestD[used]=d;
+    const K=12, W=budget+1, N=W*K;
+    const sc=new Float64Array(N); sc.fill(-Infinity);
+    const cc=new Uint16Array(N), dd=new Uint16Array(N), uu=new Int32Array(N);
+
+    function insert(cost,score,c,d,used){
+      const base=cost*K;
+      for(let j=0;j<K;j++){
+        const p=base+j;
+        if(cc[p]===c&&dd[p]===d&&sc[p]>-Infinity)return;
+        if(sc[p]===-Infinity || score>sc[p]+EPS ||
+          (Math.abs(score-sc[p])<=EPS && used>uu[p])){
+          for(let z=K-1;z>j;z--){const q=base+z,r=q-1;sc[q]=sc[r];cc[q]=cc[r];dd[q]=dd[r];uu[q]=uu[r];}
+          sc[p]=score;cc[p]=c;dd[p]=d;uu[p]=used;return;
         }
       }
     }
-    // 비용 x 이하에서 얻을 수 있는 최고 (차원,영겁) 조합.
+    for(let c=0;c<=3000;c++){
+      const c0=levelCost[2][c];if(c0>budget)break;
+      for(let d=0;d<=3000;d++){
+        const used=c0+levelCost[3][d];if(used>budget)break;
+        insert(used,levelEffect[2][c]+levelEffect[3][d],c,d,used);
+      }
+    }
+    // Prefix merge: retain tied/near-best distinct CD states for every affordable budget.
     for(let x=1;x<=budget;x++){
-      if(bestScore[x-1]>bestScore[x]+EPS){
-        bestScore[x]=bestScore[x-1]; bestC[x]=bestC[x-1]; bestD[x]=bestD[x-1];
+      const cur=x*K, prev=(x-1)*K, cand=[];
+      for(let j=0;j<K;j++){
+        if(sc[cur+j]>-Infinity)cand.push([sc[cur+j],cc[cur+j],dd[cur+j],uu[cur+j]]);
+        if(sc[prev+j]>-Infinity)cand.push([sc[prev+j],cc[prev+j],dd[prev+j],uu[prev+j]]);
       }
+      cand.sort((p,q)=>Math.abs(q[0]-p[0])>EPS?q[0]-p[0]:q[3]-p[3]);
+      let w=0,seen=new Set();
+      for(const v of cand){
+        const key=v[1]+","+v[2];if(seen.has(key))continue;seen.add(key);
+        sc[cur+w]=v[0];cc[cur+w]=v[1];dd[cur+w]=v[2];uu[cur+w]=v[3];
+        if(++w===K)break;
+      }
+      for(;w<K;w++){sc[cur+w]=-Infinity;cc[cur+w]=dd[cur+w]=uu[cur+w]=0;}
     }
-    let best=null;
+    let best=null, ties=[];
+    const addTie=c=>{
+      if(!best || c.score>best.score+EPS){best=c;ties=[c];return;}
+      if(Math.abs(c.score-best.score)<=EPS){
+        if(c.used>best.used)best=c;
+        const key=c.levels.join(",");
+        if(!ties.some(x=>x.levels.join(",")===key))ties.push(c);
+      }
+    };
     for(let aa=0;aa<=3000;aa++){
-      const ca=levelCost[0][aa]; if(ca>budget)break;
-      const ea=levelEffect[0][aa];
+      const ca=levelCost[0][aa];if(ca>budget)break;
       for(let bb=0;bb<=3000;bb++){
-        const ab=ca+levelCost[1][bb]; if(ab>budget)break;
-        const rem=budget-ab;
-        if(!Number.isFinite(bestScore[rem]))continue;
-        const c=bestC[rem], d=bestD[rem];
-        const used=ab+levelCost[2][c]+levelCost[3][d];
-        const cand={levels:[aa,bb,c,d],used,left:budget-used,
-          score:ea+levelEffect[1][bb]+bestScore[rem]};
-        if(better(cand,best))best=cand;
+        const ab=ca+levelCost[1][bb];if(ab>budget)break;
+        const base=(budget-ab)*K;
+        for(let j=0;j<K;j++){
+          if(sc[base+j]===-Infinity)break;
+          const c=cc[base+j],d=dd[base+j],used=ab+uu[base+j];
+          addTie({levels:[aa,bb,c,d],used,left:budget-used,
+            score:levelEffect[0][aa]+levelEffect[1][bb]+sc[base+j]});
+        }
       }
     }
-    return {best,top:best?[best]:[],base100:null};
+    if(best){
+      ties=ties.filter(x=>Math.abs(x.score-best.score)<=EPS);
+      ties.sort((x,y)=>y.used-x.used || y.levels[0]-x.levels[0] || y.levels[1]-x.levels[1] || y.levels[2]-x.levels[2] || y.levels[3]-x.levels[3]);
+      best=ties[0];
+    }
+    return {best,top:ties.slice(0,12),base100:null};
   }
   function getPool(){
     return Math.max(0,Math.floor(Number(document.getElementById("stones").value)||0));
