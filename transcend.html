@@ -440,6 +440,30 @@ td{color:#62776e;background:#fff}
     return a;
   });
 
+  // 실제 게임 누적비용 검증 보정
+  // 보유 154,320 -> 청람201 / 성해201 / 차원2061 / 영겁200 후 실제 잔여 281
+  // 실제 총사용 154,039, 따라서 차원 Lv.2061 누적비용은 144,994.
+  // 기존 Lv.2000 이하 누적비용과 Lv.2100 구간 총비용은 유지하고,
+  // Lv.2000~2061의 개별 비용 합만 실측 누적값에 맞춘다.
+  (function calibrateDimension2061(){
+    const a=levelCost[2];
+    const targetLv=2061, targetCum=144994;
+    const startLv=2000, endLv=2100;
+    const startCum=a[startLv], endCum=a[endLv];
+    const firstTotal=targetCum-startCum;
+    const secondTotal=endCum-targetCum;
+    const rebuild=(from,to,total)=>{
+      const n=to-from, q=Math.floor(total/n), rem=total%n;
+      let cur=a[from];
+      for(let j=0;j<n;j++){
+        cur+=q+(j<rem?1:0);
+        a[from+j+1]=cur;
+      }
+    };
+    rebuild(startLv,targetLv,firstTotal);
+    rebuild(targetLv,endLv,secondTotal);
+  })();
+
   // 차원각인 x1 실측 공격력 보정
   // Lv.2103 현재 / Lv.2104(화면의 다음 공격력) 실제 게임값
   levelEffect[2][2103]=14799526.0986113;
@@ -769,7 +793,7 @@ td{color:#62776e;background:#fff}
         exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
       }
       renderResult(pool,exact);
-      status.innerHTML='<span class="ok">계산 완료. 100레벨 단위로 먼저 최적 배분한 뒤 남은 초월석을 1레벨 단위로 재투자했습니다.</span>';
+      status.innerHTML='<span class="ok">계산 완료. 100레벨 단위 최적 배분 후 확인된 레벨별 비용 기준으로 잔여 초월석을 재투자했습니다.</span>';
       button.disabled=false;
     },20);
   }
