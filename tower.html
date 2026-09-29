@@ -15,7 +15,7 @@ h1{font-size:24px;margin:0 0 6px}.sub{font-size:13px;color:var(--muted);margin-b
 .result{text-align:center;padding:18px 8px 10px}.result .small{font-size:13px;color:var(--muted)}#floor{font-size:30px;font-weight:950;color:var(--strong);line-height:1.2;margin:7px 0}.need{font-size:14px;font-weight:750}
 details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}summary{cursor:pointer;padding:15px 16px;font-weight:900;list-style:none}summary::-webkit-details-marker{display:none}summary:after{content:"＋";float:right;color:var(--strong)}details[open] summary:after{content:"－"}
 .tableWrap{max-height:62vh;overflow:auto;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 8px;border-bottom:1px solid #e4f1e9;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:center}thead th{position:sticky;top:0;background:#effbf4;z-index:1}tr.hit{background:#e8fff2;font-weight:900}
-.note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.5}
+.note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.5}.planLine{padding:5px 0;border-bottom:1px solid #dceee4}.planLine:last-child{border-bottom:0}.ok{color:#198b64}.bad{color:#c86b35}
 @media(max-width:520px){main{padding:16px 10px 40px}.floorLookup{grid-template-columns:1fr}.lookupResult{min-height:44px}h1{font-size:21px}.card{padding:13px}.inputs{gap:7px}input{font-size:16px;padding:11px}#floor{font-size:34px}th,td{padding:8px 5px;font-size:13px}}
 </style>
 </head>
@@ -27,8 +27,14 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <label>내 관통<input id="pen" inputmode="numeric" placeholder="예: 6000"></label>
 <label>내 명중<input id="acc" inputmode="numeric" placeholder="예: 17500"></label>
 </div>
-<div class="floorLookup"><label>층수 조회<input id="lookupFloor" inputmode="numeric" placeholder="예: 1250"></label><div id="lookupResult" class="lookupResult">층수를 입력하면 필요 관통·명중이 표시됩니다.</div></div>
+<div class="floorLookup"><label>목표 층수<input id="lookupFloor" inputmode="numeric" value="1500" placeholder="예: 1250"></label><div id="lookupResult" class="lookupResult">목표 층의 필요 관통·명중이 표시됩니다.</div></div>
 <div class="result" id="resultBox" hidden><div id="floor"></div><div id="need" class="need"></div></div>
+</section>
+<section class="card" id="planCard">
+<h2 style="font-size:17px;margin:0 0 10px">최소 각인석 제작 플랜</h2>
+<div id="planIntro" class="sub" style="margin:0 0 10px">내 관통·명중과 목표 층을 입력하면 부족한 수치를 채우는 최소 개수 조합을 계산합니다.</div>
+<div id="planResult" class="lookupResult" style="display:block;line-height:1.65">관통·명중을 입력해 주세요.</div>
+<div class="note">슬롯 상한: 마석 10개 · 경화석 11개 · 생명석 10개. 참고자료의 전설/신화/태초/불멸 수치로 계산하며, 우선 각인석 개수를 최소화하고 같은 개수에서는 낮은 등급 조합을 우선합니다.</div>
 </section>
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
@@ -66,6 +72,65 @@ function update(){
  else need.textContent='1500층 필요 · 관통 '+fmt(req(1500)[0])+' / 명중 '+fmt(req(1500)[1]);
 }
 ['pen','acc'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+const STONES={
+ M:{name:'마석',cap:10,v:[[52,52,'전설'],[62,62,'신화'],[73,73,'태초'],[85,85,'불멸']]},
+ H:{name:'경화석',cap:11,v:[[156,104,'전설'],[186,124,'신화'],[219,146,'태초'],[255,170,'불멸']]},
+ L:{name:'생명석',cap:10,v:[[104,156,'전설'],[124,186,'신화'],[146,219,'태초'],[170,255,'불멸']]}
+};
+function categoryPlans(cat){
+ const x=STONES[cat], out=[];
+ function rec(i,left,cnt,p,a,rank,arr){
+   if(i===4){out.push({cat,cnt,p,a,rank,arr:arr.slice()});return}
+   for(let n=0;n<=left;n++){arr[i]=n;const v=x.v[i];rec(i+1,left-n,cnt+n,p+n*v[0],a+n*v[1],rank+n*(i+1),arr)}
+ }
+ rec(0,x.cap,0,0,0,0,[0,0,0,0]); return out;
+}
+const CP={M:categoryPlans('M'),H:categoryPlans('H'),L:categoryPlans('L')};
+function bestPlan(dp,da){
+ if(dp<=0&&da<=0)return {cnt:0,p:0,a:0,rank:0,parts:[]};
+ let best=null;
+ // 각 카테고리별 후보를 부족치 이상으로 과도하게 넘지 않도록 압축
+ function pareto(list){
+   const map=new Map();
+   for(const q of list){
+     const kp=Math.min(q.p,Math.max(0,dp)),ka=Math.min(q.a,Math.max(0,da)),k=kp+'|'+ka+'|'+q.cnt;
+     const old=map.get(k); if(!old||q.rank<old.rank)map.set(k,q);
+   }
+   return [...map.values()];
+ }
+ const m=pareto(CP.M),h=pareto(CP.H),l=pareto(CP.L);
+ // M+H를 먼저 압축
+ const mhMap=new Map();
+ for(const x of m)for(const y of h){
+   const p=x.p+y.p,a=x.a+y.a,cnt=x.cnt+y.cnt,rank=x.rank+y.rank;
+   const kp=Math.min(p,Math.max(0,dp)),ka=Math.min(a,Math.max(0,da)),k=kp+'|'+ka+'|'+cnt;
+   const old=mhMap.get(k);if(!old||rank<old.rank)mhMap.set(k,{p,a,cnt,rank,parts:[x,y]});
+ }
+ const mh=[...mhMap.values()];
+ for(const x of mh)for(const y of l){
+   const p=x.p+y.p,a=x.a+y.a;if(p<dp||a<da)continue;
+   const z={p,a,cnt:x.cnt+y.cnt,rank:x.rank+y.rank,parts:x.parts.concat(y)};
+   const over=(p-dp)+(a-da),bestOver=best?((best.p-dp)+(best.a-da)):Infinity;
+   if(!best||z.cnt<best.cnt||(z.cnt===best.cnt&&(z.rank<best.rank||(z.rank===best.rank&&over<bestOver))))best=z;
+ }
+ return best;
+}
+function planText(q){
+ const x=STONES[q.cat],bits=[];
+ q.arr.forEach((n,i)=>{if(n)bits.push(x.v[i][2]+' '+n+'개')});
+ return bits.length?'<div class="planLine"><b>'+x.name+'</b> · '+bits.join(' · ')+'</div>':'';
+}
+function updatePlan(){
+ const p=num(document.getElementById('pen').value),a=num(document.getElementById('acc').value),f=num(document.getElementById('lookupFloor').value);
+ const box=document.getElementById('planResult');
+ if(!p&&!a){box.innerHTML='관통·명중을 입력해 주세요.';return}
+ if(f<500||f>1500){box.innerHTML='목표 층수를 500~1500 사이로 입력해 주세요.';return}
+ const [rp,ra]=req(f),dp=Math.max(0,rp-p),da=Math.max(0,ra-a);
+ if(dp===0&&da===0){box.innerHTML='<span class="ok"><b>'+f+'층은 추가 제작 없이 관통·명중 조건 충족</b></span>';return}
+ const b=bestPlan(dp,da);
+ if(!b){box.innerHTML='<span class="bad"><b>현재 슬롯 상한으로 부족 수치를 채울 수 없습니다.</b></span><br>부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da);return}
+ box.innerHTML='<b>'+f+'층까지 부족</b> · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br><b>최소 '+b.cnt+'개 제작</b> · 추가 관통 '+fmt(b.p)+' / 명중 '+fmt(b.a)+b.parts.map(planText).join('');
+}
 const lf=document.getElementById('lookupFloor'),lr=document.getElementById('lookupResult');
 function lookup(){
  const f=num(lf.value);
@@ -73,5 +138,7 @@ function lookup(){
  if(f<500||f>1500){lr.textContent='500~1500층 사이로 입력해 주세요.';return}
  const [p,a]=req(f);lr.textContent=f+'층 필요 · 관통 '+fmt(p)+' / 명중 '+fmt(a);
 }
-lf.addEventListener('input',lookup);
+lf.addEventListener('input',()=>{lookup();updatePlan()});
+['pen','acc'].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
+lookup();updatePlan();
 </script></body></html>
