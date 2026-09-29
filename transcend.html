@@ -371,7 +371,7 @@ td{color:#62776e;background:#fff}
     [2000,3000,5000,7000,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8685,9150,9633,10132,10646,11173,11720,12277,12852,13442,14047,14669,15300,15952,16616]
   ];
 
-  // 영상에서 직접 읽은 100레벨 단위 공격력 증가값을 게임 큰수 표기 순서로 수치화한 효과지수.
+  // 영상에서 직접 읽은 100레벨 단위 공격력 증가값을 게임 큰수 표기 순서로 수치화한 내부 효과값.
   // 공격력 배율은 곱연산이므로 이 대수 지수는 합산해서 비교할 수 있다.
   const effect=[
     [0,149998.125,299996.25,449942.375,599990.5,748638.624996999977,899988.75,1199985,1499981.25,1799925.5,2099973.75,2399970,2699966.25,3199908,3699953.75,4199947.5,4699941.25,5199935,5699928.75,6199922.5,6699916.25,7199910,7699903.75,8199897.5,8699891.25,9199885,9699878.75,10199872.5,10699866.25,11199860,11699853.75],
@@ -478,19 +478,12 @@ td{color:#62776e;background:#fff}
     if(lo<=0 || idx<=1) return "+"+hi+s1+"%";
     return "+"+hi+s1+" "+String(lo).padStart(4,"0")+suffixFromIndex(idx-1)+"%";
   }
-  // effect는 실제 공격력의 로그형 인코딩 값이다.
-  // 인코딩 값을 단순 덧셈하면 최적 배분이 틀어진다.
-  // 실제 공격력 합과 같은 순서가 되도록 log-sum-exp 방식으로 합친다.
-  function addEffect(a,b){
-    if(a<=0)return b;
-    if(b<=0)return a;
-    const m=Math.max(a,b), d=Math.abs(a-b);
-    if(d>20)return m;
-    return m+Math.log10(1+Math.pow(10,-4*d))/4;
-  }
+  // 각 초월 항목의 효과는 대수 효과값을 합산해 전체 배분을 비교한다.
+  // 302,600 실게임 검증값: 청람130 / 성해100 / 차원200 / 영겁3000.
+  function addEffect(a,b){ return a+b; }
   function addEffects(){
     let v=0;
-    for(let i=0;i<arguments.length;i++)v=addEffect(v,arguments[i]);
+    for(let i=0;i<arguments.length;i++)v+=arguments[i];
     return v;
   }
   const clampLv=v=>Math.max(0,Math.min(3000,Math.floor(Number(v)||0)));
@@ -675,16 +668,6 @@ td{color:#62776e;background:#fff}
       if(seen.has(key))continue; seen.add(key); refined.push(r);
     }
 
-    // 실제 게임에서 확인된 302,600 기준 조합도 검증 후보로 포함.
-    // 영겁3000 + 차원200 + 성해100 + 청람130 = 사용 302,594 / 잔여 6.
-    if(budget===302600){
-      const lv=[130,100,200,3000];
-      const used=lv.reduce((sum,x,i)=>sum+levelCost[i][x],0);
-      if(used<=budget) refined.push({
-        levels:lv,used,left:budget-used,
-        score:addEffects(levelEffect[0][lv[0]],levelEffect[1][lv[1]],levelEffect[2][lv[2]],levelEffect[3][lv[3]])
-      });
-    }
 
     refined.sort((a,b)=>{
       if(Math.abs(b.score-a.score)>EPS)return b.score-a.score;
