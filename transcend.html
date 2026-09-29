@@ -605,7 +605,7 @@ td{color:#62776e;background:#fff}
     }
     return {levels,used,left:budget-used,score:addEffects(levelEffect[0][levels[0]],levelEffect[1][levels[1]],levelEffect[2][levels[2]],levelEffect[3][levels[3]])};
   }
-  function optimizeExact(budget){
+  async function optimizeExact(budget,onProgress){
     budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
     // CD 모든 조합에서 각 비용별 최고 효과를 저장한 뒤, 예산 이하 prefix 최고를 만든다.
     const bestScore=new Float64Array(budget+1); bestScore.fill(-Infinity);
@@ -619,11 +619,16 @@ td{color:#62776e;background:#fff}
           bestScore[cost]=score; bestC[cost]=c; bestD[cost]=d;
         }
       }
+      if((c&63)===63){
+        if(onProgress)onProgress(Math.min(45,Math.round(c/3000*45)));
+        await new Promise(requestAnimationFrame);
+      }
     }
     for(let x=1;x<=budget;x++){
       if(bestScore[x-1]>bestScore[x]+EPS){
         bestScore[x]=bestScore[x-1]; bestC[x]=bestC[x-1]; bestD[x]=bestD[x-1];
       }
+      if((x&16383)===0) await new Promise(requestAnimationFrame);
     }
 
     let best=null;
@@ -639,7 +644,12 @@ td{color:#62776e;background:#fff}
           score:levelEffect[0][a]+levelEffect[1][b]+cds};
         if(better(cand,best))best=cand;
       }
+      if((a&63)===63){
+        if(onProgress)onProgress(50+Math.min(49,Math.round(a/3000*49)));
+        await new Promise(requestAnimationFrame);
+      }
     }
+    if(onProgress)onProgress(100);
     return {best,top:best?[best]:[],base100:null};
   }
   function getPool(){
@@ -717,7 +727,7 @@ td{color:#62776e;background:#fff}
     const calcPool=Math.min(pool,TOTAL_MAX);
     button.disabled=true; status.textContent="전체 조합을 비교해 최적 배분 계산 중...";
     setTimeout(()=>{
-      const exact=optimizeExact(calcPool);
+      optimizeExact(calcPool,p=>{status.textContent="전체 조합 계산 중... "+p+"%";}).then(exact=>{
       if(pool>TOTAL_MAX && exact.best){
         exact.best.left+=pool-TOTAL_MAX;
         exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
@@ -725,6 +735,11 @@ td{color:#62776e;background:#fff}
       renderResult(pool,exact);
       status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식으로 전체 조합을 비교했습니다.</span>';
       button.disabled=false;
+      }).catch(err=>{
+        console.error(err);
+        status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
+        button.disabled=false;
+      });
     },20);
   }
   document.getElementById("run").addEventListener("click",run);
