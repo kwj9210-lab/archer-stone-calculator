@@ -351,7 +351,7 @@ td{color:#62776e;background:#fff}
   <div class="cost-head">
     <h2>비용 기준</h2>
   </div>
-  <div class="cost-summary">Lv.3000 MAX · 청람 137,774 / 성해 173,275 / 차원 260,871 / 영겁 296,903</div>
+  <div class="cost-summary">Lv.3000 MAX · 청람 137,774 / 성해 173,277 / 차원 260,789 / 영겁 296,794</div>
   <details class="cost-details">
     <summary>100레벨 구간별 비용</summary>
     <div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th></tr></thead><tbody><tr><td>Lv.0→100</td><td>500</td><td>1,000</td><td>1,500</td><td>2,000</td></tr><tr><td>Lv.100→200</td><td>1,000</td><td>1,500</td><td>2,500</td><td>3,000</td></tr><tr><td>Lv.200→300</td><td>2,000</td><td>2,500</td><td>4,000</td><td>5,000</td></tr><tr><td>Lv.300→400</td><td>3,000</td><td>4,000</td><td>6,000</td><td>7,000</td></tr><tr><td>Lv.400→500</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.500→600</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.600→700</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.700→800</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.800→900</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.900→1000</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1000→1100</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1100→1200</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1200→1300</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1300→1400</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1400→1500</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td><b>MAX</b></td><td><b>50,500</b></td><td><b>64,000</b></td><td><b>96,500</b></td><td><b>110,500</b></td></tr></tbody></table></div>
@@ -380,54 +380,33 @@ td{color:#62776e;background:#fff}
     [0,599990.5,1049986.875,1424982.1875,1774977.8125,2093723.828119999962,2412469.84375,3049960.875,3687453.90625,4324945.9375,4962437.96875,5599930,6237422.03125,7299909,8362395.46875,9424882.191290000454,10487368.913799999282,11549855.636399999261,12612342.35889999941,13674829.081499999389,15486526.402111284435,16889658.971068248153,18360800.134351626039,18987886.757238332182,21514663.705007649958,23201163.842937778682,24963228.036304540932,26802745.150386504829,28721656.050461553037,30721693.601805225015,32804902.669700134546]
   ];
 
-  // x100 실측 총비용을 100개 개별 레벨에 정수 단위로 배분한다.
-  // 각 100레벨 구간의 누적합은 영상의 x100 비용과 정확히 일치한다.
-  // 나머지는 앞 레벨부터 1씩 추가해 초월석 1단위 사용이 가능하게 한다.
+  // APK 비용식 복원.
+  // Lv.1~1500은 100레벨 구간 내 x1 비용이 고정이며,
+  // Lv.1501~3000은 GrowthStoneTranscendence.BuildExpandedCosts의 정수식을 그대로 사용한다.
+  const baseCost=[40,50,75,85];
   const levelCost=costs.map((row,stoneIndex)=>{
     const a=new Int32Array(3001);
     let sum=0;
     a[0]=0;
-    for(let b=0;b<30;b++){
-      const total=row[b];
-
-      // 기본: x100 총비용을 100개 레벨에 정수 배분.
-      let per=new Int32Array(100);
-      const q=Math.floor(total/100), rem=total%100;
-      for(let j=0;j<100;j++) per[j]=q+(j<rem?1:0);
-
-      // 차원각인 Lv.2100~2200은 x1 실측으로 보정.
-      // 149,280 보유 -> Lv.2103 / 잔여 83 이므로
-      // Lv.2100→2101, →2102, →2103 합계가 실제 누적값과 일치해야 하고
-      // Lv.2103→2104 비용은 화면 실측 101.
-      if(stoneIndex===2 && b===21){
-        // Lv.2100까지 누적 사용량은 이전 x100 실측 합계로 확정.
-        // 실제 스크린샷과 일치하도록 첫 3레벨을 배치하고,
-        // 4번째 레벨은 101로 고정한다.
-        const targetUsedAt2103=149197;
-        const usedAt2100=sum;
-        const first3=targetUsedAt2103-usedAt2100;
-
-        // 첫 3개 비용은 가능한 한 균등하게 배치.
-        const bq=Math.floor(first3/3), br=first3%3;
-        per[0]=bq+(br>0?1:0);
-        per[1]=bq+(br>1?1:0);
-        per[2]=bq;
-        per[3]=101;
-
-        // x100 총비용 10,334는 유지해야 하므로 나머지 96레벨 재분배.
-        let fixed=per[0]+per[1]+per[2]+per[3];
-        let rest=total-fixed;
-        const rq=Math.floor(rest/96), rr=rest%96;
-        for(let j=4;j<100;j++) per[j]=rq+((j-4)<rr?1:0);
-      }
-
-      for(let j=0;j<100;j++){
-        sum+=per[j];
-        a[b*100+j+1]=sum;
-      }
+    for(let lv=1;lv<=1500;lv++){
+      const b=Math.floor((lv-1)/100);
+      sum+=Math.floor(row[b]/100);
+      a[lv]=sum;
+    }
+    const B=baseCost[stoneIndex];
+    for(let lv=1501;lv<=3000;lv++){
+      const n=lv-1500;
+      const one=B+Math.floor(B*n*(n+6000)/11250000);
+      sum+=one;
+      a[lv]=sum;
     }
     return a;
   });
+
+  // 화면의 100레벨 구간표도 APK x1 누적값으로 갱신한다.
+  for(let i=0;i<4;i++){
+    for(let b=15;b<30;b++) costs[i][b]=levelCost[i][(b+1)*100]-levelCost[i][b*100];
+  }
 
   // 공격력 효과는 확보된 100레벨 기준점 사이를 레벨별 선형 보간한다.
   const levelEffect=effect.map(row=>{
@@ -439,44 +418,6 @@ td{color:#62776e;background:#fff}
     a[3000]=row[30];
     return a;
   });
-
-  // 실제 게임 검증: 330,680 보유 -> 청람3000 / 성해3000 / 차원310 / 영겁310 -> 잔여329
-  // 실제 총사용 330,351. 기존 비용표 동일 조합은 330,349로 2개 부족하므로
-  // Lv.300~310의 차원/영겁 누적에 각각 +1, 이후 Lv.400에서 기존 x100 총합으로 복귀시킨다.
-  (function calibrate310Checkpoint(){
-    for(const stoneIndex of [2,3]){
-      const a=levelCost[stoneIndex];
-      for(let lv=301;lv<=310;lv++) a[lv]+=Math.ceil((lv-300)/10);
-      for(let lv=311;lv<400;lv++){
-        const remain=400-lv;
-        a[lv]+=Math.max(0,Math.round(remain/90));
-      }
-    }
-  })();
-
-  // 실제 게임 누적비용 검증 보정
-  // 보유 154,320 -> 청람201 / 성해201 / 차원2061 / 영겁200 후 실제 잔여 281
-  // 실제 총사용 154,039, 따라서 차원 Lv.2061 누적비용은 144,994.
-  // 기존 Lv.2000 이하 누적비용과 Lv.2100 구간 총비용은 유지하고,
-  // Lv.2000~2061의 개별 비용 합만 실측 누적값에 맞춘다.
-  (function calibrateDimension2061(){
-    const a=levelCost[2];
-    const targetLv=2061, targetCum=144994;
-    const startLv=2000, endLv=2100;
-    const startCum=a[startLv], endCum=a[endLv];
-    const firstTotal=targetCum-startCum;
-    const secondTotal=endCum-targetCum;
-    const rebuild=(from,to,total)=>{
-      const n=to-from, q=Math.floor(total/n), rem=total%n;
-      let cur=a[from];
-      for(let j=0;j<n;j++){
-        cur+=q+(j<rem?1:0);
-        a[from+j+1]=cur;
-      }
-    };
-    rebuild(startLv,targetLv,firstTotal);
-    rebuild(targetLv,endLv,secondTotal);
-  })();
 
   // 실제 게임 공격력 실측 앵커 (330,680 검증 화면)
   // 청람 Lv3000 +20AGFXPF 6598AGFXPE%
