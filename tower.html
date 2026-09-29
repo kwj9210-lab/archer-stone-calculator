@@ -12,7 +12,7 @@ h1{font-size:24px;margin:0 0 6px}.sub{font-size:13px;color:var(--muted);margin-b
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 8px 22px rgba(69,126,98,.09);margin-bottom:14px}
 .inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:13px;font-weight:800}input{width:100%;margin-top:6px;border:1px solid #b9ddc8;border-radius:12px;padding:13px;font-size:18px;font-weight:800;color:var(--text);background:#fbfffc;outline:none}input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.12)}
 .floorLookup{margin-top:12px;padding-top:12px;border-top:1px solid #e1efe7;display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:end}.lookupResult{min-height:50px;border-radius:12px;background:#effbf4;padding:13px 14px;font-size:14px;font-weight:850;display:flex;align-items:center;color:var(--strong)}
-.result{text-align:center;padding:18px 8px 10px}.result .small{font-size:13px;color:var(--muted)}#floor{font-size:38px;font-weight:950;color:var(--strong);line-height:1.15;margin:4px 0}.need{font-size:14px;font-weight:750}
+.result{text-align:center;padding:18px 8px 10px}.result .small{font-size:13px;color:var(--muted)}#floor{font-size:30px;font-weight:950;color:var(--strong);line-height:1.2;margin:7px 0}.need{font-size:14px;font-weight:750}
 details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}summary{cursor:pointer;padding:15px 16px;font-weight:900;list-style:none}summary::-webkit-details-marker{display:none}summary:after{content:"＋";float:right;color:var(--strong)}details[open] summary:after{content:"－"}
 .tableWrap{max-height:62vh;overflow:auto;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 8px;border-bottom:1px solid #e4f1e9;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:center}thead th{position:sticky;top:0;background:#effbf4;z-index:1}tr.hit{background:#e8fff2;font-weight:900}
 .note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.5}
@@ -60,7 +60,7 @@ function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
 function update(){
  const p=num(document.getElementById('pen').value),a=num(document.getElementById('acc').value);
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
- if(!p&&!a){floor.textContent='수치 입력';need.textContent='';return}
+ if(!p&&!a){floor.textContent='관통·명중을 입력하세요';need.textContent='';return}
  let best=899;
  for(let f=900;f<=1500;f++){const [rp,ra]=req(f);if(p>=rp&&a>=ra)best=f;else break}
  if(best<900){floor.textContent='900층 미만';const [rp,ra]=req(900);need.textContent='900층 필요 · 관통 '+fmt(rp)+' / 명중 '+fmt(ra);return}
