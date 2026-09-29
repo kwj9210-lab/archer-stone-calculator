@@ -402,7 +402,7 @@ function calc(){
  });
  el('resourceResults').innerHTML=html;
  var tickets=totalRuns*2,short=Math.max(0,tickets-val('ticketsNow')),dia=short*val('ticketPrice');
- el('ticketsTotal').textContent=fmt(tickets)+'장';el('totalRuns').textContent=fmt(totalRuns)+'회';el('ticketShort').textContent=fmt(short)+'장';el('diamondNeed').textContent=fmt(dia)+' 다이아';
+ function fmtMan(n,suffix){return n>=10000?fmt(Math.floor(n/10000))+'만'+suffix:fmt(n)+suffix;} el('ticketsTotal').textContent=fmtMan(tickets,'장');el('totalRuns').textContent=fmtMan(totalRuns,'회');el('ticketShort').textContent=fmtMan(short,'장');el('diamondNeed').textContent=fmtMan(dia,' 다이아');
  el('ticketLabel').textContent='총 필요 입장권';
  var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
  var remain=inv.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
