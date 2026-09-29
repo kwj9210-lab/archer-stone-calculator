@@ -78,12 +78,14 @@ const STONES={
  L:{name:'생명석',cap:10,v:[[104,156,'전설'],[124,186,'신화'],[146,219,'태초'],[170,255,'불멸']]}
 };
 function categoryPlans(cat){
- const x=STONES[cat], out=[];
- function rec(i,left,cnt,p,a,rank,arr){
-   if(i===4){out.push({cat,cnt,p,a,rank,arr:arr.slice()});return}
-   for(let n=0;n<=left;n++){arr[i]=n;const v=x.v[i];rec(i+1,left-n,cnt+n,p+n*v[0],a+n*v[1],rank+n*(i+1),arr)}
+ const x=STONES[cat],out=[];
+ for(let a=0;a<=x.cap;a++)for(let b=0;b<=x.cap-a;b++)for(let d=0;d<=x.cap-a-b;d++)for(let e=0;e<=x.cap-a-b-d;e++){
+   const arr=[a,b,d,e],cnt=a+b+d+e;
+   let p=0,ac=0,rank=0;
+   for(let i=0;i<4;i++){p+=arr[i]*x.v[i][0];ac+=arr[i]*x.v[i][1];rank+=arr[i]*(i+1)}
+   out.push({cat:cat,cnt:cnt,p:p,a:ac,rank:rank,arr:arr});
  }
- rec(0,x.cap,0,0,0,0,[0,0,0,0]); return out;
+ return out;
 }
 const CP={M:categoryPlans('M'),H:categoryPlans('H'),L:categoryPlans('L')};
 function bestPlan(dp,da){
