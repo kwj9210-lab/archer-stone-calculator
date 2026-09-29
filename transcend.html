@@ -371,6 +371,29 @@ td{color:#62776e;background:#fff}
     [2000,3000,5000,7000,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8685,9150,9633,10132,10646,11173,11720,12277,12852,13442,14047,14669,15300,15952,16616]
   ];
 
+  // APK 비용표 구성: Lv.1~1500은 100레벨 구간 내 고정 x1 비용,
+  // Lv.1501~3000은 BuildExpandedCosts 정수식.
+  const baseCost=[40,50,75,85];
+  const levelCost=costs.map((row,stoneIndex)=>{
+    const a=new Int32Array(3001);
+    let sum=0; a[0]=0;
+    for(let lv=1;lv<=1500;lv++){
+      const block=Math.floor((lv-1)/100);
+      sum+=Math.floor(row[block]/100);
+      a[lv]=sum;
+    }
+    const B=baseCost[stoneIndex];
+    for(let lv=1501;lv<=3000;lv++){
+      const n=lv-1500;
+      sum+=B+Math.floor(B*n*(n+6000)/11250000);
+      a[lv]=sum;
+    }
+    return a;
+  });
+  for(let i=0;i<4;i++){
+    for(let b=15;b<30;b++) costs[i][b]=levelCost[i][(b+1)*100]-levelCost[i][b*100];
+  }
+
   // APK CalculateStoneTranscendMultiplierAtLevel 복원값.
   // 비교에는 최종 BigNumber 변환 전의 d8 값만 쓰면 된다. 최종 변환은 단조증가라 최적 조합 순서는 동일하다.
   function oneCost(stone,level){
