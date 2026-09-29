@@ -380,36 +380,51 @@ td{color:#62776e;background:#fff}
     [0,599990.5,1049986.875,1424982.1875,1774977.8125,2093723.828119999962,2412469.84375,3049960.875,3687453.90625,4324945.9375,4962437.96875,5599930,6237422.03125,7299909,8362395.46875,9424882.191290000454,10487368.913799999282,11549855.636399999261,12612342.35889999941,13674829.081499999389,15486526.402111284435,16889658.971068248153,18360800.134351626039,18987886.757238332182,21514663.705007649958,23201163.842937778682,24963228.036304540932,26802745.150386504829,28721656.050461553037,30721693.601805225015,32804902.669700134546]
   ];
 
-  // 비용 모델
-  // Lv.1~1500: 기존 실측 x100 구간값을 사용.
-  // Lv.1501~3000: APK GrowthStoneTranscendence.BuildExpandedCosts에서 확인한 x1 공식 사용.
-  // n = 올리려는 레벨 - 1500 (1500→1501이면 n=1)
-  // cost = B + floor(B*n*(n+6000)/11250000)
-  // B: 청람40 / 성해50 / 차원75 / 영겁85
-  const expandedBase=[40,50,75,85];
+  // x100 실측 총비용을 100개 개별 레벨에 정수 단위로 배분한다.
+  // 각 100레벨 구간의 누적합은 영상의 x100 비용과 정확히 일치한다.
+  // 나머지는 앞 레벨부터 1씩 추가해 초월석 1단위 사용이 가능하게 한다.
   const levelCost=costs.map((row,stoneIndex)=>{
     const a=new Int32Array(3001);
     let sum=0;
     a[0]=0;
-
-    // Lv.1~1500: 확보된 x100 실측 총비용을 정수 x1로 분배.
-    // 1500까지는 기존 시뮬레이터 검증 구간을 그대로 유지한다.
-    for(let b=0;b<15;b++){
+    for(let b=0;b<30;b++){
       const total=row[b];
+
+      // 기본: x100 총비용을 100개 레벨에 정수 배분.
+      let per=new Int32Array(100);
       const q=Math.floor(total/100), rem=total%100;
+      for(let j=0;j<100;j++) per[j]=q+(j<rem?1:0);
+
+      // 차원각인 Lv.2100~2200은 x1 실측으로 보정.
+      // 149,280 보유 -> Lv.2103 / 잔여 83 이므로
+      // Lv.2100→2101, →2102, →2103 합계가 실제 누적값과 일치해야 하고
+      // Lv.2103→2104 비용은 화면 실측 101.
+      if(stoneIndex===2 && b===21){
+        // Lv.2100까지 누적 사용량은 이전 x100 실측 합계로 확정.
+        // 실제 스크린샷과 일치하도록 첫 3레벨을 배치하고,
+        // 4번째 레벨은 101로 고정한다.
+        const targetUsedAt2103=149197;
+        const usedAt2100=sum;
+        const first3=targetUsedAt2103-usedAt2100;
+
+        // 첫 3개 비용은 가능한 한 균등하게 배치.
+        const bq=Math.floor(first3/3), br=first3%3;
+        per[0]=bq+(br>0?1:0);
+        per[1]=bq+(br>1?1:0);
+        per[2]=bq;
+        per[3]=101;
+
+        // x100 총비용 10,334는 유지해야 하므로 나머지 96레벨 재분배.
+        let fixed=per[0]+per[1]+per[2]+per[3];
+        let rest=total-fixed;
+        const rq=Math.floor(rest/96), rr=rest%96;
+        for(let j=4;j<100;j++) per[j]=rq+((j-4)<rr?1:0);
+      }
+
       for(let j=0;j<100;j++){
-        sum+=q+(j<rem?1:0);
+        sum+=per[j];
         a[b*100+j+1]=sum;
       }
-    }
-
-    // Lv.1501~3000: APK 원본 공식.
-    const B=expandedBase[stoneIndex];
-    for(let lv=1501;lv<=3000;lv++){
-      const n=lv-1500;
-      const one=B+Math.floor((B*n*(n+6000))/11250000);
-      sum+=one;
-      a[lv]=sum;
     }
     return a;
   });
@@ -424,6 +439,44 @@ td{color:#62776e;background:#fff}
     a[3000]=row[30];
     return a;
   });
+
+  // 실제 게임 검증: 330,680 보유 -> 청람3000 / 성해3000 / 차원310 / 영겁310 -> 잔여329
+  // 실제 총사용 330,351. 기존 비용표 동일 조합은 330,349로 2개 부족하므로
+  // Lv.300~310의 차원/영겁 누적에 각각 +1, 이후 Lv.400에서 기존 x100 총합으로 복귀시킨다.
+  (function calibrate310Checkpoint(){
+    for(const stoneIndex of [2,3]){
+      const a=levelCost[stoneIndex];
+      for(let lv=301;lv<=310;lv++) a[lv]+=Math.ceil((lv-300)/10);
+      for(let lv=311;lv<400;lv++){
+        const remain=400-lv;
+        a[lv]+=Math.max(0,Math.round(remain/90));
+      }
+    }
+  })();
+
+  // 실제 게임 누적비용 검증 보정
+  // 보유 154,320 -> 청람201 / 성해201 / 차원2061 / 영겁200 후 실제 잔여 281
+  // 실제 총사용 154,039, 따라서 차원 Lv.2061 누적비용은 144,994.
+  // 기존 Lv.2000 이하 누적비용과 Lv.2100 구간 총비용은 유지하고,
+  // Lv.2000~2061의 개별 비용 합만 실측 누적값에 맞춘다.
+  (function calibrateDimension2061(){
+    const a=levelCost[2];
+    const targetLv=2061, targetCum=144994;
+    const startLv=2000, endLv=2100;
+    const startCum=a[startLv], endCum=a[endLv];
+    const firstTotal=targetCum-startCum;
+    const secondTotal=endCum-targetCum;
+    const rebuild=(from,to,total)=>{
+      const n=to-from, q=Math.floor(total/n), rem=total%n;
+      let cur=a[from];
+      for(let j=0;j<n;j++){
+        cur+=q+(j<rem?1:0);
+        a[from+j+1]=cur;
+      }
+    };
+    rebuild(startLv,targetLv,firstTotal);
+    rebuild(targetLv,endLv,secondTotal);
+  })();
 
   // 실제 게임 공격력 실측 앵커 (330,680 검증 화면)
   // 청람 Lv3000 +20AGFXPF 6598AGFXPE%
@@ -700,7 +753,7 @@ td{color:#62776e;background:#fff}
   }
 
 
-  const estimatedCostBlocks=new Set();
+  const estimatedCostBlocks=new Set(["1-22","1-28","2-22","2-23","2-24","2-25","2-26","2-27","2-28"]);
 
   function renderCostTable(){
     let h="<thead><tr><th>구간</th>";
@@ -776,7 +829,7 @@ td{color:#62776e;background:#fff}
         exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
       }
       renderResult(pool,exact);
-      status.innerHTML='<span class="ok">계산 완료. 100레벨 단위로 먼저 배분한 뒤 잔여 초월석을 재투자했습니다. Lv.1501~3000 비용은 APK 원본 x1 공식을 사용합니다.</span>';
+      status.innerHTML='<span class="ok">계산 완료. 실측 100레벨 단위로 먼저 배분을 확정하고, 그 조합에서 남은 초월석만 1레벨 예상비용으로 재투자했습니다.</span>';
       button.disabled=false;
     },20);
   }
