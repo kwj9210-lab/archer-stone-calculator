@@ -320,7 +320,7 @@ td{color:#62776e;background:#fff}
           <div>1. 게임에서 초월석을 초기화한 뒤 총 보유량을 확인합니다.</div>
           <div>2. 보유 초월석 수량을 입력하고 ‘최적 배분 계산’을 누릅니다.</div>
           <div>3. 결과에 표시된 청람·성해·차원·영겁 레벨대로 올리면 됩니다.</div>
-          <div>4. 공동 1위가 여러 개면 모두 같은 최고 효율 범위이며, ‘잔여 최대’ 조합을 우선 표시합니다.</div>
+          <div>4. 공동 최고가 여러 개면 모두 같은 최고 효율 범위이며, ‘잔여 최대’ 조합을 우선 표시합니다.</div>
         </div>
       </details>
     </div>
@@ -477,6 +477,23 @@ td{color:#62776e;background:#fff}
     rebuild(startLv,targetLv,firstTotal);
     rebuild(targetLv,endLv,secondTotal);
   })();
+
+  // 실제 게임 공격력 실측 앵커 (330,680 검증 화면)
+  // 청람 Lv3000 +20AGFXPF 6598AGFXPE%
+  // 성해 Lv3000 +1AOXKDF 6806AOXKDE%
+  // 차원 Lv310  +1BMRNN 7782BMRNM%
+  // 영겁 Lv310  +10CEASD%
+  // 기존 고레벨 extrapolation보다 실측값을 우선한다.
+  levelEffect[0][3000]=15202309.828781528;
+  levelEffect[1][3000]=19165385.55636609;
+  levelEffect[2][310]=1154985.5624951515;
+  levelEffect[3][310]=1459981.75;
+
+  // Lv.2900~3000 청람/성해는 새 실측 MAX값까지 다시 연결한다.
+  for(const i of [0,1]){
+    const v0=levelEffect[i][2900], v1=levelEffect[i][3000];
+    for(let lv=2901;lv<3000;lv++) levelEffect[i][lv]=v0+(v1-v0)*((lv-2900)/100);
+  }
 
   // 차원각인 x1 실측 공격력 보정
   // Lv.2103 현재 / Lv.2104(화면의 다음 공격력) 실제 게임값
@@ -776,13 +793,13 @@ td{color:#62776e;background:#fff}
     }
 
     document.getElementById("best").innerHTML=
-      '<div class="bestline">'+(ordered.length>1?'공동 1위 '+ordered.length+'개':'최고 효율 1위')+'</div>'+
+      '<div class="bestline">'+(ordered.length>1?'공동 최고 '+ordered.length+'개':'최고 전투력 배분')+'</div>'+
       '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>사용 <b>'+fmt(shown.used)+'</b></span><span>잔여 <b>'+fmt(shown.left)+'</b></span></div>'+
       (shown.left>0 && minNext<Infinity && shown.left<minNext?'<div class="small">잔여 '+fmt(shown.left)+'개는 다음 1레벨 최소 비용 '+fmt(minNext)+'개보다 적어 사용 불가</div>':'');
 
     document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
       '<div class="joint-card">'+
-        '<div class="joint-rank'+(idx===0?' featured':'')+'">'+(ordered.length>1?'공동 1위':'최고 효율 1위')+(idx===0&&ordered.length>1?' · 잔여 최소':'')+'</div>'+
+        '<div class="joint-rank'+(idx===0?' featured':'')+'">'+(ordered.length>1?'공동 최고':'최고 전투력 배분')+(idx===0&&ordered.length>1?' · 잔여 최소':'')+'</div>'+
         '<div class="joint-levels">'+r.levels.map((lv,i)=>
           '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
         ).join("")+'</div>'+
