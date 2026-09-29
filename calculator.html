@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>궁수키우기 RPG 계산기</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;background:#f4fff8;color:#29463b}
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);border-bottom:1px solid #cfe9d9;padding:10px 12px;box-shadow:0 3px 12px rgba(69,126,98,.09)}
+.bar{max-width:1020px;margin:auto;display:flex;align-items:center;gap:10px}
+.title{font-weight:900;font-size:17px;white-space:nowrap;color:#22694f}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;flex:1}
+button{border:1px solid #b6ddc7;background:#fff;border-radius:11px;min-height:42px;font-weight:850;color:#557268;cursor:pointer}
+button.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#35c98c,#54cbd6);box-shadow:0 5px 14px rgba(53,201,140,.22)}
+main{height:calc(100vh - 63px)}
+iframe{width:100%;height:100%;border:0;display:none;background:white}
+iframe.active{display:block}
+@media(max-width:600px){header{padding:8px}.bar{display:block}.title{text-align:center;margin-bottom:7px}.tabs{gap:6px}button{min-height:40px;font-size:14px}main{height:calc(100vh - 98px)}}
+</style>
+</head>
+<body>
+<header><div class="bar"><div class="title">궁수키우기 RPG 계산기</div><div class="tabs">
+<button id="tabStone" class="active" type="button">초월석 시뮬레이터</button>
+<button id="tabEngrave" type="button">각인석 계산기</button>
+</div></div></header>
+<main>
+<iframe id="stone" class="active" src="transcend.html" title="초월석 시뮬레이터"></iframe>
+<iframe id="engrave" src="index.html" title="각인석 계산기"></iframe>
+</main>
+<script>
+const ts=document.getElementById('tabStone'),te=document.getElementById('tabEngrave'),s=document.getElementById('stone'),e=document.getElementById('engrave');
+function show(which){
+ const stone=which==='stone';ts.classList.toggle('active',stone);te.classList.toggle('active',!stone);s.classList.toggle('active',stone);e.classList.toggle('active',!stone);
+ history.replaceState(null,'','#'+(stone?'transcend':'engrave'));
+}
+ts.onclick=()=>show('stone');te.onclick=()=>show('engrave');
+if(location.hash==='#engrave')show('engrave');
+</script>
+</body></html>
