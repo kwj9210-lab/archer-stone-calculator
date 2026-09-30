@@ -117,10 +117,10 @@ function updatePlan(){
  if(!b){
  const maxP=11*85+12*255+11*170,maxA=11*85+12*170+11*255;
  const afterP=baseP+maxP,afterA=baseA+maxA;
- box.innerHTML='<span class="bad"><b>'+f+'층은 95% 적중 기준으로 현재 참고자료의 각인석만으로 도달 불가</b></span><br>전투 기준 · 관통 '+fmt(rp)+' 이상 / 명중 '+fmt(ra)+' 이상+'<br>현재 부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br>전부 불멸 장착 시 최대 추가 · 관통 '+fmt(maxP)+' / 명중 '+fmt(maxA)+'<br>최대 장착 후 · 관통 '+fmt(afterP)+' / 명중 '+fmt(afterA);
+ box.innerHTML='<span class="bad"><b>'+f+'층은 95% 적중 기준으로 현재 참고자료의 각인석만으로 도달 불가</b></span><br>전투 기준 · 관통 '+fmt(rp)+' 이상 / 명중 '+fmt(ra)+' 이상<br>현재 부족 · 관통 '+fmt(dp)+' / 명중 '+fmt(da)+'<br>전부 불멸 장착 시 최대 추가 · 관통 '+fmt(maxP)+' / 명중 '+fmt(maxA)+'<br>최대 장착 후 · 관통 '+fmt(afterP)+' / 명중 '+fmt(afterA);
  return
 }
- box.innerHTML='<b>'+f+'층 전투 기준</b> · 관통 '+fmt(rp)+' 이상(Block 확정 회피) / 명중 '+fmt(ra)+' 이상(적중률 95%)+'<br><b>각인석 해제 기준</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>입장권 최소 조합 · '+b.cnt+'개</b> · 예상 입장권 약 '+fmt(Math.ceil(b.cost/10000)*10000)+'장<br>추가 관통 '+fmt(b.p)+' / 명중 '+fmt(b.a)+b.parts.map(planText).join('');
+ box.innerHTML='<b>'+f+'층 전투 기준</b> · 관통 '+fmt(rp)+' 이상(Block 확정 회피) / 명중 '+fmt(ra)+' 이상(적중률 95%)<br><b>각인석 해제 기준</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>입장권 최소 조합 · '+b.cnt+'개</b> · 예상 입장권 약 '+fmt(Math.ceil(b.cost/10000)*10000)+'장<br>추가 관통 '+fmt(b.p)+' / 명중 '+fmt(b.a)+b.parts.map(planText).join('');
 }
 ['planPen','planAcc','planFloor'].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
 updatePlan();
