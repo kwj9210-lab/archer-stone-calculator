@@ -22,6 +22,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <body><main>
 <h1>초월의 탑</h1>
 <div class="sub">APK 0.1.85 기준 · 500~1500층 관통/명중</div>
+<section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">층별 필요 수치 조회</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>층수<input id="lookupFloor" inputmode="numeric" value="1000" placeholder="500~1500"></label><div id="lookupResult" class="lookupResult">1000층 · 필요 관통 6,000 / 필요 명중 17,500</div></div></section>
 <section class="card" id="planCard">
 <h2 style="font-size:17px;margin:0 0 10px">최소 각인석 제작 플랜</h2>
 <div id="planIntro" class="sub" style="margin:0 0 10px">현재 장착 중인 각인석이 포함된 관통·명중과 현재 세팅을 입력하면, 현재 각인 효과를 자동으로 빼서 기본 수치를 계산한 뒤 목표 세팅과 바꿀 항목을 알려줍니다.</div>
@@ -59,6 +60,9 @@ function req(f){
  if(f<=1000)return [lerpInt(f,A1,B1),lerpInt(f,A1,E1)];
  return [lerpInt(f,A2,B2),lerpInt(f,A2,E2)];
 }
+const lookupFloor=document.getElementById('lookupFloor'),lookupResult=document.getElementById('lookupResult');
+function updateLookup(){const f=num(lookupFloor.value);if(f<500||f>1500){lookupResult.textContent='500~1500층 사이로 입력해 주세요.';return}const [p,a]=req(f);lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a)}
+lookupFloor.addEventListener('input',updateLookup);updateLookup();
 const rows=document.getElementById('rows');
 for(let f=500;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
 function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
