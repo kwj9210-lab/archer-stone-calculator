@@ -16,30 +16,14 @@ h1{font-size:24px;margin:0 0 6px}.sub{font-size:13px;color:var(--muted);margin-b
 details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}summary{cursor:pointer;padding:15px 16px;font-weight:900;list-style:none}summary::-webkit-details-marker{display:none}summary:after{content:"＋";float:right;color:var(--strong)}details[open] summary:after{content:"－"}
 .tableWrap{max-height:62vh;overflow:auto;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 8px;border-bottom:1px solid #e4f1e9;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:center}thead th{position:sticky;top:0;background:#effbf4;z-index:1}tr.hit{background:#e8fff2;font-weight:900}
 .settingTable input{min-width:54px;width:64px;padding:7px 5px;margin:0;font-size:14px;text-align:center}.settingTable th,.settingTable td{text-align:center}.note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.5}.planLine{padding:5px 0;border-bottom:1px solid #dceee4}.planLine:last-child{border-bottom:0}.ok{color:#198b64}.bad{color:#c86b35}
-@media(max-width:520px){main{padding:16px 10px 40px}.floorLookup{grid-template-columns:1fr}.lookupResult{min-height:44px}h1{font-size:21px}.card{padding:13px}.inputs{gap:7px}input{font-size:16px;padding:11px}#floor{font-size:34px}th,td{padding:8px 5px;font-size:13px}}
+@media(max-width:520px){main{padding:16px 10px 40px}.floorLookup{grid-template-columns:1fr}.lookupResult{min-height:44px}h1{font-size:21px}.card{padding:13px}input{font-size:16px;padding:11px}#floor{font-size:34px}th,td{padding:8px 5px;font-size:13px}}
 </style>
 </head>
 <body><main>
 <h1>초월의 탑</h1>
-<div class="sub">APK 0.1.85 기준 · 500~1500층 관통/명중</div>
+<div class="sub">500~1500층 관통/명중 필요 수치 조회</div>
 <section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">층별 필요 수치 조회</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>층수<input id="lookupFloor" inputmode="numeric" value="1000" placeholder="500~1500"></label><div id="lookupResult" class="lookupResult">1000층 · 필요 관통 6,000 / 필요 명중 17,500</div></div></section>
-<section class="card" id="planCard">
-<h2 style="font-size:17px;margin:0 0 10px">최소 각인석 제작 플랜</h2>
-<div id="planIntro" class="sub" style="margin:0 0 10px">현재 장착 중인 각인석이 포함된 관통·명중과 현재 세팅을 입력하면, 현재 각인 효과를 자동으로 빼서 기본 수치를 계산한 뒤 목표 세팅과 바꿀 항목을 알려줍니다.</div>
-<div class="inputs" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px">
-<label>현재 최종 관통<input id="planPen" inputmode="numeric" placeholder="예: 1961"></label>
-<label>현재 최종 명중<input id="planAcc" inputmode="numeric" placeholder="예: 4599"></label>
-<label>목표 층<input id="planFloor" inputmode="numeric" value="1000" placeholder="500~1500"></label>
-</div>
-<div style="font-size:13px;font-weight:900;margin:4px 0 7px">현재 장착 세팅</div>
-<div style="overflow-x:auto;margin-bottom:10px"><table class="settingTable"><thead><tr><th>종류</th><th>전설</th><th>신화</th><th>태초</th><th>불멸</th></tr></thead><tbody>
-<tr><td>마석</td><td><input id="curM0" inputmode="numeric" value="0"></td><td><input id="curM1" inputmode="numeric" value="0"></td><td><input id="curM2" inputmode="numeric" value="0"></td><td><input id="curM3" inputmode="numeric" value="0"></td></tr>
-<tr><td>경화석</td><td><input id="curH0" inputmode="numeric" value="0"></td><td><input id="curH1" inputmode="numeric" value="0"></td><td><input id="curH2" inputmode="numeric" value="0"></td><td><input id="curH3" inputmode="numeric" value="0"></td></tr>
-<tr><td>생명석</td><td><input id="curL0" inputmode="numeric" value="0"></td><td><input id="curL1" inputmode="numeric" value="0"></td><td><input id="curL2" inputmode="numeric" value="0"></td><td><input id="curL3" inputmode="numeric" value="0"></td></tr>
-</tbody></table></div>
-<div id="planResult" class="lookupResult" style="display:block;line-height:1.65">현재 최종 관통·명중과 장착 세팅을 입력해 주세요.</div>
-<div class="note">슬롯 상한: 마석 11개 · 경화석 12개 · 생명석 11개(기본 각 11칸 + 자유각인 1칸은 경화석 사용). 총 34칸. 현재 최종 수치에서 입력한 장착 각인석의 관통·명중을 자동 차감해 각인 제외 기본 수치를 구합니다. 현재와 같은 종류·등급의 각인석은 재사용(제작비 0)으로 계산합니다. 목표 층의 필요 관통·필요 명중 수치를 모두 충족하는 최소 제작 조합을 계산합니다.</div>
-</section>
+
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
 <div class="tableWrap"><table><thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th></tr></thead><tbody id="rows"></tbody></table></div>
@@ -66,63 +50,4 @@ lookupFloor.addEventListener('input',updateLookup);updateLookup();
 const rows=document.getElementById('rows');
 for(let f=500;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
 function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
-const STONES={
- M:{name:'마석',cap:11,v:[[52,52,'전설',844343],[62,62,'신화',3479099],[73,73,'태초',14170714],[85,85,'불멸',63040860]]},
- H:{name:'경화석',cap:12,v:[[156,104,'전설',519551],[186,124,'신화',3643683],[219,146,'태초',19292964],[255,170,'불멸',100763016]]},
- L:{name:'생명석',cap:11,v:[[104,156,'전설',776982],[124,186,'신화',3792940],[146,219,'태초',17288462],[170,255,'불멸',79737347]]}
-};
-function getCurrent(){
- const o={M:[],H:[],L:[]};
- for(const k of ['M','H','L'])for(let i=0;i<4;i++)o[k][i]=Math.max(0,Math.trunc(num(document.getElementById('cur'+k+i).value)));
- return o;
-}
-function stoneStats(set){
- let p=0,a=0;
- for(const k of ['M','H','L'])for(let i=0;i<4;i++){p+=set[k][i]*STONES[k].v[i][0];a+=set[k][i]*STONES[k].v[i][1]}
- return {p,a};
-}
-function categoryPlans(cat,owned){
- const x=STONES[cat],out=[];
- for(let a=0;a<=x.cap;a++)for(let b=0;b<=x.cap-a;b++)for(let d=0;d<=x.cap-a-b;d++)for(let e=0;e<=x.cap-a-b-d;e++){
-   const arr=[a,b,d,e],cnt=a+b+d+e;let p=0,ac=0,rank=0,cost=0;
-   for(let i=0;i<4;i++){p+=arr[i]*x.v[i][0];ac+=arr[i]*x.v[i][1];rank+=arr[i]*(i+1);cost+=Math.max(0,arr[i]-(owned[i]||0))*x.v[i][3]}
-   out.push({cat,cnt,p,a:ac,rank,cost,arr});
- }
- return out;
-}
-function bestPlan(dp,da,current){
- let best=null;
- function pareto(list){
-   const map=new Map();
-   for(const q of list){const kp=Math.min(q.p,Math.max(0,dp)),ka=Math.min(q.a,Math.max(0,da)),k=kp+'|'+ka+'|'+q.cnt;const old=map.get(k);if(!old||q.cost<old.cost||(q.cost===old.cost&&q.rank<old.rank))map.set(k,q)}
-   return [...map.values()];
- }
- const m=pareto(categoryPlans('M',current.M)),h=pareto(categoryPlans('H',current.H)),l=pareto(categoryPlans('L',current.L));
- const mhMap=new Map();
- for(const x of m)for(const y of h){const p=x.p+y.p,a=x.a+y.a,cnt=x.cnt+y.cnt,rank=x.rank+y.rank,cost=x.cost+y.cost,k=Math.min(p,Math.max(0,dp))+'|'+Math.min(a,Math.max(0,da));const old=mhMap.get(k);if(!old||cost<old.cost||(cost===old.cost&&rank<old.rank))mhMap.set(k,{p,a,cnt,rank,cost,parts:[x,y]})}
- for(const x of mhMap.values())for(const y of l){const p=x.p+y.p,a=x.a+y.a;if(p<dp||a<da)continue;const z={p,a,cnt:x.cnt+y.cnt,rank:x.rank+y.rank,cost:x.cost+y.cost,parts:x.parts.concat(y)};if(!best||z.cost<best.cost||(z.cost===best.cost&&z.cnt<best.cnt))best=z}
- return best;
-}
-function planText(q){const x=STONES[q.cat],bits=[];q.arr.forEach((n,i)=>{if(n)bits.push(x.v[i][2]+' '+n+'개')});return bits.length?'<div class="planLine"><b>'+x.name+'</b> · '+bits.join(' · ')+'</div>':''}
-function changeText(current,b){
- const target={M:[0,0,0,0],H:[0,0,0,0],L:[0,0,0,0]};b.parts.forEach(q=>target[q.cat]=q.arr.slice());
- const out=[];
- for(const k of ['M','H','L'])for(let i=0;i<4;i++){const d=target[k][i]-current[k][i];if(d)out.push(STONES[k].name+' '+STONES[k].v[i][2]+' '+(d>0?'+'+d:d)+'개')}
- return out.length?out.join(' · '):'변경 없음';
-}
-function hitRate(acc,evasion){return Math.max(5,Math.min(95,acc-evasion+80))}
-function updatePlan(){
- const p=num(document.getElementById('planPen').value),a=num(document.getElementById('planAcc').value),f=num(document.getElementById('planFloor').value),box=document.getElementById('planResult'),current=getCurrent();
- if(!p&&!a){box.innerHTML='현재 최종 관통·명중과 장착 세팅을 입력해 주세요.';return}
- if(f<500||f>1500){box.innerHTML='목표 층수를 500~1500 사이로 입력해 주세요.';return}
- for(const k of ['M','H','L'])if(current[k].reduce((s,n)=>s+n,0)>STONES[k].cap){box.innerHTML='<span class="bad">'+STONES[k].name+' 장착 개수가 슬롯 상한을 넘었습니다.</span>';return}
- const curS=stoneStats(current),baseP=p-curS.p,baseA=a-curS.a;
- if(baseP<0||baseA<0){box.innerHTML='<span class="bad">현재 세팅의 각인 수치가 입력한 최종 관통·명중보다 큽니다. 장착 개수를 확인해 주세요.</span>';return}
- const [bossBlock,bossEvasion]=req(f),dp=Math.max(0,bossBlock-baseP),da=Math.max(0,bossEvasion-baseA),b=bestPlan(dp,da,current);
- if(!b){box.innerHTML='<span class="bad"><b>'+f+'층 필요 관통·명중 수치는 현재 슬롯으로 도달 불가</b></span><br>기본 관통 '+fmt(baseP)+' / 필요 '+fmt(bossBlock)+' · 기본 명중 '+fmt(baseA)+' / 필요 '+fmt(bossEvasion);return}
- const afterP=baseP+b.p,afterA=baseA+b.a;
- box.innerHTML='<b>각인 제외 자동 계산</b> · 관통 '+fmt(baseP)+' / 명중 '+fmt(baseA)+'<br><b>현재 각인 효과</b> · 관통 +'+fmt(curS.p)+' / 명중 +'+fmt(curS.a)+'<br><b>'+f+'층 목표 세팅</b> · 관통 '+fmt(afterP)+' / 명중 '+fmt(afterA)+'<br><b>바꿀 것</b> · '+changeText(current,b)+'<br><b>추가 제작비 기준</b> · 예상 입장권 약 '+fmt(Math.ceil(b.cost/10000)*10000)+'장'+b.parts.map(planText).join('')+'<div class="note" style="margin-top:8px">현재와 같은 종류·등급은 그대로 재사용합니다. 목표 층의 필요 관통·명중을 모두 충족하는 조합입니다. 다른 등급을 상위 등급 재료로 소비하는 세부 업그레이드 절감분은 아직 반영하지 않았습니다.</div>';
-}
-['planPen','planAcc','planFloor',...['M','H','L'].flatMap(k=>[0,1,2,3].map(i=>'cur'+k+i))].forEach(id=>document.getElementById(id).addEventListener('input',updatePlan));
-updatePlan();
 </script></body></html>
