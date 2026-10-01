@@ -632,6 +632,13 @@ td{color:#62776e;background:#fff}
   }
   function optimizeExact(budget){
     budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
+    // MAX에서는 탐색할 필요가 없다. 4500 확장 후 대형 DP 배열 생성을 피한다.
+    if(budget>=TOTAL_MAX){
+      const levels=[4500,4500,4500,4500];
+      const cand={levels,used:TOTAL_MAX,left:0,
+        score:addEffects(levelEffect[0][4500],levelEffect[1][4500],levelEffect[2][4500],levelEffect[3][4500])};
+      return {best:cand,top:[cand],base100:null};
+    }
     const K=12, W=budget+1, N=W*K;
     const sc=new Float64Array(N); sc.fill(-Infinity);
     const cc=new Uint16Array(N), dd=new Uint16Array(N), uu=new Int32Array(N);
