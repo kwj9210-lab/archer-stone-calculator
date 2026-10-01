@@ -38,16 +38,19 @@ const B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32
 const B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
 function tower1000Value(f,vals){
  const level=Math.max(501,Math.min(1000,f));
+ if(level===1000)return vals[vals.length-1];
  const i=Math.floor((level-501)/100),t=level-i*100-500;
  return vals[i]+Math.trunc(((vals[i+1]-vals[i])*t+50)/100);
 }
 function tower1500Value(f,vals){
  const level=Math.max(1001,Math.min(1500,f));
+ if(level===1500)return vals[vals.length-1];
  const i=Math.floor((level-1001)/100),t=level-i*100-1000;
  return vals[i]+Math.trunc((vals[i+1]-vals[i])/100)*t;
 }
 function tower3000Value(f,vals){
  const level=Math.max(1501,Math.min(3000,f));
+ if(level===3000)return vals[vals.length-1];
  const i=Math.floor((level-1501)/500);
  const t=level-i*500-1500;
  return vals[i]+Math.trunc((vals[i+1]-vals[i])/500)*t;
