@@ -40,12 +40,18 @@ function lerpInt(f,floors,vals){
  const span=floors[i+1]-floors[i], t=f-floors[i], d=vals[i+1]-vals[i];
  return vals[i]+Math.trunc((d*t+Math.trunc(span/2))/span);
 }
-// APK 0.1.87: 1501~3000층은 500층 기준점 사이를 정수 선형 증가.
-const A3=[1500,2000,2500,3000], B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
+// APK 0.1.87 TranscendenceTower3000Balance.Interpolate 원본식.
+const B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
+function tower3000Value(f,vals){
+ const level=Math.max(1501,Math.min(3000,f));
+ const i=Math.floor((level-1501)/500);
+ const t=level-i*500-1500;
+ return vals[i]+Math.trunc((vals[i+1]-vals[i])/500)*t;
+}
 function req(f){
  if(f<=1000)return [lerpInt(f,A1,B1),lerpInt(f,A1,E1)];
  if(f<=1500)return [lerpInt(f,A2,B2),lerpInt(f,A2,E2)];
- return [lerpInt(f,A3,B3),lerpInt(f,A3,E3)];
+ return [tower3000Value(f,B3),tower3000Value(f,E3)];
 }
 const lookupFloor=document.getElementById('lookupFloor'),lookupResult=document.getElementById('lookupResult');
 function floorNum(v){
