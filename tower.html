@@ -64,14 +64,27 @@ function updateLookup(){
  document.querySelectorAll('tr.hit').forEach(r=>r.classList.remove('hit'));
  const row=document.getElementById('f'+f);if(row)row.classList.add('hit');
 }
+const list=document.getElementById('list'),rows=document.getElementById('rows');
+let rowsBuilt=false;
+function buildRows(){
+ if(rowsBuilt)return;
+ const frag=document.createDocumentFragment();
+ for(let f=500;f<=3000;f++){
+  const [p,a]=req(f),tr=document.createElement('tr');
+  tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';frag.appendChild(tr);
+ }
+ rows.appendChild(frag);rowsBuilt=true;updateLookup();
+}
 lookupFloor.addEventListener('input',updateLookup);
 lookupFloor.addEventListener('keydown',e=>{
  if(e.key!=='Enter')return;
  updateLookup();
- const f=floorNum(lookupFloor.value), row=document.getElementById('f'+f);
- if(row){document.getElementById('list').open=true;row.scrollIntoView({behavior:'smooth',block:'center'})}
+ const f=floorNum(lookupFloor.value);
+ if(!Number.isFinite(f)||f<500||f>3000)return;
+ list.open=true;buildRows();
+ const row=document.getElementById('f'+f);
+ if(row)row.scrollIntoView({behavior:'smooth',block:'center'});
 });
-const rows=document.getElementById('rows');
-for(let f=500;f<=3000;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
+list.addEventListener('toggle',()=>{if(list.open)buildRows()});
 updateLookup();
 </script></body></html>
