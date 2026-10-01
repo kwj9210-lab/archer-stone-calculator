@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>궁수키우기 시련의 관문 계산기</title>
+<style>
+:root{--bg:#f4fff8;--surface:#fff;--line:#cfe9d9;--text:#29463b;--muted:#70847b;--accent:#35c98c;--bad:#d96889;--good:#1a9b6c}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;background:linear-gradient(135deg,#f4fff8,#fff9ea)}
+main{width:min(980px,100%);margin:auto;padding:22px 18px 44px}.site-head{display:flex;justify-content:space-between;align-items:flex-end;padding:3px 2px 16px;margin-bottom:14px}.site-head h1{margin:0;font-size:29px;color:#22694f}.submark{font-size:12px;font-weight:800;color:#5d8575;background:#e5f8ee;border:1px solid #bfe2ce;border-radius:999px;padding:5px 10px}
+.wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 8px 22px rgba(69,126,98,.11)}.input-panel{position:sticky;top:14px}h2{margin:0 0 16px;font-size:17px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}.field{margin-bottom:12px}.field label{display:block;margin-bottom:7px;color:#657c72;font-size:12px;font-weight:700}input{width:100%;min-height:50px;padding:11px 12px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:17px;font-weight:800;outline:none}button{width:100%;min-height:50px;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;font-size:15px;font-weight:900;cursor:pointer}.status{min-height:18px;margin-top:10px;font-size:12px}.bad{color:var(--bad);font-weight:700}.ok{color:var(--good);font-weight:700}.note,.small{color:var(--muted);font-size:11.5px;line-height:1.6}.note{margin-top:10px}.result-main{margin-bottom:10px;padding:13px 14px;border:1px solid #d8ebce;border-left:4px solid var(--accent);border-radius:13px;background:linear-gradient(135deg,#f0fbf5,#fffbe9)}.bestline{font-size:17px;font-weight:900;margin-bottom:7px;color:#257455}.empty{color:#7d9188;font-size:13px;line-height:1.6}.scroll{overflow-x:auto;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:540px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:11.5px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
+@media(max-width:760px){main{padding:13px 9px 31px}.site-head h1{font-size:22px}.submark{display:none}.wrap{grid-template-columns:1fr;gap:9px}.panel{padding:12px;border-radius:14px}.input-panel{position:static}}
+</style></head><body><main>
+<header class="site-head"><h1>시련의 관문</h1><div class="submark">2000–3000</div></header>
+<div class="wrap"><section class="panel input-panel"><h2>기준점 입력</h2>
+<div class="field"><label for="baseFloor">실제로 클리어한 기준 층</label><input id="baseFloor" type="number" min="2000" max="3000" step="1" value="2000"></div>
+<div class="field"><label for="basePower">그때 전투력</label><input id="basePower" type="text" inputmode="decimal" placeholder="예: 1.25e120 또는 1250000"></div>
+<button id="run" type="button">2000~3000 환산</button><div id="status" class="status"></div>
+<div class="note">APK에는 층별 권장 전투력 값이 따로 없습니다. 실제 클리어 기준점을 넣고 보스 HP 증가율을 같은 비율로 적용한 환산값입니다. 관통·명중은 시련의 관문 데미지 경로에 적용되지 않아 입력하지 않습니다.</div>
+</section><section class="panel"><h2>100층 단위 환산</h2><div id="summary" class="result-main"><div class="empty">기준 층과 당시 전투력을 입력하면 결과가 표시됩니다.</div></div>
+<div class="scroll"><table><thead><tr><th>층</th><th>기준 대비 HP</th><th>환산 전투력</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
+</main><script>
+(function(){
+function ref(g){g=Math.max(1,Math.min(6000,Math.floor(g)));if(g>=4001)return 1000*g-1098735;if(g>=2001)return 500*g-814735;if(g>=551)return 120*g-54735;if(g>=501)return 70*g-27235;if(g>=301)return 35*g-9735;if(g>=101)return 3*g-110;if(g>=11)return 2*g-10;return g}
+function stage(g){return ref(g)*100-1}
+function hpLog(s){if(s<5000000)return 0;let cur=5000000,total=0;while(cur<=s){const q=Math.floor((cur-3000000)/100000),end=q*100000+3099999,last=Math.min(s,end);total+=(last-cur+1)*Math.log10(2900+400*q);cur=last+1}return total}
+function delta(a,b){return hpLog(stage(a))-hpLog(stage(b))}
+function parse(raw){raw=String(raw||"").trim().replace(/,/g,"");const m=raw.match(/^([+]?(?:\d+(?:\.\d*)?|\.\d+))(?:[eE]([+-]?\d+))?$/);if(!m)return null;const v=Number(m[1]),e=Number(m[2]||0);if(!(v>0)||!Number.isFinite(v)||!Number.isSafeInteger(e))return null;return Math.log10(v)+e}
+function sci(lg){if(!Number.isFinite(lg))return "계산 범위 밖";let e=Math.floor(lg),m=Math.pow(10,lg-e);if(m>=9.9999995){m=1;e++}return m.toFixed(6).replace(/0+$/,"").replace(/\.$/,"")+" × 10^"+e.toLocaleString("ko-KR")}
+function run(){const f=Math.floor(Number(document.getElementById("baseFloor").value)),p=parse(document.getElementById("basePower").value),st=document.getElementById("status");if(!Number.isFinite(f)||f<2000||f>3000){st.innerHTML='<span class="bad">기준 층은 2000~3000 사이로 입력해 주세요.</span>';return}if(p===null){st.innerHTML='<span class="bad">전투력을 숫자 또는 1.23e120 형식으로 입력해 주세요.</span>';return}let h="";for(let t=2000;t<=3000;t+=100){const d=delta(t,f);h+="<tr><td>"+t+"</td><td>"+(Math.abs(d)<1e-10?"1배":sci(d)+"배")+"</td><td><b>"+sci(p+d)+"</b></td></tr>"}document.getElementById("rows").innerHTML=h;document.getElementById("summary").innerHTML='<div class="bestline">기준 '+f.toLocaleString("ko-KR")+'층에서 환산</div><div class="small">30초 제한 · APK 보스 HP 증가곡선 적용</div>';st.innerHTML='<span class="ok">계산 완료.</span>'}
+document.getElementById("run").onclick=run;document.getElementById("basePower").addEventListener("keydown",e=>{if(e.key==="Enter")run()});
+})();
+</script></body></html>
