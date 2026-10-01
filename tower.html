@@ -64,7 +64,7 @@ function req(f){
 const lookupFloor=document.getElementById('lookupFloor'),lookupResult=document.getElementById('lookupResult');
 function floorNum(v){
  const t=String(v).trim();
- if(!/^\\d+$/.test(t))return NaN;
+ if(!/^\d+$/.test(t))return NaN;
  const n=Number(t);
  return Number.isSafeInteger(n)?n:NaN;
 }
