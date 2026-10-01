@@ -22,7 +22,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <body><main>
 <h1>초월의 탑</h1>
 <div class="sub">500~3000층 관통/명중 필요 수치 조회</div>
-<section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">층별 필요 수치 조회</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>층수<input id="lookupFloor" inputmode="numeric" value="1234" placeholder="예: 1234, 1313, 2999"></label><div id="lookupResult" class="lookupResult">1234층 · 필요 관통 8,508 / 필요 명중 23,686</div></div></section>
+<section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">층별 필요 수치 조회</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>층수<input id="lookupFloor" type="number" inputmode="numeric" min="500" max="3000" step="1" value="1234" placeholder="예: 1234, 1313, 2999"></label><div id="lookupResult" class="lookupResult">1234층 · 필요 관통 8,508 / 필요 명중 23,686</div></div></section>
 
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
@@ -56,11 +56,20 @@ function floorNum(v){
 }
 function updateLookup(){
  const f=floorNum(lookupFloor.value);
- if(!Number.isFinite(f)||f<500||f>3000){lookupResult.textContent='500~3000 사이의 정수 층수를 입력해 주세요.';return}
+ const ok=Number.isFinite(f)&&f>=500&&f<=3000;
+ lookupFloor.setAttribute('aria-invalid',ok?'false':'true');
+ if(!ok){lookupResult.textContent='500~3000 사이의 정수 층수를 입력해 주세요.';return}
  const [p,a]=req(f);
  lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a);
 }
-lookupFloor.addEventListener('input',updateLookup);updateLookup();
+lookupFloor.addEventListener('input',updateLookup);
+lookupFloor.addEventListener('keydown',e=>{
+ if(e.key!=='Enter')return;
+ updateLookup();
+ const f=floorNum(lookupFloor.value), row=document.getElementById('f'+f);
+ if(row){document.getElementById('list').open=true;row.scrollIntoView({behavior:'smooth',block:'center'})}
+});
 const rows=document.getElementById('rows');
 for(let f=500;f<=3000;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
+updateLookup();
 </script></body></html>
