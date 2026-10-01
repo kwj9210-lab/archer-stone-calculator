@@ -520,35 +520,19 @@ td{color:#62776e;background:#fff}
         insert(used,levelEffect[2][c]+levelEffect[3][d],c,d);
       }
     }
-    // Prefix merge: cur/prev는 이미 같은 우선순위로 정렬돼 있으므로
-    // 매 예산마다 배열·Set·sort를 만들지 않고 두 정렬 목록을 그대로 병합한다.
-    const tmpSc=new Float64Array(K), tmpC=new Uint16Array(K), tmpD=new Uint16Array(K);
+    // Prefix merge: retain tied/near-best distinct CD states for every affordable budget.
     for(let x=1;x<=budget;x++){
-      const cur=x*K, prev=(x-1)*K;
-      for(let j=0;j<K;j++){tmpSc[j]=sc[cur+j];tmpC[j]=cc[cur+j];tmpD[j]=dd[cur+j];}
-      let ci=0,pi=0,w=0;
-      while(w<K){
-        while(ci<K && tmpSc[ci]===-Infinity)ci++;
-        while(pi<K && sc[prev+pi]===-Infinity)pi++;
-        if(ci>=K && pi>=K)break;
-        let takeCur=false;
-        if(pi>=K)takeCur=true;
-        else if(ci<K){
-          const ds=tmpSc[ci]-sc[prev+pi];
-          if(Math.abs(ds)>EPS)takeCur=ds>0;
-          else{
-            const cu=cdUsed(tmpC[ci],tmpD[ci]), pu=cdUsed(cc[prev+pi],dd[prev+pi]);
-            takeCur=cu>=pu;
-          }
-        }
-        const vs=takeCur?tmpSc[ci]:sc[prev+pi];
-        const vc=takeCur?tmpC[ci]:cc[prev+pi];
-        const vd=takeCur?tmpD[ci]:dd[prev+pi];
-        if(takeCur)ci++;else pi++;
-        let dup=false;
-        for(let z=0;z<w;z++)if(cc[cur+z]===vc&&dd[cur+z]===vd){dup=true;break;}
-        if(dup)continue;
-        sc[cur+w]=vs;cc[cur+w]=vc;dd[cur+w]=vd;w++;
+      const cur=x*K, prev=(x-1)*K, cand=[];
+      for(let j=0;j<K;j++){
+        if(sc[cur+j]>-Infinity)cand.push([sc[cur+j],cc[cur+j],dd[cur+j],cdUsed(cc[cur+j],dd[cur+j])]);
+        if(sc[prev+j]>-Infinity)cand.push([sc[prev+j],cc[prev+j],dd[prev+j],cdUsed(cc[prev+j],dd[prev+j])]);
+      }
+      cand.sort((p,q)=>Math.abs(q[0]-p[0])>EPS?q[0]-p[0]:q[3]-p[3]);
+      let w=0,seen=new Set();
+      for(const v of cand){
+        const key=v[1]+","+v[2];if(seen.has(key))continue;seen.add(key);
+        sc[cur+w]=v[0];cc[cur+w]=v[1];dd[cur+w]=v[2];
+        if(++w===K)break;
       }
       for(;w<K;w++){sc[cur+w]=-Infinity;cc[cur+w]=dd[cur+w]=0;}
     }
