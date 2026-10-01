@@ -21,8 +21,8 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 </head>
 <body><main>
 <h1>초월의 탑</h1>
-<div class="sub">500~1500층 관통/명중 필요 수치 조회</div>
-<section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">층별 필요 수치 조회</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>층수<input id="lookupFloor" inputmode="numeric" value="1000" placeholder="500~1500"></label><div id="lookupResult" class="lookupResult">1000층 · 필요 관통 6,000 / 필요 명중 17,500</div></div></section>
+<div class="sub">500~3000층 관통/명중 필요 수치 조회</div>
+<section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">층별 필요 수치 조회</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>층수<input id="lookupFloor" inputmode="numeric" value="1000" placeholder="500~3000"></label><div id="lookupResult" class="lookupResult">1000층 · 필요 관통 6,000 / 필요 명중 17,500</div></div></section>
 
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
@@ -40,14 +40,17 @@ function lerpInt(f,floors,vals){
  const span=floors[i+1]-floors[i], t=f-floors[i], d=vals[i+1]-vals[i];
  return vals[i]+Math.trunc((d*t+Math.trunc(span/2))/span);
 }
+// APK 0.1.87: 1501~3000층은 500층 기준점 사이를 정수 선형 증가.
+const A3=[1500,2000,2500,3000], B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
 function req(f){
  if(f<=1000)return [lerpInt(f,A1,B1),lerpInt(f,A1,E1)];
- return [lerpInt(f,A2,B2),lerpInt(f,A2,E2)];
+ if(f<=1500)return [lerpInt(f,A2,B2),lerpInt(f,A2,E2)];
+ return [lerpInt(f,A3,B3),lerpInt(f,A3,E3)];
 }
 const lookupFloor=document.getElementById('lookupFloor'),lookupResult=document.getElementById('lookupResult');
-function updateLookup(){const f=num(lookupFloor.value);if(f<500||f>1500){lookupResult.textContent='500~1500층 사이로 입력해 주세요.';return}const [p,a]=req(f);lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a)}
+function updateLookup(){const f=num(lookupFloor.value);if(f<500||f>1500){lookupResult.textContent='500~3000층 사이로 입력해 주세요.';return}const [p,a]=req(f);lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a)}
 lookupFloor.addEventListener('input',updateLookup);updateLookup();
 const rows=document.getElementById('rows');
-for(let f=500;f<=1500;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
+for(let f=500;f<=3000;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
 function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
 </script></body></html>
