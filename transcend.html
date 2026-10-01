@@ -639,7 +639,9 @@ td{color:#62776e;background:#fff}
         score:addEffects(levelEffect[0][4500],levelEffect[1][4500],levelEffect[2][4500],levelEffect[3][4500])};
       return {best:cand,top:[cand],base100:null};
     }
-    const K=12, W=budget+1, N=W*K;
+    // 4500 확장 후 K=12는 고예산에서 메모리를 과도하게 사용한다.
+    // 동일한 후보 유지 로직을 쓰되 K=6으로 줄여 배열 메모리를 절반으로 낮춘다.
+    const K=6, W=budget+1, N=W*K;
     const sc=new Float64Array(N); sc.fill(-Infinity);
     const cc=new Uint16Array(N), dd=new Uint16Array(N), uu=new Int32Array(N);
 
