@@ -48,9 +48,19 @@ function req(f){
  return [lerpInt(f,A3,B3),lerpInt(f,A3,E3)];
 }
 const lookupFloor=document.getElementById('lookupFloor'),lookupResult=document.getElementById('lookupResult');
-function updateLookup(){const f=num(lookupFloor.value);if(f<500||f>3000){lookupResult.textContent='500~3000층 사이로 입력해 주세요.';return}const [p,a]=req(f);lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a)}
+function floorNum(v){
+ const t=String(v).trim();
+ if(!/^\\d+$/.test(t))return NaN;
+ const n=Number(t);
+ return Number.isSafeInteger(n)?n:NaN;
+}
+function updateLookup(){
+ const f=floorNum(lookupFloor.value);
+ if(!Number.isFinite(f)||f<500||f>3000){lookupResult.textContent='500~3000 사이의 정수 층수를 입력해 주세요.';return}
+ const [p,a]=req(f);
+ lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a);
+}
 lookupFloor.addEventListener('input',updateLookup);updateLookup();
 const rows=document.getElementById('rows');
 for(let f=500;f<=3000;f++){const [p,a]=req(f);const tr=document.createElement('tr');tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';rows.appendChild(tr)}
-function num(v){return Number(String(v).replace(/[^0-9]/g,''))||0}
 </script></body></html>
