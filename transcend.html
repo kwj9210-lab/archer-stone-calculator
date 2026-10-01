@@ -787,8 +787,10 @@ td{color:#62776e;background:#fff}
       try{
         const exact=optimizeExact(calcPool);
         if(pool>TOTAL_MAX && exact.best){
-          exact.best.left+=pool-TOTAL_MAX;
-          exact.top.forEach(r=>r.left+=pool-TOTAL_MAX);
+          const extra=pool-TOTAL_MAX;
+          // best는 top[0]과 같은 객체일 수 있으므로 중복 가산하지 않는다.
+          exact.top.forEach(r=>r.left+=extra);
+          if(!exact.top.includes(exact.best)) exact.best.left+=extra;
         }
         renderResult(pool,exact);
         status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식 전체 조합 기준 최고 전투력 배분입니다.</span>';
