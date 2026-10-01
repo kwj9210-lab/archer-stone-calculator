@@ -639,9 +639,9 @@ td{color:#62776e;background:#fff}
         score:addEffects(levelEffect[0][4500],levelEffect[1][4500],levelEffect[2][4500],levelEffect[3][4500])};
       return {best:cand,top:[cand],base100:null};
     }
-    // 예산별 CD 후보는 상위 4개만 유지한다. 전체 조합 탐색 방식은 그대로다.
-    // 4500 확장 시 고예산 메모리를 K=12 대비 1/3 수준으로 낮춘다.
-    const K=4, W=budget+1, N=W*K;
+    // 정확탐색에서 예산별 CD 후보 6개를 유지한다.
+    // K=4는 메모리는 더 적지만 전 예산 동일해 검증 전이므로 사용하지 않는다.
+    const K=6, W=budget+1, N=W*K;
     const sc=new Float64Array(N); sc.fill(-Infinity);
     const cc=new Uint16Array(N), dd=new Uint16Array(N), uu=new Int32Array(N);
 
