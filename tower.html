@@ -58,10 +58,10 @@ function updateLookup(){
  const f=floorNum(lookupFloor.value);
  const ok=Number.isFinite(f)&&f>=500&&f<=3000;
  lookupFloor.setAttribute('aria-invalid',ok?'false':'true');
+ document.querySelectorAll('tr.hit').forEach(r=>r.classList.remove('hit'));
  if(!ok){lookupResult.textContent='500~3000 사이의 정수 층수를 입력해 주세요.';return}
  const [p,a]=req(f);
  lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a);
- document.querySelectorAll('tr.hit').forEach(r=>r.classList.remove('hit'));
  const row=document.getElementById('f'+f);if(row)row.classList.add('hit');
 }
 const list=document.getElementById('list'),rows=document.getElementById('rows');
@@ -78,6 +78,7 @@ function buildRows(){
 lookupFloor.addEventListener('input',updateLookup);
 lookupFloor.addEventListener('keydown',e=>{
  if(e.key!=='Enter')return;
+ e.preventDefault();
  updateLookup();
  const f=floorNum(lookupFloor.value);
  if(!Number.isFinite(f)||f<500||f>3000)return;
