@@ -501,13 +501,13 @@ td{color:#62776e;background:#fff}
     const cc=new Uint16Array(N), dd=new Uint16Array(N);
     const cdUsed=(c,d)=>levelCost[2][c]+levelCost[3][d];
 
-    function insert(cost,score,c,d,used){
+    function insert(cost,score,c,d){
       const base=cost*K;
       for(let j=0;j<K;j++){
         const p=base+j;
         if(cc[p]===c&&dd[p]===d&&sc[p]>-Infinity)return;
         if(sc[p]===-Infinity || score>sc[p]+EPS ||
-          (Math.abs(score-sc[p])<=EPS && used>cdUsed(cc[p],dd[p]))){
+          (Math.abs(score-sc[p])<=EPS && cost>cdUsed(cc[p],dd[p]))){
           for(let z=K-1;z>j;z--){const q=base+z,r=q-1;sc[q]=sc[r];cc[q]=cc[r];dd[q]=dd[r];}
           sc[p]=score;cc[p]=c;dd[p]=d;return;
         }
@@ -517,7 +517,7 @@ td{color:#62776e;background:#fff}
       const c0=levelCost[2][c];if(c0>budget)break;
       for(let d=0;d<=4500;d++){
         const used=c0+levelCost[3][d];if(used>budget)break;
-        insert(used,levelEffect[2][c]+levelEffect[3][d],c,d,used);
+        insert(used,levelEffect[2][c]+levelEffect[3][d],c,d);
       }
     }
     // Prefix merge: retain tied/near-best distinct CD states for every affordable budget.
