@@ -9,7 +9,7 @@
 header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);border-bottom:1px solid #cfe9d9;padding:10px 12px;box-shadow:0 3px 12px rgba(69,126,98,.09)}
 .bar{max-width:1020px;margin:auto;display:flex;align-items:center;gap:10px}
 .title{font-weight:900;font-size:17px;white-space:nowrap;color:#22694f}
-.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;flex:1}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;flex:1}
 button{border:1px solid #b6ddc7;background:#fff;border-radius:11px;min-height:42px;font-weight:850;color:#557268;cursor:pointer}
 button.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#35c98c,#54cbd6);box-shadow:0 5px 14px rgba(53,201,140,.22)}
 main{height:calc(100vh - 63px)}
@@ -23,23 +23,25 @@ iframe.active{display:block}
 <button id="tabStone" class="active" type="button">초월석 시뮬레이터</button>
 <button id="tabEngrave" type="button">각인석 계산기</button>
 <button id="tabTower" type="button">초월의 탑</button>
+<button id="tabTrial" type="button">시련의 관문</button>
 </div></div></header>
 <main>
 <iframe id="stone" class="active" src="transcend.html" title="초월석 시뮬레이터"></iframe>
 <iframe id="engrave" src="index.html" title="각인석 계산기"></iframe>
 <iframe id="tower" src="tower.html" title="초월의 탑"></iframe>
+<iframe id="trial" src="trial.html" title="시련의 관문"></iframe>
 </main>
 <script>
-const ts=document.getElementById('tabStone'),te=document.getElementById('tabEngrave'),tt=document.getElementById('tabTower');
-const s=document.getElementById('stone'),e=document.getElementById('engrave'),t=document.getElementById('tower');
+const ts=document.getElementById('tabStone'),te=document.getElementById('tabEngrave'),tt=document.getElementById('tabTower'),tr=document.getElementById('tabTrial');
+const s=document.getElementById('stone'),e=document.getElementById('engrave'),t=document.getElementById('tower'),r=document.getElementById('trial');
 function show(which){
- const stone=which==='stone',engrave=which==='engrave',tower=which==='tower';
- ts.classList.toggle('active',stone);te.classList.toggle('active',engrave);tt.classList.toggle('active',tower);
- s.classList.toggle('active',stone);e.classList.toggle('active',engrave);t.classList.toggle('active',tower);
- history.replaceState(null,'','#'+(stone?'transcend':engrave?'engrave':'tower'));
+ const stone=which==='stone',engrave=which==='engrave',tower=which==='tower',trial=which==='trial';
+ ts.classList.toggle('active',stone);te.classList.toggle('active',engrave);tt.classList.toggle('active',tower);tr.classList.toggle('active',trial);
+ s.classList.toggle('active',stone);e.classList.toggle('active',engrave);t.classList.toggle('active',tower);r.classList.toggle('active',trial);
+ history.replaceState(null,'','#'+(stone?'transcend':engrave?'engrave':tower?'tower':'trial'));
 }
-ts.onclick=()=>show('stone');te.onclick=()=>show('engrave');tt.onclick=()=>show('tower');
-if(location.hash==='#engrave')show('engrave');else if(location.hash==='#tower')show('tower');
+ts.onclick=()=>show('stone');te.onclick=()=>show('engrave');tt.onclick=()=>show('tower');tr.onclick=()=>show('trial');
+if(location.hash==='#engrave')show('engrave');else if(location.hash==='#tower')show('tower');else if(location.hash==='#trial')show('trial');
 </script>
 <!-- deploy refresh 2026-09-30: sweep decomposition fix 55c70e1 -->
 </body></html>
