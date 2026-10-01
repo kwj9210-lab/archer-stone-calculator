@@ -354,7 +354,7 @@ td{color:#62776e;background:#fff}
   <div class="cost-summary">Lv.4500 MAX · 청람 297,051 / 성해 372,562 / 차원 560,096 / 영겁 636,101</div>
   <details class="cost-details">
     <summary>100레벨 구간별 비용</summary>
-    <div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th></tr></thead><tbody><tr><td>Lv.0→100</td><td>500</td><td>1,000</td><td>1,500</td><td>2,000</td></tr><tr><td>Lv.100→200</td><td>1,000</td><td>1,500</td><td>2,500</td><td>3,000</td></tr><tr><td>Lv.200→300</td><td>2,000</td><td>2,500</td><td>4,000</td><td>5,000</td></tr><tr><td>Lv.300→400</td><td>3,000</td><td>4,000</td><td>6,000</td><td>7,000</td></tr><tr><td>Lv.400→500</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.500→600</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.600→700</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.700→800</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.800→900</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.900→1000</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1000→1100</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1100→1200</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1200→1300</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1300→1400</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1400→1500</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td><b>MAX</b></td><td><b>50,500</b></td><td><b>64,000</b></td><td><b>96,500</b></td><td><b>110,500</b></td></tr></tbody></table></div>
+    <div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th></tr></thead><tbody></tbody></table></div>
   </details>
 </section>
 </main>
@@ -710,7 +710,9 @@ td{color:#62776e;background:#fff}
     return {best,top:ties.slice(0,12),base100:null};
   }
   function getPool(){
-    return Math.max(0,Math.floor(Number(document.getElementById("stones").value)||0));
+    const n=Number(document.getElementById("stones").value);
+    if(!Number.isFinite(n) || n<0 || !Number.isSafeInteger(Math.floor(n))) return NaN;
+    return Math.floor(n);
   }
 
 
