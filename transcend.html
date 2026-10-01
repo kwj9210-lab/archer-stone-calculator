@@ -434,35 +434,6 @@ td{color:#62776e;background:#fff}
   const EPS=1e-9;
   const fmt=n=>Math.round(n).toLocaleString("ko-KR");
 
-  // 게임의 큰수 표기 복원:
-  // effect의 정수부 = 엑셀식(A..Z, AA..) 접미사 번호
-  // 소수부 = 앞자리 계수의 log10 정보
-  function suffixFromIndex(n){
-    n=Math.max(0,Math.floor(n));
-    if(n===0)return "";
-    let out="";
-    while(n>0){
-      n--;
-      out=String.fromCharCode(65+(n%26))+out;
-      n=Math.floor(n/26);
-    }
-    return out;
-  }
-  function gameAttackText(e,stoneIndex,lv){
-    // 화면에서 직접 확인된 x1 공격력은 게임 문자열 그대로 표시
-    if(stoneIndex===2 && lv===2103)return "+247AFIZTN 9963AFIZTM%";
-    if(stoneIndex===2 && lv===2104)return "+64AFJSNY 9872AFJSNX%";
-    if(!Number.isFinite(e)||e<=0)return "0%";
-    const idx=Math.floor(e);
-    const frac=e-idx;
-    const coeff=Math.pow(10,4*(frac+0.5));
-    let hi=Math.floor(coeff+1e-7);
-    let lo=Math.round((coeff-hi)*10000);
-    if(lo>=10000){hi++;lo=0;}
-    const s1=suffixFromIndex(idx);
-    if(lo<=0 || idx<=1) return "+"+hi+s1+"%";
-    return "+"+hi+s1+" "+String(lo).padStart(4,"0")+suffixFromIndex(idx-1)+"%";
-  }
   // 각 초월 항목의 효과는 대수 효과값을 합산해 전체 배분을 비교한다.
   // 302,600 실게임 검증값: 청람130 / 성해100 / 차원200 / 영겁3000.
   function addEffect(a,b){ return a+b; }
