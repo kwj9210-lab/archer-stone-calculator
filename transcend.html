@@ -307,7 +307,7 @@ td{color:#62776e;background:#fff}
 <main>
 <header class="site-head">
   <h1>궁수키우기 초월석 시뮬레이터</h1>
-  <div class="submark">Lv.0–3000</div>
+  <div class="submark">Lv.0–4500</div>
 </header>
 
 <div class="workspace">
@@ -351,7 +351,7 @@ td{color:#62776e;background:#fff}
   <div class="cost-head">
     <h2>비용 기준</h2>
   </div>
-  <div class="cost-summary">Lv.3000 MAX · 청람 137,774 / 성해 173,277 / 차원 260,789 / 영겁 296,794</div>
+  <div class="cost-summary">Lv.4500 MAX · 청람 297,051 / 성해 372,562 / 차원 560,096 / 영겁 636,101</div>
   <details class="cost-details">
     <summary>100레벨 구간별 비용</summary>
     <div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th></tr></thead><tbody><tr><td>Lv.0→100</td><td>500</td><td>1,000</td><td>1,500</td><td>2,000</td></tr><tr><td>Lv.100→200</td><td>1,000</td><td>1,500</td><td>2,500</td><td>3,000</td></tr><tr><td>Lv.200→300</td><td>2,000</td><td>2,500</td><td>4,000</td><td>5,000</td></tr><tr><td>Lv.300→400</td><td>3,000</td><td>4,000</td><td>6,000</td><td>7,000</td></tr><tr><td>Lv.400→500</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.500→600</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.600→700</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.700→800</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.800→900</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.900→1000</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1000→1100</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1100→1200</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1200→1300</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1300→1400</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td>Lv.1400→1500</td><td>4,000</td><td>5,000</td><td>7,500</td><td>8,500</td></tr><tr><td><b>MAX</b></td><td><b>50,500</b></td><td><b>64,000</b></td><td><b>96,500</b></td><td><b>110,500</b></td></tr></tbody></table></div>
@@ -364,18 +364,20 @@ td{color:#62776e;background:#fff}
   if(window.__archerFinalInit)return; window.__archerFinalInit=true;
   const names=["청람결정","성해공명","차원각인","영겁성핵"];
   const shortNames=["청람","성해","차원","영겁"];
-  const costs=[
+  let costs=[
     [500,1000,2000,3000,4000,4000,4000,4000,4000,4000,4000,4000,4000,4000,4000,4062,4282,4506,4740,4987,5230,5491,5752,6019,6299,6586,6876,7174,7479,7791],
     [1000,1500,2500,4000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,5089,5363,5646,5939,6242,6553,6871,7202,7541,7885,8244,8607,8978,9361,9754],
     [1500,2500,4000,6000,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500,7855,8069,8494,8932,9389,9855,10334,10837,11349,11869,12400,12943,13499,14070,14656],
     [2000,3000,5000,7000,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8685,9150,9633,10132,10646,11173,11720,12277,12852,13442,14047,14669,15300,15952,16616]
   ];
+  // Lv.3001~4500 구간은 아래 APK BuildExpandedCosts 식으로 생성하므로 빈 구간을 확장한다.
+  costs=costs.map(row=>row.concat(Array(15).fill(0)));
 
   // APK 비용표 구성: Lv.1~1500은 100레벨 구간 내 고정 x1 비용,
-  // Lv.1501~3000은 BuildExpandedCosts 정수식.
+  // Lv.1501~4500은 BuildExpandedCosts 정수식.
   const baseCost=[40,50,75,85];
   const levelCost=costs.map((row,stoneIndex)=>{
-    const a=new Int32Array(3001);
+    const a=new Int32Array(4501);
     let sum=0; a[0]=0;
     for(let lv=1;lv<=1500;lv++){
       const block=Math.floor((lv-1)/100);
@@ -383,7 +385,7 @@ td{color:#62776e;background:#fff}
       a[lv]=sum;
     }
     const B=baseCost[stoneIndex];
-    for(let lv=1501;lv<=3000;lv++){
+    for(let lv=1501;lv<=4500;lv++){
       const n=lv-1500;
       sum+=B+Math.floor(B*n*(n+6000)/11250000);
       a[lv]=sum;
@@ -391,17 +393,17 @@ td{color:#62776e;background:#fff}
     return a;
   });
   for(let i=0;i<4;i++){
-    for(let b=15;b<30;b++) costs[i][b]=levelCost[i][(b+1)*100]-levelCost[i][b*100];
+    for(let b=15;b<45;b++) costs[i][b]=levelCost[i][(b+1)*100]-levelCost[i][b*100];
   }
 
-  // APK CalculateStoneTranscendMultiplierAtLevel 복원값.
+  // APK CalculateStoneTranscendMultiplierAtLevel 복원값. Lv.1501 이후 동일 확장식을 Lv.4500까지 적용.
   // 비교에는 최종 BigNumber 변환 전의 d8 값만 쓰면 된다. 최종 변환은 단조증가라 최적 조합 순서는 동일하다.
   function oneCost(stone,level){
-    if(level<1||level>3000)return 0;
+    if(level<1||level>4500)return 0;
     return levelCost[stone][level]-levelCost[stone][level-1];
   }
   function apkEffect(stone,level){
-    level=Math.max(0,Math.min(3000,Math.floor(level)));
+    level=Math.max(0,Math.min(4500,Math.floor(level)));
     let v=0;
     const upto=Math.min(level,1500);
     const seg=[[0,100],[100,200],[200,300],[300,400],[400,600],[600,1200],[1200,1500]];
@@ -423,12 +425,12 @@ td{color:#62776e;background:#fff}
     return v;
   }
   const levelEffect=Array.from({length:4},(_,i)=>{
-    const a=new Float64Array(3001);
-    for(let lv=0;lv<=3000;lv++)a[lv]=apkEffect(i,lv);
+    const a=new Float64Array(4501);
+    for(let lv=0;lv<=4500;lv++)a[lv]=apkEffect(i,lv);
     return a;
   });
 
-  const TOTAL_MAX=levelCost.reduce((s,a)=>s+a[3000],0);
+  const TOTAL_MAX=levelCost.reduce((s,a)=>s+a[4500],0);
   const EPS=1e-9;
   const fmt=n=>Math.round(n).toLocaleString("ko-KR");
 
@@ -469,7 +471,7 @@ td{color:#62776e;background:#fff}
     for(let i=0;i<arguments.length;i++)v+=arguments[i];
     return v;
   }
-  const clampLv=v=>Math.max(0,Math.min(3000,Math.floor(Number(v)||0)));
+  const clampLv=v=>Math.max(0,Math.min(4500,Math.floor(Number(v)||0)));
   const better=(a,b)=>{
     if(!b)return true;
     const d=a.score-b.score;
@@ -479,8 +481,8 @@ td{color:#62776e;background:#fff}
     return false;
   };
   const levelsFor=(fixed,step)=>{
-    if(fixed)return [3000];
-    const a=[]; for(let x=0;x<=3000;x+=step)a.push(x); return a;
+    if(fixed)return [4500];
+    const a=[]; for(let x=0;x<=4500;x+=step)a.push(x); return a;
   };
 
   function optimize(budget,fixed,step,topN){
@@ -601,7 +603,7 @@ td{color:#62776e;background:#fff}
       const before=totalScore();
       let pick=-1,pickGain=-Infinity,pickCost=Infinity;
       for(let i=0;i<4;i++){
-        const lv=levels[i]; if(lv>=3000)continue;
+        const lv=levels[i]; if(lv>=4500)continue;
         const oneCost=levelCost[i][lv+1]-levelCost[i][lv];
         if(oneCost<=0||used+oneCost>budget)continue;
         levels[i]=lv+1; const after=totalScore(); levels[i]=lv;
@@ -619,7 +621,7 @@ td{color:#62776e;background:#fff}
     while(used<budget && guard++<20000){
       let pick=-1, cheapest=Infinity;
       for(let i=0;i<4;i++){
-        const lv=levels[i]; if(lv>=3000)continue;
+        const lv=levels[i]; if(lv>=4500)continue;
         const c=levelCost[i][lv+1]-levelCost[i][lv];
         if(c>0 && used+c<=budget && c<cheapest){pick=i;cheapest=c;}
       }
@@ -646,9 +648,9 @@ td{color:#62776e;background:#fff}
         }
       }
     }
-    for(let c=0;c<=3000;c++){
+    for(let c=0;c<=4500;c++){
       const c0=levelCost[2][c];if(c0>budget)break;
-      for(let d=0;d<=3000;d++){
+      for(let d=0;d<=4500;d++){
         const used=c0+levelCost[3][d];if(used>budget)break;
         insert(used,levelEffect[2][c]+levelEffect[3][d],c,d,used);
       }
@@ -678,9 +680,9 @@ td{color:#62776e;background:#fff}
         if(!ties.some(x=>x.levels.join(",")===key))ties.push(c);
       }
     };
-    for(let aa=0;aa<=3000;aa++){
+    for(let aa=0;aa<=4500;aa++){
       const ca=levelCost[0][aa];if(ca>budget)break;
-      for(let bb=0;bb<=3000;bb++){
+      for(let bb=0;bb<=4500;bb++){
         const ab=ca+levelCost[1][bb];if(ab>budget)break;
         const base=(budget-ab)*K;
         for(let j=0;j<K;j++){
@@ -703,19 +705,19 @@ td{color:#62776e;background:#fff}
   }
 
 
-  const estimatedCostBlocks=new Set(["1-22","1-28","2-22","2-23","2-24","2-25","2-26","2-27","2-28"]);
+  const estimatedCostBlocks=new Set();
 
   function renderCostTable(){
     let h="<thead><tr><th>구간</th>";
     for(const n of shortNames)h+="<th>"+n+"</th>";
     h+="</tr></thead><tbody>";
-    for(let b=0;b<30;b++){
+    for(let b=0;b<45;b++){
       h+="<tr><td>Lv."+(b*100)+"→"+((b+1)*100)+"</td>";
       for(let i=0;i<4;i++){const est=estimatedCostBlocks.has(i+"-"+b);h+="<td>"+(est?"≈":"")+fmt(costs[i][b])+"</td>";}
       h+="</tr>";
     }
     h+="<tr><td><b>MAX</b></td>";
-    for(let i=0;i<4;i++)h+="<td><b>"+fmt(levelCost[i][3000])+"</b></td>";
+    for(let i=0;i<4;i++)h+="<td><b>"+fmt(levelCost[i][4500])+"</b></td>";
     h+="</tr></tbody>";
     document.getElementById("costTable").innerHTML=h;
   }
