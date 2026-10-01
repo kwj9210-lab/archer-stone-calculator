@@ -32,16 +32,20 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 </main>
 <script>
 const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
-const A1=[500,600,700,800,900,1000], B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
-const A2=[1000,1100,1200,1300,1400,1500], B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
-function lerpInt(f,floors,vals){
- if(f<=floors[0])return vals[0]; if(f>=floors[floors.length-1])return vals[vals.length-1];
- let i=0; while(i+1<floors.length && f>floors[i+1])i++;
- const span=floors[i+1]-floors[i], t=f-floors[i], d=vals[i+1]-vals[i];
- return vals[i]+Math.trunc((d*t+Math.trunc(span/2))/span);
-}
-// APK 0.1.87 TranscendenceTower3000Balance.Interpolate 원본식.
+// APK 0.1.87 TranscendenceTower1000/1500/3000Balance 원본 배열·보간식.
+const B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
+const B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
 const B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
+function tower1000Value(f,vals){
+ const level=Math.max(501,Math.min(1000,f));
+ const i=Math.floor((level-501)/100),t=level-i*100-500;
+ return vals[i]+Math.trunc(((vals[i+1]-vals[i])*t+50)/100);
+}
+function tower1500Value(f,vals){
+ const level=Math.max(1001,Math.min(1500,f));
+ const i=Math.floor((level-1001)/100),t=level-i*100-1000;
+ return vals[i]+Math.trunc((vals[i+1]-vals[i])/100)*t;
+}
 function tower3000Value(f,vals){
  const level=Math.max(1501,Math.min(3000,f));
  const i=Math.floor((level-1501)/500);
@@ -49,8 +53,8 @@ function tower3000Value(f,vals){
  return vals[i]+Math.trunc((vals[i+1]-vals[i])/500)*t;
 }
 function req(f){
- if(f<=1000)return [lerpInt(f,A1,B1),lerpInt(f,A1,E1)];
- if(f<=1500)return [lerpInt(f,A2,B2),lerpInt(f,A2,E2)];
+ if(f<=1000)return [tower1000Value(f,B1),tower1000Value(f,E1)];
+ if(f<=1500)return [tower1500Value(f,B2),tower1500Value(f,E2)];
  return [tower3000Value(f,B3),tower3000Value(f,E3)];
 }
 const lookupFloor=document.getElementById('lookupFloor'),lookupResult=document.getElementById('lookupResult');
