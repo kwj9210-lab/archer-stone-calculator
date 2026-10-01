@@ -639,9 +639,9 @@ td{color:#62776e;background:#fff}
         score:addEffects(levelEffect[0][4500],levelEffect[1][4500],levelEffect[2][4500],levelEffect[3][4500])};
       return {best:cand,top:[cand],base100:null};
     }
-    // 4500 확장 후 K=12는 고예산에서 메모리를 과도하게 사용한다.
-    // 동일한 후보 유지 로직을 쓰되 K=6으로 줄여 배열 메모리를 절반으로 낮춘다.
-    const K=6, W=budget+1, N=W*K;
+    // 예산별 CD 후보는 상위 4개만 유지한다. 전체 조합 탐색 방식은 그대로다.
+    // 4500 확장 시 고예산 메모리를 K=12 대비 1/3 수준으로 낮춘다.
+    const K=4, W=budget+1, N=W*K;
     const sc=new Float64Array(N); sc.fill(-Infinity);
     const cc=new Uint16Array(N), dd=new Uint16Array(N), uu=new Int32Array(N);
 
@@ -751,7 +751,7 @@ td{color:#62776e;background:#fff}
     let minNext=Infinity;
     for(let i=0;i<4;i++){
       const lv=shown.levels[i];
-      if(lv<3000){
+      if(lv<4500){
         const c=levelCost[i][lv+1]-levelCost[i][lv];
         if(c>0)minNext=Math.min(minNext,c);
       }
