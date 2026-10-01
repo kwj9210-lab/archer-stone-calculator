@@ -498,7 +498,8 @@ td{color:#62776e;background:#fff}
     // K=4는 메모리는 더 적지만 전 예산 동일해 검증 전이므로 사용하지 않는다.
     const K=6, W=budget+1, N=W*K;
     const sc=new Float64Array(N); sc.fill(-Infinity);
-    const cc=new Uint16Array(N), dd=new Uint16Array(N), uu=new Int32Array(N);
+    const cc=new Uint16Array(N), dd=new Uint16Array(N);
+    const cdUsed=(c,d)=>levelCost[2][c]+levelCost[3][d];
 
     function insert(cost,score,c,d,used){
       const base=cost*K;
@@ -506,9 +507,9 @@ td{color:#62776e;background:#fff}
         const p=base+j;
         if(cc[p]===c&&dd[p]===d&&sc[p]>-Infinity)return;
         if(sc[p]===-Infinity || score>sc[p]+EPS ||
-          (Math.abs(score-sc[p])<=EPS && used>uu[p])){
-          for(let z=K-1;z>j;z--){const q=base+z,r=q-1;sc[q]=sc[r];cc[q]=cc[r];dd[q]=dd[r];uu[q]=uu[r];}
-          sc[p]=score;cc[p]=c;dd[p]=d;uu[p]=used;return;
+          (Math.abs(score-sc[p])<=EPS && used>cdUsed(cc[p],dd[p]))){
+          for(let z=K-1;z>j;z--){const q=base+z,r=q-1;sc[q]=sc[r];cc[q]=cc[r];dd[q]=dd[r];}
+          sc[p]=score;cc[p]=c;dd[p]=d;return;
         }
       }
     }
@@ -523,17 +524,17 @@ td{color:#62776e;background:#fff}
     for(let x=1;x<=budget;x++){
       const cur=x*K, prev=(x-1)*K, cand=[];
       for(let j=0;j<K;j++){
-        if(sc[cur+j]>-Infinity)cand.push([sc[cur+j],cc[cur+j],dd[cur+j],uu[cur+j]]);
-        if(sc[prev+j]>-Infinity)cand.push([sc[prev+j],cc[prev+j],dd[prev+j],uu[prev+j]]);
+        if(sc[cur+j]>-Infinity)cand.push([sc[cur+j],cc[cur+j],dd[cur+j],cdUsed(cc[cur+j],dd[cur+j])]);
+        if(sc[prev+j]>-Infinity)cand.push([sc[prev+j],cc[prev+j],dd[prev+j],cdUsed(cc[prev+j],dd[prev+j])]);
       }
       cand.sort((p,q)=>Math.abs(q[0]-p[0])>EPS?q[0]-p[0]:q[3]-p[3]);
       let w=0,seen=new Set();
       for(const v of cand){
         const key=v[1]+","+v[2];if(seen.has(key))continue;seen.add(key);
-        sc[cur+w]=v[0];cc[cur+w]=v[1];dd[cur+w]=v[2];uu[cur+w]=v[3];
+        sc[cur+w]=v[0];cc[cur+w]=v[1];dd[cur+w]=v[2];
         if(++w===K)break;
       }
-      for(;w<K;w++){sc[cur+w]=-Infinity;cc[cur+w]=dd[cur+w]=uu[cur+w]=0;}
+      for(;w<K;w++){sc[cur+w]=-Infinity;cc[cur+w]=dd[cur+w]=0;}
     }
     let best=null, ties=[];
     const addTie=c=>{
@@ -551,7 +552,7 @@ td{color:#62776e;background:#fff}
         const base=(budget-ab)*K;
         for(let j=0;j<K;j++){
           if(sc[base+j]===-Infinity)break;
-          const c=cc[base+j],d=dd[base+j],used=ab+uu[base+j];
+          const c=cc[base+j],d=dd[base+j],used=ab+cdUsed(c,d);
           addTie({levels:[aa,bb,c,d],used,left:budget-used,
             score:levelEffect[0][aa]+levelEffect[1][bb]+sc[base+j]});
         }
