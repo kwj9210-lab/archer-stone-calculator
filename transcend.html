@@ -301,6 +301,20 @@ td{color:#62776e;background:#fff}
   .site-head h1{font-size:20px}
   .numbers{grid-template-columns:1fr 1fr}
 }
+
+.mode-tabs{display:flex;gap:8px;margin:0 0 14px}
+.mode-tab{width:auto;min-height:42px;padding:9px 18px;background:#fff;color:#4f7465;border:1px solid #cfe9d9;box-shadow:none}
+.mode-tab.active{background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(53,201,140,.18)}
+.mode-pane[hidden]{display:none!important}
+.trial-wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}
+.trial-result{display:grid;gap:10px}
+.trial-card{padding:13px 14px;border:1px solid #d6ebdf;border-radius:13px;background:#fbfffc}
+.trial-card .big{font-size:18px;font-weight:900;color:#257455}
+.trial-table{min-width:540px}
+.trial-table th,.trial-table td{text-align:right}
+.trial-table th:first-child,.trial-table td:first-child{text-align:left}
+.trial-note{margin-top:10px;color:#71847b;font-size:11.5px;line-height:1.6}
+@media(max-width:760px){.trial-wrap{grid-template-columns:1fr}.mode-tabs{margin-bottom:9px}.mode-tab{flex:1;padding:8px 7px;font-size:13px}}
 </style>
 </head>
 <body>
@@ -310,6 +324,12 @@ td{color:#62776e;background:#fff}
   <div class="submark">Lv.0–4500</div>
 </header>
 
+
+<div class="mode-tabs" role="tablist" aria-label="계산기 선택">
+  <button class="mode-tab active" id="tabTranscend" type="button" role="tab" aria-selected="true">초월석</button>
+  <button class="mode-tab" id="tabTrial" type="button" role="tab" aria-selected="false">시련의 관문</button>
+</div>
+<div id="transcendPane" class="mode-pane">
 <div class="workspace">
   <section class="panel input-panel">
     <div class="input-head">
@@ -357,6 +377,31 @@ td{color:#62776e;background:#fff}
     <div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th></tr></thead><tbody></tbody></table></div>
   </details>
 </section>
+</div>
+<section id="trialPane" class="mode-pane" hidden>
+  <div class="trial-wrap">
+    <section class="panel input-panel">
+      <div class="input-head"><h2>시련의 관문 기준점</h2></div>
+      <div class="field">
+        <label for="trialBaseFloor">실제로 클리어한 기준 층</label>
+        <input id="trialBaseFloor" type="number" min="1" max="6000" step="1" value="2000">
+      </div>
+      <div class="field">
+        <label for="trialBasePower">그때 전투력</label>
+        <input id="trialBasePower" type="text" inputmode="decimal" placeholder="예: 1.25e120 또는 1250000">
+      </div>
+      <button id="trialRun" type="button">2000~3000 환산</button>
+      <div id="trialStatus" class="status" aria-live="polite"></div>
+      <div class="trial-note">APK에는 층별 권장 전투력 값이 따로 없습니다. 실제 클리어 기준점을 넣고 보스 HP 증가율을 같은 비율로 적용한 환산값입니다. 관통·명중은 시련의 관문 데미지 경로에 적용되지 않아 입력하지 않습니다.</div>
+    </section>
+    <section class="panel result-panel">
+      <h2>100층 단위 환산</h2>
+      <div id="trialSummary" class="result-main"><div class="result-empty">기준 층과 당시 전투력을 입력하면 2000~3000층을 100층 단위로 계산합니다.</div></div>
+      <div class="scroll"><table class="trial-table"><thead><tr><th>층</th><th>기준 대비 HP</th><th>환산 전투력</th></tr></thead><tbody id="trialRows"></tbody></table></div>
+    </section>
+  </div>
+</section>
+
 </main>
 
 <script>
@@ -633,6 +678,94 @@ td{color:#62776e;background:#fff}
   document.getElementById("run").addEventListener("click",run);
   document.getElementById("stones").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
   renderCostTable(); document.getElementById("status").textContent="";
+})();
+</script>
+
+
+<script>
+(function(){
+  const tabA=document.getElementById("tabTranscend"),tabB=document.getElementById("tabTrial");
+  const paneA=document.getElementById("transcendPane"),paneB=document.getElementById("trialPane");
+  function show(which){
+    const trial=which==="trial";
+    paneA.hidden=trial; paneB.hidden=!trial;
+    tabA.classList.toggle("active",!trial); tabB.classList.toggle("active",trial);
+    tabA.setAttribute("aria-selected",String(!trial)); tabB.setAttribute("aria-selected",String(trial));
+  }
+  tabA.addEventListener("click",()=>show("transcend"));
+  tabB.addEventListener("click",()=>show("trial"));
+
+  function referenceChapter(g){
+    g=Math.max(1,Math.min(6000,Math.floor(g)));
+    if(g>=4001)return 1000*g-1098735;
+    if(g>=2001)return 500*g-814735;
+    if(g>=551)return 120*g-54735;
+    if(g>=501)return 70*g-27235;
+    if(g>=301)return 35*g-9735;
+    if(g>=101)return 3*g-110;
+    if(g>=11)return 2*g-10;
+    return g;
+  }
+  function trialStage(g){return referenceChapter(g)*100-1}
+  function highStageLog10(s){
+    if(s<5000000)return 0;
+    let cur=5000000,total=0;
+    while(cur<=s){
+      const q=Math.floor((cur-3000000)/100000);
+      const end=q*100000+3099999;
+      const last=Math.min(s,end);
+      total+=(last-cur+1)*Math.log10(2900+400*q);
+      cur=last+1;
+    }
+    return total;
+  }
+  function hpLogDelta(a,b){
+    const sa=trialStage(a),sb=trialStage(b);
+    if(sa>=5000000&&sb>=5000000)return highStageLog10(sa)-highStageLog10(sb);
+    return NaN;
+  }
+  function parsePower(raw){
+    raw=String(raw||"").trim().replace(/,/g,"");
+    const m=raw.match(/^([+]?(?:\d+(?:\.\d*)?|\.\d+))(?:[eE]([+-]?\d+))?$/);
+    if(!m)return null;
+    const v=Number(m[1]),e=Number(m[2]||0);
+    if(!(v>0)||!Number.isFinite(v)||!Number.isSafeInteger(e))return null;
+    const lg=Math.log10(v)+e;
+    return {log10:lg};
+  }
+  function sciFromLog(lg){
+    if(!Number.isFinite(lg))return "계산 범위 밖";
+    let e=Math.floor(lg),m=Math.pow(10,lg-e);
+    if(m>=9.9999995){m=1;e++}
+    return m.toFixed(6).replace(/0+$/,"").replace(/\.$/,"")+" × 10^"+e.toLocaleString("ko-KR");
+  }
+  function ratioText(d){
+    if(Math.abs(d)<1e-10)return "1배";
+    return sciFromLog(d)+"배";
+  }
+  function runTrial(){
+    const floor=Math.floor(Number(document.getElementById("trialBaseFloor").value));
+    const p=parsePower(document.getElementById("trialBasePower").value);
+    const status=document.getElementById("trialStatus");
+    if(!Number.isFinite(floor)||floor<2000||floor>3000){
+      status.innerHTML='<span class="bad">기준 층은 2000~3000 사이로 입력해 주세요.</span>';return;
+    }
+    if(!p){
+      status.innerHTML='<span class="bad">전투력을 숫자 또는 1.23e120 형식으로 입력해 주세요.</span>';return;
+    }
+    const rows=[];
+    for(let target=2000;target<=3000;target+=100){
+      const d=hpLogDelta(target,floor);
+      rows.push("<tr><td>"+target+"</td><td>"+ratioText(d)+"</td><td><b>"+sciFromLog(p.log10+d)+"</b></td></tr>");
+    }
+    document.getElementById("trialRows").innerHTML=rows.join("");
+    document.getElementById("trialSummary").innerHTML=
+      '<div class="bestline">기준 '+floor.toLocaleString("ko-KR")+'층에서 환산</div>'+
+      '<div class="small">30초 제한 · APK 보스 HP 증가곡선 적용 · 동일한 공격 효율을 유지한다는 기준점 환산</div>';
+    status.innerHTML='<span class="ok">계산 완료.</span>';
+  }
+  document.getElementById("trialRun").addEventListener("click",runTrial);
+  document.getElementById("trialBasePower").addEventListener("keydown",e=>{if(e.key==="Enter")runTrial()});
 })();
 </script>
 
