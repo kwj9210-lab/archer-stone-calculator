@@ -107,11 +107,7 @@ function updateReward(f){
   return;
  }
  const all=totalStoneReward(f,1);
- const from500=totalStoneReward(f,500);
- const current=stoneRewardAtFloor(f);
- out.innerHTML='<b style="font-size:17px">'+f+'층까지 전체 누적 '+fmt(all)+'개</b>'
-   +'<br>500층부터 '+f+'층까지: <b>'+fmt(from500)+'개</b>'
-   +'<br><span style="font-size:12px;color:#71867c">'+f+'층 1회 보상: '+fmt(current)+'개</span>';
+ out.innerHTML='<b style="font-size:17px">'+f+'층까지 전체 누적 '+fmt(all)+'개</b>';
 }
 function updateLookup(){
  const pen=penNum(myPen.value);
