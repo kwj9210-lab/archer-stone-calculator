@@ -21,14 +21,14 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 </head>
 <body><main>
 <h1>초월의 탑</h1>
-<div class="sub">500~3000층 관통/명중 필요 수치 조회</div>
-<section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">층별 필요 수치 조회</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>층수<input id="lookupFloor" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="go" value="1234" placeholder="예: 1234, 1313, 2999"></label><div id="lookupResult" class="lookupResult">1234층 · 필요 관통 8,508 / 필요 명중 23,686</div></div></section>
+<div class="sub">내 관통 기준으로 500~3000층에서 가능한 최고층과 필요 관통·명중을 계산</div>
+<section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">내 관통으로 가능한 최고층</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>내 관통<input id="myPen" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="go" value="8508" placeholder="예: 8508"></label><div id="lookupResult" class="lookupResult">관통을 입력하면 가능한 최고층과 필요 명중을 표시합니다.</div></div></section>
 
 <details id="list">
 <summary>500층부터 필요 관통·명중 수치 보기</summary>
 <div class="tableWrap"><table><thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th></tr></thead><tbody id="rows"></tbody></table></div>
 </details>
-<div class="note">필요 관통은 보스 Block, 필요 명중은 보스 Evasion 값으로 계산. 공격력·생존·제한시간은 제외한 관통/명중 조건만 판정한다.</div>
+<div class="note">가능 최고층은 <b>관통 조건만</b> 기준으로 계산합니다. 결과에 표시되는 명중은 해당 층의 필요 명중입니다. 공격력·생존·제한시간은 포함하지 않습니다.</div>
 </main>
 <script>
 const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
@@ -61,21 +61,41 @@ function req(f){
  if(f<=1500)return [tower1500Value(f,B2),tower1500Value(f,E2)];
  return [tower3000Value(f,B3),tower3000Value(f,E3)];
 }
-const lookupFloor=document.getElementById('lookupFloor'),lookupResult=document.getElementById('lookupResult');
-function floorNum(v){
- const t=String(v).trim();
+const myPen=document.getElementById('myPen'),lookupResult=document.getElementById('lookupResult');
+function penNum(v){
+ const t=String(v).trim().replace(/,/g,'');
  if(!/^\d+$/.test(t))return NaN;
  const n=Number(t);
  return Number.isSafeInteger(n)?n:NaN;
 }
+function maxFloorByPen(pen){
+ if(pen<req(500)[0])return null;
+ let lo=500,hi=3000,best=500;
+ while(lo<=hi){
+  const mid=Math.floor((lo+hi)/2),need=req(mid)[0];
+  if(need<=pen){best=mid;lo=mid+1}else hi=mid-1;
+ }
+ return best;
+}
 function updateLookup(){
- const f=floorNum(lookupFloor.value);
- const ok=Number.isFinite(f)&&f>=500&&f<=3000;
- lookupFloor.setAttribute('aria-invalid',ok?'false':'true');
+ const pen=penNum(myPen.value);
+ const ok=Number.isFinite(pen)&&pen>=0;
+ myPen.setAttribute('aria-invalid',ok?'false':'true');
  document.querySelectorAll('tr.hit').forEach(r=>r.classList.remove('hit'));
- if(!ok){lookupResult.textContent='500~3000 사이의 정수 층수를 입력해 주세요.';return}
+ if(!ok){lookupResult.textContent='관통 수치를 정수로 입력해 주세요.';return}
+ const f=maxFloorByPen(pen);
+ if(f===null){
+  const [p,a]=req(500);
+  lookupResult.innerHTML='현재 관통 '+fmt(pen)+' · <span style="color:#c95b5b">500층 관통 기준 미달</span><br><span style="font-size:12px;color:#71867c">500층 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a)+'</span>';
+  return;
+ }
  const [p,a]=req(f);
- lookupResult.textContent=f+'층 · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a);
+ let extra='';
+ if(f<3000){
+  const [np,na]=req(f+1);
+  extra='<br><span style="font-size:12px;color:#71867c">다음 '+(f+1)+'층 · 필요 관통 '+fmt(np)+' / 필요 명중 '+fmt(na)+'</span>';
+ }
+ lookupResult.innerHTML='<span>'+f+'층까지 가능</span> · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a)+extra;
  const row=document.getElementById('f'+f);if(row)row.classList.add('hit');
 }
 const list=document.getElementById('list'),rows=document.getElementById('rows');
@@ -89,13 +109,13 @@ function buildRows(){
  }
  rows.appendChild(frag);rowsBuilt=true;updateLookup();
 }
-lookupFloor.addEventListener('input',updateLookup);
-lookupFloor.addEventListener('keydown',e=>{
+myPen.addEventListener('input',updateLookup);
+myPen.addEventListener('keydown',e=>{
  if(e.key!=='Enter')return;
  e.preventDefault();
  updateLookup();
- const f=floorNum(lookupFloor.value);
- if(!Number.isFinite(f)||f<500||f>3000)return;
+ const pen=penNum(myPen.value),f=Number.isFinite(pen)?maxFloorByPen(pen):null;
+ if(f===null)return;
  list.open=true;buildRows();
  const row=document.getElementById('f'+f);
  if(row)row.scrollIntoView({behavior:'smooth',block:'center'});
