@@ -8,23 +8,70 @@ main{width:min(980px,100%);margin:auto;padding:22px 18px 44px}.site-head{display
 .wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 8px 22px rgba(69,126,98,.11)}.input-panel{position:sticky;top:14px}h2{margin:0 0 16px;font-size:17px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}.field{margin-bottom:12px}.field label{display:block;margin-bottom:7px;color:#657c72;font-size:12px;font-weight:700}input{width:100%;min-height:50px;padding:11px 12px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:17px;font-weight:800;outline:none}button{width:100%;min-height:50px;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;font-size:15px;font-weight:900;cursor:pointer}.status{min-height:18px;margin-top:10px;font-size:12px}.bad{color:var(--bad);font-weight:700}.ok{color:var(--good);font-weight:700}.note,.small{color:var(--muted);font-size:11.5px;line-height:1.6}.note{margin-top:10px}.result-main{margin-bottom:10px;padding:13px 14px;border:1px solid #d8ebce;border-left:4px solid var(--accent);border-radius:13px;background:linear-gradient(135deg,#f0fbf5,#fffbe9)}.bestline{font-size:17px;font-weight:900;margin-bottom:7px;color:#257455}.empty{color:#7d9188;font-size:13px;line-height:1.6}.scroll{overflow-x:auto;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:540px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:11.5px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
 @media(max-width:760px){main{padding:13px 9px 31px}.site-head h1{font-size:22px}.submark{display:none}.wrap{grid-template-columns:1fr;gap:9px}.panel{padding:12px;border-radius:14px}.input-panel{position:static}}
 </style></head><body><main>
-<header class="site-head"><h1>시련의 관문</h1><div class="submark">2000–3000</div></header>
-<div class="wrap"><section class="panel input-panel"><h2>기준점 입력</h2>
-<div class="field"><label for="baseFloor">실제로 클리어한 기준 층</label><input id="baseFloor" type="number" min="2000" max="3000" step="1" value="2000"></div>
-<div class="field"><label for="basePower">그때 전투력</label><input id="basePower" type="text" inputmode="decimal" placeholder="예: 1.25e120 또는 1250000"></div>
-<button id="run" type="button">2000~3000 환산</button><div id="status" class="status"></div>
-<div class="note">APK에는 층별 권장 전투력 값이 따로 없습니다. 실제 클리어 기준점을 넣고 보스 HP 증가율을 같은 비율로 적용한 환산값입니다. 관통·명중은 시련의 관문 데미지 경로에 적용되지 않아 입력하지 않습니다.</div>
-</section><section class="panel"><h2>100층 단위 환산</h2><div id="summary" class="result-main"><div class="empty">기준 층과 당시 전투력을 입력하면 결과가 표시됩니다.</div></div>
-<div class="scroll"><table><thead><tr><th>층</th><th>기준 대비 HP</th><th>환산 전투력</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
+<header class="site-head"><h1>시련의 관문</h1><div class="submark">2000–6000</div></header>
+<div class="wrap"><section class="panel input-panel"><h2>현재 전투력 비교</h2>
+<div class="field"><label for="myPower">현재 전투력</label><input id="myPower" type="text" inputmode="text" placeholder="예: 1903EIJBIN 또는 89PRLBC 8696PRLBB"></div>
+<div class="field"><label for="checkFloor">확인할 관문</label><input id="checkFloor" type="number" min="2000" max="6000" step="1" value="2700"></div>
+<button id="run" type="button">클리어 기준 확인</button><div id="status" class="status"></div>
+<div class="note">2700관문 실측 보스 HP <b>1903EIJBIN</b>을 기준점으로 APK의 보스 HP 증가곡선을 적용합니다. 현재 전투력과 보스 HP의 1:1 비교는 실전 검증용 가설입니다. 종합 전투력에는 공격력 외 스탯도 포함되므로 절대 판정식으로 보지는 않습니다.</div>
+</section><section class="panel"><h2>2000~6000 관문 클리어 기준</h2><div id="summary" class="result-main"></div>
+<div class="scroll"><table><thead><tr><th>관문</th><th>보스 HP</th><th>1:1 전투력 기준</th><th>내 전투력 판정</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
 </main><script>
 (function(){
+const ANCHOR_FLOOR=2700, ANCHOR_COEFF=1903, ANCHOR_SUFFIX='EIJBIN';
+
 function ref(g){g=Math.max(1,Math.min(6000,Math.floor(g)));if(g>=4001)return 1000*g-1098735;if(g>=2001)return 500*g-814735;if(g>=551)return 120*g-54735;if(g>=501)return 70*g-27235;if(g>=301)return 35*g-9735;if(g>=101)return 3*g-110;if(g>=11)return 2*g-10;return g}
 function stage(g){return ref(g)*100-1}
 function hpLog(s){if(s<5000000)return 0;let cur=5000000,total=0;while(cur<=s){const q=Math.floor((cur-3000000)/100000),end=q*100000+3099999,last=Math.min(s,end);total+=(last-cur+1)*Math.log10(2900+400*q);cur=last+1}return total}
 function delta(a,b){return hpLog(stage(a))-hpLog(stage(b))}
-function parse(raw){raw=String(raw||"").trim().replace(/,/g,"");const m=raw.match(/^([+]?(?:\d+(?:\.\d*)?|\.\d+))(?:[eE]([+-]?\d+))?$/);if(!m)return null;const v=Number(m[1]),e=Number(m[2]||0);if(!(v>0)||!Number.isFinite(v)||!Number.isSafeInteger(e))return null;return Math.log10(v)+e}
-function sci(lg){if(!Number.isFinite(lg))return "계산 범위 밖";let e=Math.floor(lg),m=Math.pow(10,lg-e);if(m>=9.9999995){m=1;e++}return m.toFixed(6).replace(/0+$/,"").replace(/\.$/,"")+" × 10^"+e.toLocaleString("ko-KR")}
-function run(){const f=Math.floor(Number(document.getElementById("baseFloor").value)),p=parse(document.getElementById("basePower").value),st=document.getElementById("status");if(!Number.isFinite(f)||f<2000||f>3000){st.innerHTML='<span class="bad">기준 층은 2000~3000 사이로 입력해 주세요.</span>';return}if(p===null){st.innerHTML='<span class="bad">전투력을 숫자 또는 1.23e120 형식으로 입력해 주세요.</span>';return}let h="";for(let t=2000;t<=3000;t+=100){const d=delta(t,f);h+="<tr><td>"+t+"</td><td>"+(Math.abs(d)<1e-10?"1배":sci(d)+"배")+"</td><td><b>"+sci(p+d)+"</b></td></tr>"}document.getElementById("rows").innerHTML=h;document.getElementById("summary").innerHTML='<div class="bestline">기준 '+f.toLocaleString("ko-KR")+'층에서 환산</div><div class="small">30초 제한 · APK 보스 HP 증가곡선 적용</div>';st.innerHTML='<span class="ok">계산 완료.</span>'}
-document.getElementById("run").onclick=run;document.getElementById("basePower").addEventListener("keydown",e=>{if(e.key==="Enter")run()});
+
+function suffixIndex(txt){let n=0;txt=String(txt||'').trim().toUpperCase();for(const ch of txt){if(ch<'A'||ch>'Z')return null;n=n*26+(ch.charCodeAt(0)-64)}return n}
+function suffixFromIndex(n){n=Math.max(0,Math.floor(n));if(n===0)return '';let out='';while(n>0){n--;out=String.fromCharCode(65+(n%26))+out;n=Math.floor(n/26)}return out}
+function effectFromPart(coeff,suffix){const idx=suffixIndex(suffix);if(idx===null||!(coeff>0))return null;return idx+(Math.log10(coeff)/4-.5)}
+function addEffect(a,b){if(a===null)return b;if(b===null)return a;const m=Math.max(a,b),d=Math.abs(a-b);if(d>20)return m;return m+Math.log10(1+Math.pow(10,-4*d))/4}
+function parsePower(raw){
+ raw=String(raw||'').trim().replace(/,/g,'');
+ if(!raw)return null;
+ const sci=raw.match(/^([+]?(?:\d+(?:\.\d*)?|\.\d+))(?:[eE]([+-]?\d+))?$/);
+ if(sci){const v=Number(sci[1]),e=Number(sci[2]||0);if(v>0&&Number.isFinite(v)&&Number.isSafeInteger(e))return (Math.log10(v)+e)/4;}
+ const re=/([0-9]+(?:\.[0-9]+)?)\s*([A-Z]+)/ig;let m,total=null,found=false;
+ while((m=re.exec(raw))){const part=effectFromPart(Number(m[1]),m[2]);if(part!==null){total=addEffect(total,part);found=true}}
+ return found?total:null;
+}
+function fmtCoeff(v){
+ if(v>=1000)return String(Math.round(v));
+ if(v>=100)return v.toFixed(1).replace(/\.0$/,'');
+ if(v>=10)return v.toFixed(2).replace(/0+$/,'').replace(/\.$/,'');
+ return v.toFixed(3).replace(/0+$/,'').replace(/\.$/,'');
+}
+function gameText(effect){if(!Number.isFinite(effect))return '계산 범위 밖';const idx=Math.floor(effect),frac=effect-idx,coeff=Math.pow(10,4*(frac+.5));return fmtCoeff(coeff)+suffixFromIndex(idx)}
+const anchorEffect=effectFromPart(ANCHOR_COEFF,ANCHOR_SUFFIX);
+function hpEffect(floor){return anchorEffect+delta(floor,ANCHOR_FLOOR)/4}
+
+function render(){
+ const raw=document.getElementById('myPower').value;
+ const my=parsePower(raw);
+ const check=Math.max(2000,Math.min(6000,Math.floor(Number(document.getElementById('checkFloor').value)||2700)));
+ document.getElementById('checkFloor').value=check;
+
+ let h='',best=null;
+ for(let floor=2000;floor<=6000;floor+=100){
+   const hp=hpEffect(floor), ok=my!==null?my>=hp:null;
+   if(ok)best=floor;
+   h+='<tr'+(floor===2700?' style="font-weight:800"':'')+'><td>'+floor.toLocaleString('ko-KR')+(floor===2700?' · 실측':'')+'</td><td>'+gameText(hp)+'</td><td>'+gameText(hp)+'</td><td>'+(ok===null?'—':ok?'<span class="ok">가능*</span>':'<span class="bad">부족*</span>')+'</td></tr>';
+ }
+ document.getElementById('rows').innerHTML=h;
+
+ const checkHp=hpEffect(check),checkOk=my!==null?my>=checkHp:null;
+ let summary='<div class="bestline">'+check.toLocaleString('ko-KR')+'관문 보스 HP · '+gameText(checkHp)+'</div>';
+ summary+='<div class="small">2700 실측: 1903EIJBIN · 기록 29.8초 · 30초 제한</div>';
+ if(checkOk!==null)summary+='<div class="small" style="margin-top:6px">현재 전투력 기준: '+(checkOk?'<span class="ok">1:1 기준 통과*</span>':'<span class="bad">1:1 기준 부족*</span>')+(best!==null?' · 100층 단위 예상 최고 '+best.toLocaleString('ko-KR')+'관문':'')+'</div>';
+ document.getElementById('summary').innerHTML=summary;
+ document.getElementById('status').innerHTML=my===null?(raw.trim()?'<span class="bad">전투력 표기를 확인해 주세요.</span>':'<span class="ok">HP 목록은 계산 완료. 전투력을 넣으면 가능/부족을 표시합니다.</span>'):'<span class="ok">전투력 비교 완료.</span>';
+}
+document.getElementById('run').onclick=render;
+document.getElementById('myPower').addEventListener('keydown',e=>{if(e.key==='Enter')render()});
+document.getElementById('checkFloor').addEventListener('input',render);
+render();
 })();
 </script></body></html>
