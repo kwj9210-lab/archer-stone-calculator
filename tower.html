@@ -33,7 +33,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <summary>가능 최고층까지 초월석 총합 보기</summary>
 <div style="border-top:1px solid var(--line);padding:14px 16px">
   <div id="rewardResult" class="lookupResult" style="display:block;min-height:0;line-height:1.65">관통을 입력하면 초월석 누적 보상을 계산합니다.</div>
-  <div class="note" style="margin-top:9px">APK 0.1.87의 <b>TranscendenceTowerBalance.GetReward</b> 보상 구간을 사용합니다. 1~100층 100개, 101~200층 150개, 201~300층 200개, 301~400층 250개, 401층 이상은 층당 300개로 계산합니다.</div>
+  <div class="note" style="margin-top:9px">1~500층은 APK 보상 구간을 사용하고, 500층 이후는 <b>1016층 초기화 실측 307,800개</b>에 맞춰 보정합니다.</div>
 </div>
 </details>
 
@@ -86,18 +86,29 @@ function maxFloorByPen(pen){
  }
  return best;
 }
-// APK 0.1.87 TranscendenceTowerBalance.GetReward: floor는 1~500으로 clamp 후 100층 단위 5구간.
-// 초월석 보상 필드: 100 / 150 / 200 / 250 / 300, 501층 이상도 마지막 구간(300) 유지.
+// 1~500층: APK 0.1.87 GetReward 구간값.
+// 500층 이후: 사용자 실측 1016층 초기화 총 307,800개를 앵커로 보정.
+// 추가 실측값이 확보되면 500층 이후를 구간별 실데이터로 교체한다.
 function stoneRewardAtFloor(floor){
  const f=Math.max(1,Math.min(500,Math.floor(floor)));
  return 100+Math.floor((f-1)/100)*50;
 }
-function totalStoneReward(toFloor,fromFloor=1){
- const from=Math.max(1,Math.floor(fromFloor)),to=Math.max(0,Math.floor(toFloor));
- if(to<from)return 0;
+function apkTotalTo500(toFloor){
+ const to=Math.max(0,Math.min(500,Math.floor(toFloor)));
  let total=0;
- for(let f=from;f<=to;f++)total+=stoneRewardAtFloor(f);
+ for(let f=1;f<=to;f++)total+=stoneRewardAtFloor(f);
  return total;
+}
+const REWARD_ANCHOR_FLOOR=1016;
+const REWARD_ANCHOR_TOTAL=307800;
+const REWARD_BASE_FLOOR=500;
+const REWARD_BASE_TOTAL=apkTotalTo500(REWARD_BASE_FLOOR);
+const REWARD_POST500_AVG=(REWARD_ANCHOR_TOTAL-REWARD_BASE_TOTAL)/(REWARD_ANCHOR_FLOOR-REWARD_BASE_FLOOR);
+function totalStoneReward(toFloor){
+ const to=Math.max(0,Math.floor(toFloor));
+ if(to<=REWARD_BASE_FLOOR)return apkTotalTo500(to);
+ if(to===REWARD_ANCHOR_FLOOR)return REWARD_ANCHOR_TOTAL;
+ return Math.round(REWARD_BASE_TOTAL+(to-REWARD_BASE_FLOOR)*REWARD_POST500_AVG);
 }
 function updateReward(f){
  const out=document.getElementById('rewardResult');
