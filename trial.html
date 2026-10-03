@@ -5,17 +5,52 @@
 :root{--bg:#f4fff8;--surface:#fff;--line:#cfe9d9;--text:#29463b;--muted:#70847b;--accent:#35c98c;--bad:#d96889;--good:#1a9b6c}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;background:linear-gradient(135deg,#f4fff8,#fff9ea)}
 main{width:min(980px,100%);margin:auto;padding:22px 18px 44px}.site-head{display:flex;justify-content:space-between;align-items:flex-end;padding:3px 2px 16px;margin-bottom:14px}.site-head h1{margin:0;font-size:29px;color:#22694f}.submark{font-size:12px;font-weight:800;color:#5d8575;background:#e5f8ee;border:1px solid #bfe2ce;border-radius:999px;padding:5px 10px}
-.wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 8px 22px rgba(69,126,98,.11)}.input-panel{position:sticky;top:14px}h2{margin:0 0 16px;font-size:17px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}.field{margin-bottom:12px}.field label{display:block;margin-bottom:7px;color:#657c72;font-size:12px;font-weight:700}input{width:100%;min-height:50px;padding:11px 12px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:17px;font-weight:800;outline:none}button{width:100%;min-height:50px;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;font-size:15px;font-weight:900;cursor:pointer}.status{min-height:18px;margin-top:10px;font-size:12px}.bad{color:var(--bad);font-weight:700}.ok{color:var(--good);font-weight:700}.note,.small{color:var(--muted);font-size:11.5px;line-height:1.6}.note{margin-top:10px}.result-main{margin-bottom:10px;padding:13px 14px;border:1px solid #d8ebce;border-left:4px solid var(--accent);border-radius:13px;background:linear-gradient(135deg,#f0fbf5,#fffbe9)}.bestline{font-size:17px;font-weight:900;margin-bottom:7px;color:#257455}.empty{color:#7d9188;font-size:13px;line-height:1.6}.scroll{overflow-x:auto;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:540px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:11.5px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
-@media(max-width:760px){main{padding:13px 9px 31px}.site-head h1{font-size:22px}.submark{display:none}.wrap{grid-template-columns:1fr;gap:9px}.panel{padding:12px;border-radius:14px}.input-panel{position:static}}
+.wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 8px 22px rgba(69,126,98,.11)}.input-panel{position:sticky;top:14px}h2{margin:0 0 16px;font-size:17px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}.field{margin-bottom:12px}.field label{display:block;margin-bottom:7px;color:#657c72;font-size:12px;font-weight:700}input{width:100%;min-height:50px;padding:11px 12px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:17px;font-weight:800;outline:none}button{width:100%;min-height:50px;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;font-size:15px;font-weight:900;cursor:pointer}.status{min-height:18px;margin-top:10px;font-size:12px}.bad{color:var(--bad);font-weight:700}.ok{color:var(--good);font-weight:700}.note,.small{color:var(--muted);font-size:11.5px;line-height:1.6}.note{margin-top:10px}.guide{margin-top:8px;border-top:1px solid #e1eee7;padding-top:8px}.guide summary{cursor:pointer;color:#5d7b70;font-size:12px;font-weight:800}.guide[open] summary{margin-bottom:2px}.result-main{margin-bottom:10px;padding:13px 14px;border:1px solid #d8ebce;border-left:4px solid var(--accent);border-radius:13px;background:linear-gradient(135deg,#f0fbf5,#fffbe9)}.bestline{font-size:17px;font-weight:900;margin-bottom:7px;color:#257455}.empty{color:#7d9188;font-size:13px;line-height:1.6}.scroll{overflow-x:auto;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:540px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:11.5px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
+@media(max-width:760px){
+  main{padding:8px 7px 26px}
+  .site-head{align-items:center;padding:0 2px 7px;margin-bottom:6px}
+  .site-head h1{font-size:20px;line-height:1.15}
+  .submark{display:none}
+  .wrap{grid-template-columns:1fr;gap:8px}
+  .panel{padding:11px;border-radius:13px;box-shadow:0 4px 12px rgba(69,126,98,.08)}
+  .input-panel{position:static}
+  h2{font-size:15px;margin-bottom:11px;padding-left:7px}
+  .field{margin-bottom:9px}
+  .field label{font-size:11px;margin-bottom:5px}
+  input{min-height:44px;padding:9px 10px;font-size:14px;border-radius:10px}
+  button{min-height:44px;padding:9px 10px;font-size:14px;border-radius:10px}
+  .status{min-height:16px;margin-top:7px;font-size:11px}
+  .guide{margin-top:5px;padding-top:6px}
+  .guide summary{font-size:11px}
+  .guide .note{font-size:10.5px;line-height:1.5;margin-top:6px}
+  .result-main{margin-bottom:7px;padding:10px 11px;border-radius:11px}
+  .bestline{font-size:15px;margin-bottom:5px;overflow-wrap:anywhere}
+  .small{font-size:10.5px;line-height:1.5}
+  .scroll{overflow:visible;margin-top:5px}
+  table{min-width:0;width:100%;table-layout:fixed}
+  th,td{padding:7px 4px;font-size:10.5px;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;line-height:1.35}
+  .floor-col{width:25%}
+  .hp-col{width:45%}
+  .judge-col{width:30%}
+  .criterion-col{display:none}
+  tbody td:nth-child(3){display:none}
+  th:nth-child(4),td:nth-child(4){text-align:center}
+}
+@media(max-width:380px){
+  main{padding-left:5px;padding-right:5px}
+  .panel{padding:9px}
+  th,td{font-size:10px;padding:6px 3px}
+  .bestline{font-size:14px}
+}
 </style></head><body><main>
 <header class="site-head"><h1>시련의 관문</h1><div class="submark">2000–6000</div></header>
 <div class="wrap"><section class="panel input-panel"><h2>현재 전투력 비교</h2>
 <div class="field"><label for="myPower">현재 전투력</label><input id="myPower" type="text" inputmode="text" placeholder="예: 1903EIJBIN 또는 89PRLBC 8696PRLBB"></div>
 <div class="field"><label for="checkFloor">확인할 관문</label><input id="checkFloor" type="number" min="2000" max="6000" step="1" value="2700"></div>
 <button id="run" type="button">클리어 기준 확인</button><div id="status" class="status"></div>
-<div class="note">2700관문 실측 보스 HP <b>1903EIJBIN</b>을 기준점으로 APK의 보스 HP 증가곡선을 적용합니다. 현재 전투력과 보스 HP의 1:1 비교는 실전 검증용 가설입니다. 종합 전투력에는 공격력 외 스탯도 포함되므로 절대 판정식으로 보지는 않습니다.</div>
-</section><section class="panel"><h2>2000~6000 관문 클리어 기준</h2><div id="summary" class="result-main"></div>
-<div class="scroll"><table><thead><tr><th>관문</th><th>보스 HP</th><th>1:1 전투력 기준</th><th>내 전투력 판정</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
+<details class="guide"><summary>계산 기준 안내</summary><div class="note">2700관문 실측 보스 HP <b>1903EIJBIN</b>을 기준점으로 APK의 보스 HP 증가곡선을 적용합니다. 현재 전투력과 보스 HP의 1:1 비교는 실전 검증용 가설입니다. 종합 전투력에는 공격력 외 스탯도 포함되므로 절대 판정식으로 보지는 않습니다.</div></details>
+</section><section class="panel result-panel"><h2>2000~6000 관문 클리어 기준</h2><div id="summary" class="result-main"></div>
+<div class="scroll"><table><thead><tr><th class="floor-col">관문</th><th class="hp-col">보스 HP</th><th class="criterion-col">1:1 전투력 기준</th><th class="judge-col">판정</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
 </main><script>
 (function(){
 const ANCHOR_FLOOR=2700, ANCHOR_COEFF=1903, ANCHOR_SUFFIX='EIJBIN';
