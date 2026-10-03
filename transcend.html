@@ -163,6 +163,12 @@ input:focus{
 .mode-pane.active{display:block}
 .power-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .power-levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.power-levels input{
+  font-size:15px;
+  padding:9px 6px;
+  text-align:center;
+  min-width:0;
+}
 .power-result-grid{display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:stretch;margin-top:10px}
 .power-box{padding:14px;border:1px solid #d6ebdf;border-radius:13px;background:#fbfffc}
 .power-box.after{border-color:#ead998;background:linear-gradient(160deg,#fffdf1,#fff8d7)}
@@ -296,6 +302,7 @@ td{color:#62776e;background:#fff}
 @media(max-width:760px){
    .power-grid{grid-template-columns:1fr}
   .power-levels{grid-template-columns:1fr 1fr}
+  .power-levels input{font-size:16px;padding:9px 8px}
   .power-result-grid{grid-template-columns:1fr}
   .power-arrow{transform:rotate(90deg);min-height:20px}
   .power-meta{grid-template-columns:1fr 1fr}
