@@ -416,7 +416,7 @@ td{color:#62776e;background:#fff}
       </div>
       <button id="runPower" type="button">재분배 후 전투력 계산</button>
       <div id="powerStatus" class="status" aria-live="polite"></div>
-      <p class="input-note">현재 전투력은 <b>24억 6852만 7875</b> 같은 한글 표기와 <b>719AYXLEBX 9116AYXLEBW</b> 같은 게임 영문 표기를 모두 입력할 수 있습니다.<br>초월석 비용·레벨별 공격력 효과·최적 배분은 APK 복원식을 사용하고, 최종 전투력은 초기화 전·후 실측 차이로 계정별 보정합니다.</p>
+      <p class="input-note">현재 전투력은 <b>24억 6852만 7875</b> 같은 한글 표기와 <b>719AYXLEBX 9116AYXLEBW</b> 같은 게임 영문 표기를 모두 입력할 수 있습니다. 영문 표기도 한글 전투력 값으로 자동 변환합니다.<br>초월석 비용·레벨별 공격력 효과·최적 배분은 APK 복원식을 사용하고, 최종 전투력은 초기화 전·후 실측 차이로 계정별 보정합니다.</p>
     </section>
 
     <section class="panel result-panel">
@@ -708,7 +708,7 @@ td{color:#62776e;background:#fff}
         const effect=idx+(Math.log10(Math.max(coeff,1e-300))/4-.5);
         if(!best||effect>best.effect)best={effect,coeff,suffix:p[2]};
       }
-      if(best)return {kind:"effect",effect:best.effect,text:src};
+      if(best){const idx=suffixIndex(best.suffix);const value=4*idx+Math.floor(Math.log10(best.coeff))+1;return {kind:"number",value,source:"game",text:src};}
     }
     return NaN;
   }
@@ -816,7 +816,7 @@ td{color:#62776e;background:#fff}
           best.levels.map((lv,i)=>shortNames[i]+' Lv.'+lv).join(' · ')+
           '</div>';
 
-        status.innerHTML='<span class="ok">계산 완료. 한글 억·만 표기와 게임 영문 큰수 표기를 지원합니다. 현재 계정의 초기화 전·후 차이로 보정한 예상값입니다.</span>';
+        status.innerHTML='<span class="ok">계산 완료. 영문 큰수도 한글 전투력 값으로 변환해 같은 기준으로 계산했습니다.</span>';
       }catch(err){
         console.error(err);
         status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
