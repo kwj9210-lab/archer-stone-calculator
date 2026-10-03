@@ -340,10 +340,72 @@ td{color:#62776e;background:#fff}
   .site-head h1{font-size:20px}
   .numbers{grid-template-columns:1fr 1fr}
 }
+
+/* unified top hero */
+.page-hero{
+  margin:0 0 14px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(247,255,249,.92));
+  box-shadow:0 8px 22px rgba(69,126,98,.10);
+}
+.page-hero h1,.page-hero .site-head h1{
+  margin:0;
+  font-size:27px;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:-.6px;
+  color:#22694f;
+}
+.page-hero .hero-sub{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+.page-hero .sub,.page-hero .intro{margin-bottom:0}
+.page-hero .site-head{
+  padding:0;
+  margin:0;
+  align-items:center;
+}
+.page-hero .hero-actions{margin-top:13px}
+.page-hero .tabs,.page-hero .mode-tabs{margin:13px 0 0}
+.page-hero .tab,.page-hero .mode-tab{
+  min-height:44px;
+  border:1px solid #bddfd0;
+  border-radius:12px;
+  background:#fbfffc;
+  color:#557268;
+  font-weight:900;
+  box-shadow:none;
+}
+.page-hero .tab.active,.page-hero .mode-tab.active{
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,#2fae93,#54c5cf);
+  box-shadow:0 6px 15px rgba(47,174,147,.18);
+}
+@media(max-width:760px){
+  .page-hero{
+    margin:0 0 8px;
+    padding:12px;
+    border-radius:14px;
+    box-shadow:0 5px 14px rgba(69,126,98,.08);
+  }
+  .page-hero h1,.page-hero .site-head h1{font-size:20px;line-height:1.2}
+  .page-hero .hero-sub{margin-top:5px;font-size:11px;line-height:1.45}
+  .page-hero .hero-actions{margin-top:9px}
+  .page-hero .tabs,.page-hero .mode-tabs{margin:9px 0 0}
+  .page-hero .tab,.page-hero .mode-tab{min-height:42px;border-radius:10px;font-size:13px;padding:8px 6px}
+}
+
 </style>
 </head>
 <body>
 <main>
+<section class="page-hero">
 <header class="site-head">
   <div class="site-title-row">
     <h1>궁수키우기 RPG 초월석 시뮬레이터</h1>
@@ -363,11 +425,14 @@ td{color:#62776e;background:#fff}
   </div>
   <div class="submark">Lv.0–4500</div>
 </header>
-
+<div class="hero-sub">보유 초월석 기준 최적 배분과 현재 전투력 기준 재분배 결과를 계산합니다.</div>
+<div class="hero-actions">
 <nav class="mode-tabs" aria-label="초월석 계산 모드">
   <button type="button" class="mode-tab active" data-mode="allocation">최적 배분</button>
   <button type="button" class="mode-tab" data-mode="power">전투력 재분배</button>
 </nav>
+</div>
+</section>
 
 <div id="allocationPane" class="mode-pane active">
 <div class="workspace">
