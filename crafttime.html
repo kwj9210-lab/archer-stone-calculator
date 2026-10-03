@@ -53,21 +53,32 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 <label>복원석
 <input id="r2" type="text" inputmode="text" value="0" placeholder="0"></label>
 </div>
+<div class="grid" style="margin-top:10px">
+<label>보유 불멸 마석
+<input id="immortal" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
+<div class="hint" style="align-self:end;margin:0 0 10px">초월 제작은 최대 4개, 절대 제작은 최대 16개까지 재료로 자동 사용합니다.</div>
+</div>
 </section>
 
 <section class="card">
 <h2>3. 제작 예상시간</h2>
 <div id="results" class="results"></div>
-<div class="note">각 목표는 현재 보유 재료에서 <b>각각 독립적으로</b> 계산합니다. 보유 하위 마석은 반영하지 않고, 목표 마석을 원재료부터 전부 신규 제작하는 기준입니다. 소탕 1회당 던전 입장권 2장을 사용하며 재료별 던전은 각각 따로 계산합니다.</div>
+<div class="note">각 목표는 현재 보유 재료에서 <b>각각 독립적으로</b> 계산합니다. 보유 불멸 마석은 초월·절대 마석 제작 재료로 먼저 사용하고 부족한 불멸만 신규 제작합니다. 불멸 마석 1개 결과에는 보유 불멸 수량을 적용하지 않습니다. 소탕 1회당 던전 입장권 2장을 사용하며 재료별 던전은 각각 따로 계산합니다.</div>
 </section>
 
 <script>
 const base100k=[1526775,2508670,4587000]; // 기존 각인석 계산기와 동일: 숙련도 ×5.00 기준 10만 소탕
-const targetReq={
-  "불멸 마석":247880000,
-  "초월 마석":1091520000,
-  "절대 마석":4966080000
-};
+const IMMORTAL_RAW=247880000;
+function targetRequirement(grade,ownedImmortal){
+  if(grade==="불멸 마석")return {req:IMMORTAL_RAW,usedImmortal:0,needImmortal:1};
+  if(grade==="초월 마석"){
+    const used=Math.min(4,ownedImmortal);
+    return {req:100000000+(4-used)*IMMORTAL_RAW,usedImmortal:used,needImmortal:4-used};
+  }
+  const used=Math.min(16,ownedImmortal);
+  return {req:1000000000+(16-used)*IMMORTAL_RAW,usedImmortal:used,needImmortal:16-used};
+}
+const targetGrades=["불멸 마석","초월 마석","절대 마석"];
 function parseAmount(raw){
   let s=String(raw??"").trim().replace(/,/g,"").replace(/\s+/g,"");
   if(!s)return 0;
@@ -97,6 +108,7 @@ function calculate(){
   document.getElementById("mult").textContent=level+"단계 · ×"+mult.toFixed(2);
   const ticketHour=parseAmount(document.getElementById("ticketHour").value);
   const stock=[0,1,2].map(i=>parseAmount(document.getElementById("r"+i).value));
+  const ownedImmortal=Math.max(0,Math.floor(Number(document.getElementById("immortal").value)||0));
   const invalid=!Number.isFinite(ticketHour)||stock.some(v=>!Number.isFinite(v));
   if(invalid){
     document.getElementById("results").innerHTML='<div class="bad">입력값을 확인해 주세요. 숫자, 콤마, 조/억/만 표기를 사용할 수 있습니다.</div>';
@@ -105,7 +117,9 @@ function calculate(){
   const per100k=base100k.map(v=>v*(mult/5));
   const names=["비명초","활력수","복원석"];
   let html="";
-  for(const [grade,req] of Object.entries(targetReq)){
+  for(const grade of targetGrades){
+    const info=targetRequirement(grade,ownedImmortal);
+    const req=info.req;
     const shortage=stock.map(v=>Math.max(0,req-v));
     const runs=shortage.map((v,i)=>v>0?v/per100k[i]*100000:0);
     const tickets=Math.ceil(runs.reduce((a,b)=>a+b,0)*2);
@@ -114,13 +128,15 @@ function calculate(){
       '<div class="grade">'+grade+' 1개</div>'+
       '<div class="time">'+duration(hours)+'</div>'+
       '<div class="meta">예상 필요 입장권 <b>'+fmt(tickets)+'장</b><br>'+
-      '원재료 필요량 각 <b>'+fmt(req)+'개</b></div>'+
+      '원재료 필요량 각 <b>'+fmt(req)+'개</b>'+
+      (grade==="불멸 마석"?'':'<br>보유 불멸 사용 <b>'+info.usedImmortal+'개</b> · 추가 제작 불멸 <b>'+info.needImmortal+'개</b>')+
+      '</div>'+
       '<div class="break">'+names.map((n,i)=>n+' 부족 '+fmt(shortage[i])+' · 소탕 약 '+fmt(Math.ceil(runs[i]))+'회').join('<br>')+'</div>'+
     '</div>';
   }
   document.getElementById("results").innerHTML=html;
 }
-["ticketHour","mastery","r0","r1","r2"].forEach(id=>document.getElementById(id).addEventListener("input",calculate));
+["ticketHour","mastery","r0","r1","r2","immortal"].forEach(id=>document.getElementById(id).addEventListener("input",calculate));
 calculate();
 </script>
 </main></body></html>
