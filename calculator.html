@@ -12,19 +12,46 @@ header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);border-
 .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;flex:1}
 button{border:1px solid #b6ddc7;background:#fff;border-radius:11px;min-height:42px;font-weight:850;color:#557268;cursor:pointer}
 button.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#35c98c,#54cbd6);box-shadow:0 5px 14px rgba(53,201,140,.22)}
+.short{display:none}
 main{height:calc(100vh - 63px)}
 iframe{width:100%;height:100%;border:0;display:none;background:white}
 iframe.active{display:block}
-@media(max-width:600px){header{padding:8px}.bar{display:block}.title{display:none}.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs button{flex:0 0 auto;min-width:96px}button{min-height:40px;font-size:11px;padding:4px 6px;white-space:nowrap}main{height:calc(100vh - 56px)}}
+@media(max-width:600px){
+header{padding:6px 7px}
+.bar{display:block}
+.title{display:none}
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:5px;
+  width:100%;
+}
+.tabs button{
+  min-width:0;
+  min-height:37px;
+  padding:4px 3px;
+  border-radius:10px;
+  font-size:12px;
+  line-height:1.15;
+  white-space:nowrap;
+  box-shadow:none;
+}
+.tabs button:nth-child(-n+3){grid-column:span 2}
+.tabs button:nth-child(n+4){grid-column:span 3}
+.tabs button.active{box-shadow:0 3px 9px rgba(53,201,140,.19)}
+.full{display:none}
+.short{display:inline}
+main{height:calc(100vh - 91px)}
+}
 </style>
 </head>
 <body>
 <header><div class="bar"><div class="title">궁수키우기 RPG 계산기</div><div class="tabs">
-<button id="tabEngrave" class="active" type="button">각인석 계산기</button>
-<button id="tabCraft" type="button">제작시간</button>
-<button id="tabStone" type="button">초월석 시뮬레이터</button>
-<button id="tabTower" type="button">초월의 탑</button>
-<button id="tabTrial" type="button">시련의 관문</button>
+<button id="tabEngrave" class="active" type="button"><span class="full">각인석 계산기</span><span class="short">각인석</span></button>
+<button id="tabCraft" type="button"><span class="full">제작시간</span><span class="short">제작시간</span></button>
+<button id="tabStone" type="button"><span class="full">초월석 시뮬레이터</span><span class="short">초월석</span></button>
+<button id="tabTower" type="button"><span class="full">초월의 탑</span><span class="short">초월의 탑</span></button>
+<button id="tabTrial" type="button"><span class="full">시련의 관문</span><span class="short">시련의 관문</span></button>
 </div></div></header>
 <main>
 <iframe id="engrave" class="active" src="index.html" title="각인석 계산기"></iframe>
