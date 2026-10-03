@@ -10,13 +10,14 @@
   --bg:#f4fff8;
   --bg2:#fff9ea;
   --panel:#ffffff;
-  --panel2:#f7fff9;
+  --panel2:#fbfffc;
   --line:#cfe9d9;
-  --line2:#b6ddc7;
+  --line2:#bddfd0;
   --text:#29463b;
   --muted:#70847b;
-  --accent:#35c98c;
-  --accent-dark:#198b64;
+  --accent:#2fae93;
+  --accent2:#54c5cf;
+  --accent-dark:#267d68;
   --mint:#dff8eb;
   --sky:#e4f6ff;
   --lemon:#fff5bf;
@@ -30,56 +31,50 @@ body{
   margin:0;
   color:var(--text);
   font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;
-  background:
-    radial-gradient(circle at 7% 0%,rgba(123,225,184,.34),transparent 27%),
-    radial-gradient(circle at 94% 4%,rgba(255,220,105,.30),transparent 26%),
-    linear-gradient(135deg,#f4fff8 0%,#fbfff2 46%,#fff9ea 100%);
+  background:linear-gradient(135deg,var(--bg),var(--bg2));
   min-height:100vh;
 }
-.wrap{max-width:1020px;margin:auto;padding:22px 13px 50px}
+.wrap{width:min(980px,100%);margin:auto;padding:22px 18px 44px}
 h1{
-  font-size:27px;
-  margin:0 0 7px;
+  font-size:29px;
+  margin:0 0 6px;
   font-weight:900;
-  letter-spacing:-.6px;
+  letter-spacing:-.5px;
   color:#22694f;
 }
-.intro,.foot{font-size:13px;line-height:1.6;color:var(--muted)}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:17px 0 9px}
+.intro,.foot{font-size:12px;line-height:1.6;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
 .tab{
-  min-height:48px;
+  min-height:44px;
   border:1px solid var(--line2);
-  background:rgba(255,255,255,.88);
+  background:#f8fffb;
   color:#557268;
-  border-radius:14px;
-  padding:12px 8px;
-  font-weight:800;
-  box-shadow:0 3px 10px rgba(62,121,91,.06);
+  border-radius:12px;
+  padding:10px 8px;
+  font-weight:900;
+  box-shadow:none;
   transition:.16s ease;
 }
-.tab:nth-child(1){background:#effcf5}
-.tab:nth-child(2){background:#fff8d9}
-.tab:nth-child(3){background:#fff0f5}
-.tab:hover{transform:translateY(-1px);border-color:#83c9a6}
+.tab:hover{transform:translateY(-1px);border-color:#8bcdb8}
 .tab.active{
   color:#fff;
   border-color:transparent;
-  background:linear-gradient(135deg,#35c98c,#54cbd6);
-  box-shadow:0 8px 18px rgba(53,201,140,.24);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 6px 15px rgba(47,174,147,.20);
 }
 .card{
-  background:rgba(255,255,255,.94);
+  background:#fff;
   border:1px solid var(--line);
   border-radius:18px;
-  padding:16px;
+  padding:17px;
   margin:12px 0;
-  box-shadow:var(--shadow);
+  box-shadow:0 8px 22px rgba(69,126,98,.11);
 }
 .card h2{
   font-size:17px;
-  margin:0 0 12px;
+  margin:0 0 14px;
   padding-left:9px;
-  border-left:4px solid #58cf98;
+  border-left:4px solid var(--accent);
   color:#315d4d;
 }
 .grid2,.grid3,.grid4,.grid5,.results,.stats{display:grid;gap:10px}
@@ -102,8 +97,8 @@ input,select{
   transition:.15s ease;
 }
 input:focus,select:focus{
-  border-color:#49c992;
-  box-shadow:0 0 0 3px rgba(73,201,146,.15);
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(47,174,147,.14);
   background:#fff;
 }
 button{cursor:pointer}
@@ -133,9 +128,7 @@ button{cursor:pointer}
   background:#f8fff9;
   border:1px solid #d6ebdf;
 }
-.results .box:nth-child(3n+1){background:linear-gradient(160deg,#f1fff7,#e8faf2)}
-.results .box:nth-child(3n+2){background:linear-gradient(160deg,#fffdf0,#fff6cf);border-color:#f1df9b}
-.results .box:nth-child(3n+3){background:linear-gradient(160deg,#f2fbff,#e6f6ff);border-color:#c8e6f4}
+.results .box:nth-child(3n+1),.results .box:nth-child(3n+2),.results .box:nth-child(3n+3){background:#fbfffc;border-color:#d6ebdf}
 .box h3{margin:0 0 7px;font-size:16px;color:#2c664f}
 .line{font-size:13px;line-height:1.65;color:#526b61}
 .strong{font-size:19px;font-weight:900;margin-top:4px;color:#1b9b6c}
@@ -146,14 +139,9 @@ button{cursor:pointer}
   text-align:center;
   box-shadow:0 4px 12px rgba(59,120,90,.06);
 }
-.stats .box:nth-child(1){background:#eafbf3}
-.stats .box:nth-child(2){background:#fff8d8;border-color:#eadb98}
-.stats .box:nth-child(3){background:#ffeef4;border-color:#efcfd9}
-.stats .box:nth-child(3) .strong{color:#d96889}
-.result-card{
-  background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(244,255,248,.97));
-  border-color:#bfe3cf;
-}
+.stats .box:nth-child(1),.stats .box:nth-child(2),.stats .box:nth-child(3){background:#fbfffc;border-color:#d6ebdf}
+.stats .box:nth-child(3) .strong{color:#1b9b6c}
+.result-card{background:#fff;border-color:#c8e6d5}
 details{
   margin-top:12px;
   border:1px solid #d6eadf;
@@ -173,24 +161,19 @@ th:first-child,td:first-child{text-align:left}
   background:rgba(255,255,255,.58);
 }
 @media(max-width:600px){
-  body{
-    background:
-      radial-gradient(circle at 4% 0%,rgba(123,225,184,.28),transparent 25%),
-      radial-gradient(circle at 96% 2%,rgba(255,220,105,.24),transparent 23%),
-      linear-gradient(145deg,#f4fff8,#fffbea);
-  }
-  .wrap{padding:11px 8px 35px}
-  h1{font-size:21px;margin:3px 4px 4px}
-  .intro{font-size:11.5px;line-height:1.45;margin:0 4px 8px}
+  body{background:linear-gradient(145deg,#f4fff8,#fffbea)}
+  .wrap{padding:10px 8px 32px}
+  h1{font-size:20px;margin:2px 2px 4px}
+  .intro{font-size:11px;line-height:1.45;margin:0 2px 7px}
   .tabs{
-    position:sticky;top:0;z-index:20;
+    position:static;
     grid-template-columns:repeat(3,1fr);gap:5px;
-    margin:8px -2px;padding:7px 2px;
-    background:rgba(244,255,248,.93);
-    backdrop-filter:blur(9px)
+    margin:8px 0 9px;padding:0;
+    background:transparent;
+    backdrop-filter:none
   }
-  .tab{min-height:44px;padding:9px 4px;border-radius:11px;font-size:14px}
-  .tab.active{background:linear-gradient(135deg,#35c98c,#55cbd5);border-color:transparent}
+  .tab{min-height:42px;padding:8px 4px;border-radius:10px;font-size:13px}
+  .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
   .card{padding:11px;margin:8px 0;border-radius:14px;box-shadow:0 5px 14px rgba(69,126,98,.08)}
   .card h2{font-size:15px;margin-bottom:9px}
   .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
