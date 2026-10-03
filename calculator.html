@@ -20,14 +20,14 @@ iframe.active{display:block}
 </head>
 <body>
 <header><div class="bar"><div class="title">궁수키우기 RPG 계산기</div><div class="tabs">
-<button id="tabStone" class="active" type="button">초월석 시뮬레이터</button>
-<button id="tabEngrave" type="button">각인석 계산기</button>
+<button id="tabEngrave" class="active" type="button">각인석 계산기</button>
+<button id="tabStone" type="button">초월석 시뮬레이터</button>
 <button id="tabTower" type="button">초월의 탑</button>
 <button id="tabTrial" type="button">시련의 관문</button>
 </div></div></header>
 <main>
-<iframe id="stone" class="active" src="transcend.html" title="초월석 시뮬레이터"></iframe>
-<iframe id="engrave" src="index.html" title="각인석 계산기"></iframe>
+<iframe id="engrave" class="active" src="index.html" title="각인석 계산기"></iframe>
+<iframe id="stone" src="transcend.html" title="초월석 시뮬레이터"></iframe>
 <iframe id="tower" src="tower.html" title="초월의 탑"></iframe>
 <iframe id="trial" src="trial.html" title="시련의 관문"></iframe>
 </main>
@@ -41,7 +41,7 @@ function show(which){
  history.replaceState(null,'','#'+(stone?'transcend':engrave?'engrave':tower?'tower':'trial'));
 }
 ts.onclick=()=>show('stone');te.onclick=()=>show('engrave');tt.onclick=()=>show('tower');tr.onclick=()=>show('trial');
-if(location.hash==='#engrave')show('engrave');else if(location.hash==='#tower')show('tower');else if(location.hash==='#trial')show('trial');
+if(location.hash==='#transcend')show('stone');else if(location.hash==='#tower')show('tower');else if(location.hash==='#trial')show('trial');else show('engrave');
 </script>
 <!-- deploy refresh 2026-09-30: sweep decomposition fix 55c70e1 -->
 </body></html>
