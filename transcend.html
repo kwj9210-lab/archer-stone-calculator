@@ -739,6 +739,15 @@ td{color:#62776e;background:#fff}
     if(!v||v.kind!=="number"){out.textContent="인식값 · -";return;}
     out.textContent="인식값 · "+formatKoreanPower(v.value)+" ("+formatPower(v.value)+")";
   }
+  function currentStoneCost(levels){
+    let used=0;
+    for(let i=0;i<4;i++)used+=levelCost[i][clampLv(levels[i])];
+    return used;
+  }
+  function updateCurrentStoneSpent(){
+    const levels=[0,1,2,3].map(i=>clampLv(document.getElementById("plv"+i).value));
+    document.getElementById("currentStoneSpent").textContent="현재 레벨 투입 초월석 · "+fmt(currentStoneCost(levels))+"개";
+  }
   function currentEffectScore(levels){
     let score=0;
     for(let i=0;i<4;i++)score+=levelEffect[i][clampLv(levels[i])];
@@ -752,6 +761,7 @@ td{color:#62776e;background:#fff}
     const poolRaw=String(document.getElementById("powerStones").value).replace(/,/g,"").trim();
     const pool=/^\d+$/.test(poolRaw)?Number(poolRaw):NaN;
     const levels=[0,1,2,3].map(i=>clampLv(document.getElementById("plv"+i).value));
+    const invested=currentStoneCost(levels);
 
     if(!current||!reset||!Number.isFinite(pool)){
       status.innerHTML='<span class="bad">전투력 표기 또는 초월석 수량을 확인해 주세요.</span>';
@@ -765,6 +775,10 @@ td{color:#62776e;background:#fff}
     }
     if(currentPowerScore<resetPowerScore){
       status.innerHTML='<span class="bad">현재 전투력이 초기화 후 전투력보다 작습니다. 입력값을 확인해 주세요.</span>';
+      return;
+    }
+    if(pool<invested){
+      status.innerHTML='<span class="bad">초기화 후 보유 초월석이 현재 레벨에 투입된 '+fmt(invested)+'개보다 적습니다. 초월석 수량을 확인해 주세요.</span>';
       return;
     }
     const nowScore=currentEffectScore(levels);
@@ -864,6 +878,8 @@ td{color:#62776e;background:#fff}
   document.getElementById("runPower").addEventListener("click",runPowerCalc);
   document.getElementById("currentPower").addEventListener("input",()=>updatePowerPreview("currentPower","currentPowerPreview"));
   document.getElementById("resetPower").addEventListener("input",()=>updatePowerPreview("resetPower","resetPowerPreview"));
+  ["plv0","plv1","plv2","plv3"].forEach(id=>document.getElementById(id).addEventListener("input",updateCurrentStoneSpent));
+  updateCurrentStoneSpent();
   ["currentPower","resetPower","powerStones","plv0","plv1","plv2","plv3"].forEach(id=>{
     document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")runPowerCalc();});
   });
