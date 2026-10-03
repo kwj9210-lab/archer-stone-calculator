@@ -395,11 +395,11 @@ td{color:#62776e;background:#fff}
       <div class="power-grid">
         <div class="field">
           <label for="currentPower">현재 전투력</label>
-          <input id="currentPower" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 24억 6852만 7859">
+          <input id="currentPower" type="text" inputmode="text" autocomplete="off" placeholder="예: 24억 6852만 7875"><div id="currentPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
         </div>
         <div class="field">
           <label for="resetPower">초월석 초기화 후 전투력</label>
-          <input id="resetPower" type="text" inputmode="numeric" autocomplete="off" placeholder="숫자 / 한글 억·만 / 게임 영문 표기">
+          <input id="resetPower" type="text" inputmode="text" autocomplete="off" placeholder="숫자 / 한글 억·만 / 게임 영문 표기"><div id="resetPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
         </div>
       </div>
       <div class="field">
@@ -732,6 +732,12 @@ td{color:#62776e;background:#fff}
     if(!(coeff>0)||!Number.isFinite(idx))return NaN;
     return 4*idx+Math.floor(Math.log10(coeff))+1;
   }
+  function updatePowerPreview(inputId,previewId){
+    const out=document.getElementById(previewId);
+    const v=parseGamePowerText(document.getElementById(inputId).value);
+    if(!v||v.kind!=="number"){out.textContent="인식값 · -";return;}
+    out.textContent="인식값 · "+formatKoreanPower(v.value)+" ("+formatPower(v.value)+")";
+  }
   function currentEffectScore(levels){
     let score=0;
     for(let i=0;i<4;i++)score+=levelEffect[i][clampLv(levels[i])];
@@ -855,6 +861,8 @@ td{color:#62776e;background:#fff}
   document.getElementById("run").addEventListener("click",run);
   document.getElementById("stones").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
   document.getElementById("runPower").addEventListener("click",runPowerCalc);
+  document.getElementById("currentPower").addEventListener("input",()=>updatePowerPreview("currentPower","currentPowerPreview"));
+  document.getElementById("resetPower").addEventListener("input",()=>updatePowerPreview("resetPower","resetPowerPreview"));
   ["currentPower","resetPower","powerStones","plv0","plv1","plv2","plv3"].forEach(id=>{
     document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")runPowerCalc();});
   });
