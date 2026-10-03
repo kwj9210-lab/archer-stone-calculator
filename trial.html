@@ -42,8 +42,72 @@ main{width:min(980px,100%);margin:auto;padding:22px 18px 44px}.site-head{display
   th,td{font-size:10px;padding:6px 3px}
   .bestline{font-size:14px}
 }
+
+/* unified top hero */
+.page-hero{
+  margin:0 0 14px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(247,255,249,.92));
+  box-shadow:0 8px 22px rgba(69,126,98,.10);
+}
+.page-hero h1,.page-hero .site-head h1{
+  margin:0;
+  font-size:27px;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:-.6px;
+  color:#22694f;
+}
+.page-hero .hero-sub{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+.page-hero .sub,.page-hero .intro{margin-bottom:0}
+.page-hero .site-head{
+  padding:0;
+  margin:0;
+  align-items:center;
+}
+.page-hero .hero-actions{margin-top:13px}
+.page-hero .tabs,.page-hero .mode-tabs{margin:13px 0 0}
+.page-hero .tab,.page-hero .mode-tab{
+  min-height:44px;
+  border:1px solid #bddfd0;
+  border-radius:12px;
+  background:#fbfffc;
+  color:#557268;
+  font-weight:900;
+  box-shadow:none;
+}
+.page-hero .tab.active,.page-hero .mode-tab.active{
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,#2fae93,#54c5cf);
+  box-shadow:0 6px 15px rgba(47,174,147,.18);
+}
+@media(max-width:760px){
+  .page-hero{
+    margin:0 0 8px;
+    padding:12px;
+    border-radius:14px;
+    box-shadow:0 5px 14px rgba(69,126,98,.08);
+  }
+  .page-hero h1,.page-hero .site-head h1{font-size:20px;line-height:1.2}
+  .page-hero .hero-sub{margin-top:5px;font-size:11px;line-height:1.45}
+  .page-hero .hero-actions{margin-top:9px}
+  .page-hero .tabs,.page-hero .mode-tabs{margin:9px 0 0}
+  .page-hero .tab,.page-hero .mode-tab{min-height:42px;border-radius:10px;font-size:13px;padding:8px 6px}
+}
+
 </style></head><body><main>
+<section class="page-hero">
 <header class="site-head"><h1>시련의 관문</h1><div class="submark">2000–6000</div></header>
+<div class="hero-sub">현재 전투력과 2000~6000 관문 보스 HP 기준을 비교합니다.</div>
+</section>
 <div class="wrap"><section class="panel input-panel"><h2>현재 전투력 비교</h2>
 <div class="field"><label for="myPower">현재 전투력</label><input id="myPower" type="text" inputmode="text" placeholder="예: 1903EIJBIN 또는 89PRLBC 8696PRLBB"></div>
 <div class="field"><label for="checkFloor">확인할 관문</label><input id="checkFloor" type="number" min="2000" max="6000" step="1" value="2700"></div>
