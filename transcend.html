@@ -750,16 +750,18 @@ td{color:#62776e;background:#fff}
       status.innerHTML='<span class="bad">전투력 표기 또는 초월석 수량을 확인해 주세요.</span>';
       return;
     }
-    if(current.kind!==reset.kind){
-      status.innerHTML='<span class="bad">현재 전투력과 초기화 후 전투력은 같은 표기 방식으로 입력해 주세요.</span>';
+    const currentPowerScore=gameTextToKoreanScore(current);
+    const resetPowerScore=gameTextToKoreanScore(reset);
+    if(!Number.isFinite(currentPowerScore)||!Number.isFinite(resetPowerScore)){
+      status.innerHTML='<span class="bad">전투력 표기를 변환하지 못했습니다.</span>';
       return;
     }
-    if(current.kind==="number" && current.value<reset.value){
+    if(currentPowerScore<resetPowerScore){
       status.innerHTML='<span class="bad">현재 전투력이 초기화 후 전투력보다 작습니다. 입력값을 확인해 주세요.</span>';
       return;
     }
     const nowScore=currentEffectScore(levels);
-    const hasCurrentGain=current.kind==="number" ? current.value>reset.value : current.effect>reset.effect;
+    const hasCurrentGain=currentPowerScore>resetPowerScore;
     if(nowScore<=0 && hasCurrentGain){
       status.innerHTML='<span class="bad">현재 초월 레벨 4종을 입력해 주세요. 전투력 환산 기준이 필요합니다.</span>';
       return;
