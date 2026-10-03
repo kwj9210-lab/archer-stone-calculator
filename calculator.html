@@ -13,7 +13,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-
 .tabs button{
   --tab:#35c98c;--tab2:#54cbd6;--wash:#f3fcf7;
   position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;gap:7px;
+  display:flex;align-items:center;justify-content:center;gap:0;
   min-width:0;min-height:46px;padding:6px 9px;
   border:1px solid color-mix(in srgb,var(--tab) 35%,#dbeae2);
   border-radius:14px;background:linear-gradient(180deg,#fff,var(--wash));
@@ -34,13 +34,6 @@ header{position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-
 #tabStone{--tab:#459bcf;--tab2:#64c4df;--wash:#eff9fe}
 #tabTower{--tab:#7b78cf;--tab2:#a092e6;--wash:#f5f3ff}
 #tabTrial{--tab:#cb6e96;--tab2:#e79ab3;--wash:#fff2f7}
-.tab-mark{
-  flex:0 0 auto;width:25px;height:25px;border-radius:8px;
-  display:grid;place-items:center;
-  color:var(--tab);background:#fff;border:1px solid color-mix(in srgb,var(--tab) 28%,#e7eee9);
-  font-size:12px;font-weight:950;box-shadow:0 2px 6px rgba(0,0,0,.05)
-}
-.tabs button.active .tab-mark{color:var(--tab);background:rgba(255,255,255,.94);border-color:rgba(255,255,255,.55)}
 .tab-label{min-width:0;line-height:1.1}
 .short{display:none}
 main{height:calc(100vh - 63px)}
@@ -61,7 +54,7 @@ header{padding:6px 7px 7px}
   min-height:44px;
   padding:5px 5px;
   border-radius:12px;
-  gap:5px;
+  gap:0;
   font-size:12px;
   line-height:1.1;
   white-space:nowrap;
@@ -71,25 +64,23 @@ header{padding:6px 7px 7px}
 .tabs button:nth-child(-n+3){grid-column:span 2}
 .tabs button:nth-child(n+4){grid-column:span 3}
 .tabs button.active{box-shadow:0 5px 12px color-mix(in srgb,var(--tab) 24%,transparent)}
-.tab-mark{width:22px;height:22px;border-radius:7px;font-size:11px}
 .full{display:none}
 .short{display:inline}
 main{height:calc(100vh - 105px)}
 }
 @media(max-width:360px){
 .tabs{gap:4px}
-.tabs button{min-height:42px;padding:4px 3px;font-size:11px;gap:4px}
-.tab-mark{width:20px;height:20px;font-size:10px}
+.tabs button{min-height:42px;padding:4px 3px;font-size:11px;gap:0}
 }
 </style>
 </head>
 <body>
 <header><div class="bar"><div class="title">궁수키우기 RPG 계산기</div><div class="tabs">
-<button id="tabEngrave" class="active" type="button"><span class="tab-mark">각</span><span class="tab-label"><span class="full">각인석 계산기</span><span class="short">각인석</span></span></button>
-<button id="tabCraft" type="button"><span class="tab-mark">제</span><span class="tab-label"><span class="full">제작시간</span><span class="short">제작시간</span></span></button>
-<button id="tabStone" type="button"><span class="tab-mark">초</span><span class="tab-label"><span class="full">초월석 시뮬레이터</span><span class="short">초월석</span></span></button>
-<button id="tabTower" type="button"><span class="tab-mark">탑</span><span class="tab-label"><span class="full">초월의 탑</span><span class="short">초월의 탑</span></span></button>
-<button id="tabTrial" type="button"><span class="tab-mark">관</span><span class="tab-label"><span class="full">시련의 관문</span><span class="short">시련의 관문</span></span></button>
+<button id="tabEngrave" class="active" type="button"><span class="tab-label"><span class="full">각인석 계산기</span><span class="short">각인석</span></span></button>
+<button id="tabCraft" type="button"><span class="tab-label"><span class="full">제작시간</span><span class="short">제작시간</span></span></button>
+<button id="tabStone" type="button"><span class="tab-label"><span class="full">초월석 시뮬레이터</span><span class="short">초월석</span></span></button>
+<button id="tabTower" type="button"><span class="tab-label"><span class="full">초월의 탑</span><span class="short">초월의 탑</span></span></button>
+<button id="tabTrial" type="button"><span class="tab-label"><span class="full">시련의 관문</span><span class="short">시련의 관문</span></span></button>
 </div></div></header>
 <main>
 <iframe id="engrave" class="active" src="index.html" title="각인석 계산기"></iframe>
