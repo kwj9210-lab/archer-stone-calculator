@@ -833,8 +833,19 @@ td{color:#62776e;background:#fff}
           '</div>';
 
         document.getElementById("powerFinalLevels").innerHTML=
-          '<div class="power-final-levels">최적 레벨 · '+
-          best.levels.map((lv,i)=>shortNames[i]+' Lv.'+lv).join(' · ')+
+          '<div class="joint-card" style="margin-top:10px">'+
+            '<div class="joint-rank featured">초월석 재분배 결과</div>'+
+            '<div class="joint-levels">'+
+              best.levels.map((lv,i)=>
+                '<div class="target">'+
+                  '<div class="name">'+names[i]+'</div>'+
+                  '<div class="lv">Lv.'+lv+'</div>'+
+                  '<div class="small">현재 Lv.'+levels[i]+' → 재분배 Lv.'+lv+'</div>'+
+                  '<div class="small">배분 초월석 '+fmt(levelCost[i][lv])+'개</div>'+
+                '</div>'
+              ).join('')+
+            '</div>'+
+            '<div class="joint-foot">총 사용 '+fmt(best.used)+'개 · 잔여 '+fmt(left)+'개</div>'+
           '</div>';
 
         status.innerHTML='<span class="ok">계산 완료. 영문 큰수도 한글 전투력 값으로 변환해 같은 기준으로 계산했습니다.</span>';
