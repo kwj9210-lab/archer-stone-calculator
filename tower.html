@@ -17,11 +17,74 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 .tableWrap{max-height:62vh;overflow:auto;border-top:1px solid var(--line)}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 8px;border-bottom:1px solid #e4f1e9;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:center}thead th{position:sticky;top:0;background:#effbf4;z-index:1}tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outline-offset:-2px}
 .note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.5}
 @media(max-width:520px){main{padding:16px 10px 40px}.floorLookup{grid-template-columns:1fr}.lookupResult{min-height:44px}h1{font-size:21px}.card{padding:13px}input{font-size:16px;padding:11px}th,td{padding:8px 5px;font-size:13px}}
+
+/* unified top hero */
+.page-hero{
+  margin:0 0 14px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(247,255,249,.92));
+  box-shadow:0 8px 22px rgba(69,126,98,.10);
+}
+.page-hero h1,.page-hero .site-head h1{
+  margin:0;
+  font-size:27px;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:-.6px;
+  color:#22694f;
+}
+.page-hero .hero-sub{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+.page-hero .sub,.page-hero .intro{margin-bottom:0}
+.page-hero .site-head{
+  padding:0;
+  margin:0;
+  align-items:center;
+}
+.page-hero .hero-actions{margin-top:13px}
+.page-hero .tabs,.page-hero .mode-tabs{margin:13px 0 0}
+.page-hero .tab,.page-hero .mode-tab{
+  min-height:44px;
+  border:1px solid #bddfd0;
+  border-radius:12px;
+  background:#fbfffc;
+  color:#557268;
+  font-weight:900;
+  box-shadow:none;
+}
+.page-hero .tab.active,.page-hero .mode-tab.active{
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,#2fae93,#54c5cf);
+  box-shadow:0 6px 15px rgba(47,174,147,.18);
+}
+@media(max-width:760px){
+  .page-hero{
+    margin:0 0 8px;
+    padding:12px;
+    border-radius:14px;
+    box-shadow:0 5px 14px rgba(69,126,98,.08);
+  }
+  .page-hero h1,.page-hero .site-head h1{font-size:20px;line-height:1.2}
+  .page-hero .hero-sub{margin-top:5px;font-size:11px;line-height:1.45}
+  .page-hero .hero-actions{margin-top:9px}
+  .page-hero .tabs,.page-hero .mode-tabs{margin:9px 0 0}
+  .page-hero .tab,.page-hero .mode-tab{min-height:42px;border-radius:10px;font-size:13px;padding:8px 6px}
+}
+
 </style>
 </head>
 <body><main>
+<section class="page-hero">
 <h1>초월의 탑</h1>
-<div class="sub">내 관통 기준으로 500~3000층에서 가능한 최고층과 필요 관통·명중을 계산</div>
+<div class="hero-sub sub">내 관통 기준으로 500~3000층에서 가능한 최고층과 필요 관통·명중을 계산합니다.</div>
+</section>
 <section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">내 관통으로 가능한 최고층</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>내 관통<input id="myPen" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="go" value="8508" placeholder="예: 8508"></label><div id="lookupResult" class="lookupResult">관통을 입력하면 가능한 최고층과 필요 명중을 표시합니다.</div></div></section>
 
 <details id="list">
