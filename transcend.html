@@ -722,6 +722,16 @@ td{color:#62776e;background:#fff}
   function formatPower(n){
     return Math.round(n).toLocaleString("ko-KR");
   }
+  function gameTextToKoreanScore(v){
+    if(!v)return NaN;
+    if(v.kind==="number")return v.value;
+    if(v.kind!=="effect")return NaN;
+    const m=String(v.text||"").toUpperCase().match(/(\d+(?:\.\d+)?)\s*([A-Z]+)/);
+    if(!m)return NaN;
+    const coeff=Number(m[1]),idx=suffixIndex(m[2]);
+    if(!(coeff>0)||!Number.isFinite(idx))return NaN;
+    return 4*idx+Math.floor(Math.log10(coeff))+1;
+  }
   function currentEffectScore(levels){
     let score=0;
     for(let i=0;i<4;i++)score+=levelEffect[i][clampLv(levels[i])];
