@@ -3,7 +3,7 @@
 <html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>궁수키우기 초월석 시뮬레이터</title>
+<title>궁수키우기 RPG 초월석 시뮬레이터</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
 <link href="./궁수키우기 초월석 시뮬레이터_files/css2" rel="stylesheet">
@@ -64,6 +64,12 @@ main{width:min(980px,100%);margin:0 auto;padding:22px 18px 44px}
   line-height:1.18;
   color:#22694f;
 }
+.site-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.site-guide.help-details summary{min-height:34px;padding:5px 10px;font-size:12px}
+.site-guide .help-box{left:0;right:auto;width:460px;max-width:min(460px,calc(100vw - 36px))}
+.guide-title{font-weight:900;color:#2f6d55;font-size:13px}
+.guide-copy{margin-top:3px;color:#62796f}
+.guide-block+.guide-block{margin-top:11px;padding-top:10px;border-top:1px solid #e1efe7}
 .site-head .submark{
   color:#5d8575;
   font-size:12px;
@@ -309,6 +315,9 @@ td{color:#62776e;background:#fff}
   main{padding:13px 9px 31px}
   .site-head{align-items:flex-start;padding:2px 4px 10px;margin-bottom:8px}
   .site-head h1{font-size:22px;line-height:1.15}
+  .site-title-row{gap:7px}
+  .site-guide.help-details summary{min-height:32px;padding:5px 9px;font-size:12px}
+  .site-guide .help-box{left:0;right:auto;width:min(430px,calc(100vw - 24px))}
   .site-head .submark{display:none}
   .workspace{grid-template-columns:1fr;gap:9px}
   .panel{padding:12px;border-radius:14px;box-shadow:0 5px 14px rgba(69,126,98,.08)}
@@ -336,7 +345,22 @@ td{color:#62776e;background:#fff}
 <body>
 <main>
 <header class="site-head">
-  <h1>궁수키우기 초월석 시뮬레이터</h1>
+  <div class="site-title-row">
+    <h1>궁수키우기 RPG 초월석 시뮬레이터</h1>
+    <details class="help-details site-guide">
+      <summary>사용법</summary>
+      <div class="help-box">
+        <div class="guide-block">
+          <div class="guide-title">최적 배분</div>
+          <div class="guide-copy">게임에서 초월석을 초기화한 뒤 표시되는 <b>전체 보유 초월석 수량</b>을 입력합니다. ‘최적 배분 계산’을 누르면 청람결정·성해공명·차원각인·영겁성핵의 추천 레벨과 사용·잔여 초월석이 표시됩니다.</div>
+        </div>
+        <div class="guide-block">
+          <div class="guide-title">전투력 재분배</div>
+          <div class="guide-copy">현재 전투력, 초기화 후 전투력, 현재 초월 레벨을 입력합니다. 그다음 <b>초월의 탑</b> 탭에서 추가로 클리어 가능한 최고층과 그 층까지의 <b>전체 누적 초월석</b>을 확인해 ‘초기화 후 보유 초월석’에 입력합니다. 계산하면 추가 등반 후 초월석을 최적으로 재분배했을 때의 예상 전투력 증가값과 재분배 레벨을 확인할 수 있습니다.</div>
+        </div>
+      </div>
+    </details>
+  </div>
   <div class="submark">Lv.0–4500</div>
 </header>
 
@@ -350,15 +374,6 @@ td{color:#62776e;background:#fff}
   <section class="panel input-panel">
     <div class="input-head">
       <h2>초월석 입력</h2>
-      <details class="help-details">
-        <summary>사용방법</summary>
-        <div class="help-box">
-          <div>1. 게임에서 초월석을 초기화한 뒤 총 보유량을 확인합니다.</div>
-          <div>2. 보유 초월석 수량을 입력하고 ‘최적 배분 계산’을 누릅니다.</div>
-          <div>3. 결과에 표시된 청람·성해·차원·영겁 레벨대로 올리면 됩니다.</div>
-          <div>4. APK에서 복원한 비용·효과식을 기준으로 전체 조합을 비교해 최고 전투력 배분을 표시합니다.</div>
-        </div>
-      </details>
     </div>
 
     <div class="field">
