@@ -220,18 +220,82 @@ th:first-child,td:first-child{text-align:left}
   input,select{font-size:14px;padding:6px}
   .stats .strong{font-size:11.5px}
 }
+
+/* unified top hero */
+.page-hero{
+  margin:0 0 14px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(247,255,249,.92));
+  box-shadow:0 8px 22px rgba(69,126,98,.10);
+}
+.page-hero h1,.page-hero .site-head h1{
+  margin:0;
+  font-size:27px;
+  line-height:1.2;
+  font-weight:900;
+  letter-spacing:-.6px;
+  color:#22694f;
+}
+.page-hero .hero-sub{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+.page-hero .sub,.page-hero .intro{margin-bottom:0}
+.page-hero .site-head{
+  padding:0;
+  margin:0;
+  align-items:center;
+}
+.page-hero .hero-actions{margin-top:13px}
+.page-hero .tabs,.page-hero .mode-tabs{margin:13px 0 0}
+.page-hero .tab,.page-hero .mode-tab{
+  min-height:44px;
+  border:1px solid #bddfd0;
+  border-radius:12px;
+  background:#fbfffc;
+  color:#557268;
+  font-weight:900;
+  box-shadow:none;
+}
+.page-hero .tab.active,.page-hero .mode-tab.active{
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,#2fae93,#54c5cf);
+  box-shadow:0 6px 15px rgba(47,174,147,.18);
+}
+@media(max-width:760px){
+  .page-hero{
+    margin:0 0 8px;
+    padding:12px;
+    border-radius:14px;
+    box-shadow:0 5px 14px rgba(69,126,98,.08);
+  }
+  .page-hero h1,.page-hero .site-head h1{font-size:20px;line-height:1.2}
+  .page-hero .hero-sub{margin-top:5px;font-size:11px;line-height:1.45}
+  .page-hero .hero-actions{margin-top:9px}
+  .page-hero .tabs,.page-hero .mode-tabs{margin:9px 0 0}
+  .page-hero .tab,.page-hero .mode-tab{min-height:42px;border-radius:10px;font-size:13px;padding:8px 6px}
+}
+
 </style>
 </head>
 <body>
 <main class="wrap">
+<section class="page-hero">
 <h1>궁수키우기 RPG 각인석 계산기</h1>
-<div class="intro">마석·경화석·생명석의 보유 각인석과 재료를 반영해 목표 등급 제작에 필요한 재료를 계산합니다. 던전 숙련도는 확인된 드랍 기준이 있는 재료의 소탕·입장권 계산에 적용됩니다.</div>
-
+<div class="hero-sub intro">마석·경화석·생명석의 보유 각인석과 재료를 반영해 목표 등급 제작에 필요한 재료를 계산합니다. 던전 숙련도는 확인된 드랍 기준이 있는 재료의 소탕·입장권 계산에 적용됩니다.</div>
+<div class="hero-actions">
 <div class="tabs">
 <button class="tab active" data-type="maseok">마석</button>
 <button class="tab" data-type="hard">경화석</button>
 <button class="tab" data-type="life">생명석</button>
 </div>
+</div>
+</section>
 
 <section class="card">
 <h2>1. 목표</h2>
