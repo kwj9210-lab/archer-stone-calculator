@@ -395,11 +395,11 @@ td{color:#62776e;background:#fff}
       <div class="power-grid">
         <div class="field">
           <label for="currentPower">현재 전투력</label>
-          <input id="currentPower" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 28,983,639">
+          <input id="currentPower" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 24억 6852만 7859">
         </div>
         <div class="field">
           <label for="resetPower">초월석 초기화 후 전투력</label>
-          <input id="resetPower" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 20,000,000">
+          <input id="resetPower" type="text" inputmode="numeric" autocomplete="off" placeholder="숫자 / 한글 억·만 / 게임 영문 표기">
         </div>
       </div>
       <div class="field">
@@ -416,7 +416,7 @@ td{color:#62776e;background:#fff}
       </div>
       <button id="runPower" type="button">재분배 후 전투력 계산</button>
       <div id="powerStatus" class="status" aria-live="polite"></div>
-      <p class="input-note">현재 전투력과 초기화 후 전투력의 차이를 현재 초월 레벨 효과와 대조해, 같은 계정 기준으로 재분배 후 전투력을 환산합니다.</p>
+      <p class="input-note">현재 전투력은 <b>24억 6852만 7859</b> 같은 한글 표기와 <b>719AYXLEBX 9116AYXLEBW</b> 같은 게임 영문 표기를 모두 입력할 수 있습니다.<br>초월석 비용·레벨별 공격력 효과·최적 배분은 APK 복원식을 사용하고, 최종 전투력은 초기화 전·후 실측 차이로 계정별 보정합니다.</p>
     </section>
 
     <section class="panel result-panel">
@@ -674,11 +674,50 @@ td{color:#62776e;background:#fff}
     ).join("");
   }
 
-  function parseWholeNumber(raw){
-    const t=String(raw??"").trim().replace(/,/g,"").replace(/\s+/g,"");
-    if(!/^\d+$/.test(t))return NaN;
-    const n=Number(t);
-    return Number.isSafeInteger(n)?n:NaN;
+  function suffixIndex(txt){
+    txt=String(txt||"").trim().toUpperCase();
+    if(!txt)return 0;
+    let n=0;
+    for(const ch of txt){
+      if(ch<"A"||ch>"Z")return NaN;
+      n=n*26+(ch.charCodeAt(0)-64);
+    }
+    return n;
+  }
+  function parseGamePowerText(raw){
+    const src=String(raw??"").trim().replace(/,/g,"");
+    if(!src)return NaN;
+    if(/^\d+$/.test(src)){
+      const n=Number(src);
+      return Number.isSafeInteger(n)?{kind:"number",value:n}:NaN;
+    }
+    const compact=src.replace(/\s+/g,"");
+    if(/[억만]/.test(compact)){
+      let rest=compact,total=0,matched=false,m;
+      if((m=rest.match(/^(\d+)억/))){total+=Number(m[1])*100000000;rest=rest.slice(m[0].length);matched=true;}
+      if((m=rest.match(/^(\d+)만/))){total+=Number(m[1])*10000;rest=rest.slice(m[0].length);matched=true;}
+      if(/^\d+$/.test(rest)&&rest!==""){total+=Number(rest);rest="";matched=true;}
+      if(matched&&rest==="")return {kind:"number",value:total};
+    }
+    const parts=[...src.toUpperCase().matchAll(/(\d+(?:\.\d+)?)\s*([A-Z]+)/g)];
+    if(parts.length){
+      let best=null;
+      for(const p of parts){
+        const coeff=Number(p[1]),idx=suffixIndex(p[2]);
+        if(!(coeff>=0)||!Number.isFinite(idx))continue;
+        const effect=idx+(Math.log10(Math.max(coeff,1e-300))/4-.5);
+        if(!best||effect>best.effect)best={effect,coeff,suffix:p[2]};
+      }
+      if(best)return {kind:"effect",effect:best.effect,text:src};
+    }
+    return NaN;
+  }
+  function formatKoreanPower(n){
+    n=Math.round(n);
+    if(!Number.isFinite(n))return "-";
+    const e=Math.floor(n/100000000),r=n%100000000,m=Math.floor(r/10000),o=r%10000,a=[];
+    if(e)a.push(e+"억"); if(m)a.push(m+"만"); if(o||!a.length)a.push(String(o));
+    return a.join(" ");
   }
   function formatPower(n){
     return Math.round(n).toLocaleString("ko-KR");
@@ -691,21 +730,27 @@ td{color:#62776e;background:#fff}
   function runPowerCalc(){
     const status=document.getElementById("powerStatus");
     const button=document.getElementById("runPower");
-    const current=parseWholeNumber(document.getElementById("currentPower").value);
-    const reset=parseWholeNumber(document.getElementById("resetPower").value);
-    const pool=parseWholeNumber(document.getElementById("powerStones").value);
+    const current=parseGamePowerText(document.getElementById("currentPower").value);
+    const reset=parseGamePowerText(document.getElementById("resetPower").value);
+    const poolRaw=String(document.getElementById("powerStones").value).replace(/,/g,"").trim();
+    const pool=/^\d+$/.test(poolRaw)?Number(poolRaw):NaN;
     const levels=[0,1,2,3].map(i=>clampLv(document.getElementById("plv"+i).value));
 
-    if(!Number.isFinite(current)||!Number.isFinite(reset)||!Number.isFinite(pool)){
-      status.innerHTML='<span class="bad">현재 전투력·초기화 후 전투력·초월석 수량을 정수로 입력해 주세요.</span>';
+    if(!current||!reset||!Number.isFinite(pool)){
+      status.innerHTML='<span class="bad">전투력 표기 또는 초월석 수량을 확인해 주세요.</span>';
       return;
     }
-    if(current<reset){
+    if(current.kind!==reset.kind){
+      status.innerHTML='<span class="bad">현재 전투력과 초기화 후 전투력은 같은 표기 방식으로 입력해 주세요.</span>';
+      return;
+    }
+    if(current.kind==="number" && current.value<reset.value){
       status.innerHTML='<span class="bad">현재 전투력이 초기화 후 전투력보다 작습니다. 입력값을 확인해 주세요.</span>';
       return;
     }
     const nowScore=currentEffectScore(levels);
-    if(nowScore<=0 && current>reset){
+    const hasCurrentGain=current.kind==="number" ? current.value>reset.value : current.effect>reset.effect;
+    if(nowScore<=0 && hasCurrentGain){
       status.innerHTML='<span class="bad">현재 초월 레벨 4종을 입력해 주세요. 전투력 환산 기준이 필요합니다.</span>';
       return;
     }
@@ -721,23 +766,35 @@ td{color:#62776e;background:#fff}
         let left=best.left;
         if(pool>TOTAL_MAX)left+=pool-TOTAL_MAX;
 
-        const currentGain=Math.max(0,current-reset);
-        let predicted=reset;
-        if(currentGain>0 && nowScore>0){
-          predicted=reset+currentGain*(best.score/nowScore);
+        let currentLabel="",predictedLabel="",deltaLabel="",pctLabel="—";
+        if(current.kind==="number"){
+          const currentGain=Math.max(0,current.value-reset.value);
+          let predicted=reset.value;
+          if(currentGain>0&&nowScore>0)predicted=reset.value+currentGain*(best.score/nowScore);
+          const delta=predicted-current.value;
+          const pct=current.value>0?delta/current.value*100:0;
+          currentLabel=formatKoreanPower(current.value);
+          predictedLabel=formatKoreanPower(predicted);
+          deltaLabel=(delta>=0?"+":"")+formatPower(delta);
+          pctLabel=(pct>=0?"+":"")+pct.toFixed(3)+"%";
+        }else{
+          const gainEffect=Math.max(0,current.effect-reset.effect);
+          const predictedEffect=reset.effect+(nowScore>0?gainEffect*(best.score/nowScore):0);
+          const diffEffect=predictedEffect-current.effect;
+          currentLabel=current.text;
+          predictedLabel="현재 대비 "+(diffEffect>=0?"+":"")+diffEffect.toFixed(6)+" 효과지수";
+          deltaLabel=(diffEffect>=0?"+":"")+diffEffect.toFixed(6);
         }
-        const delta=predicted-current;
-        const pct=current>0?delta/current*100:0;
 
         document.getElementById("powerResult").innerHTML=
           '<div class="power-result-grid">'+
-            '<div class="power-box"><div class="k">현재 전투력</div><div class="v">'+formatPower(current)+'</div></div>'+
+            '<div class="power-box"><div class="k">현재 전투력</div><div class="v">'+currentLabel+'</div></div>'+
             '<div class="power-arrow">→</div>'+
-            '<div class="power-box after"><div class="k">재분배 후 예상 전투력</div><div class="v">'+formatPower(predicted)+'</div></div>'+
+            '<div class="power-box after"><div class="k">재분배 후 예상 전투력</div><div class="v">'+predictedLabel+'</div></div>'+
           '</div>'+
           '<div class="power-meta">'+
-            '<div>전투력 차이<b>'+(delta>=0?'+':'')+formatPower(delta)+'</b></div>'+
-            '<div>상승률<b>'+(pct>=0?'+':'')+pct.toFixed(3)+'%</b></div>'+
+            '<div>전투력 변화<b>'+deltaLabel+'</b></div>'+
+            '<div>상승률<b>'+pctLabel+'</b></div>'+
             '<div>사용 초월석<b>'+fmt(best.used)+'</b></div>'+
             '<div>잔여 초월석<b>'+fmt(left)+'</b></div>'+
           '</div>';
@@ -747,7 +804,7 @@ td{color:#62776e;background:#fff}
           best.levels.map((lv,i)=>shortNames[i]+' Lv.'+lv).join(' · ')+
           '</div>';
 
-        status.innerHTML='<span class="ok">계산 완료. 현재 계정의 초기화 전·후 전투력 차이로 보정한 예상값입니다.</span>';
+        status.innerHTML='<span class="ok">계산 완료. 한글 억·만 표기와 게임 영문 큰수 표기를 지원합니다. 현재 계정의 초기화 전·후 차이로 보정한 예상값입니다.</span>';
       }catch(err){
         console.error(err);
         status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
