@@ -156,6 +156,24 @@ input:focus{
 }
 
 .row{display:block}
+.mode-tabs{display:flex;gap:8px;margin:0 0 14px}
+.mode-tab{width:auto;flex:1;min-height:44px;padding:9px 12px;border:1px solid #bfe2ce;border-radius:12px;background:#f7fff9;color:#39715b;box-shadow:none}
+.mode-tab.active{background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;border-color:transparent;box-shadow:0 7px 16px rgba(53,201,140,.18)}
+.mode-pane{display:none}
+.mode-pane.active{display:block}
+.power-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.power-levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.power-result-grid{display:grid;grid-template-columns:1fr 40px 1fr;gap:10px;align-items:stretch;margin-top:10px}
+.power-box{padding:14px;border:1px solid #d6ebdf;border-radius:13px;background:#fbfffc}
+.power-box.after{border-color:#ead998;background:linear-gradient(160deg,#fffdf1,#fff8d7)}
+.power-box .k{font-size:11px;color:#71847b}
+.power-box .v{margin-top:4px;font-size:22px;font-weight:900;color:#285f4b;overflow-wrap:anywhere}
+.power-box.after .v{color:#b78100}
+.power-arrow{display:grid;place-items:center;font-size:24px;color:#7f9a8e}
+.power-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.power-meta>div{padding:10px;border:1px solid #dcece3;border-radius:11px;background:#fbfffc;font-size:11px;color:#71847b}
+.power-meta b{display:block;margin-top:3px;color:#23946a;font-size:14px}
+.power-final-levels{margin-top:10px;padding:11px 12px;border-radius:11px;background:#effbf4;color:#315d4d;font-size:12px;font-weight:800;line-height:1.7}
 button{
   width:100%;
   min-height:50px;
@@ -276,6 +294,11 @@ th{color:#32634f;font-weight:800;background:#effbf4}
 td{color:#62776e;background:#fff}
 
 @media(max-width:760px){
+   .power-grid{grid-template-columns:1fr}
+  .power-levels{grid-template-columns:1fr 1fr}
+  .power-result-grid{grid-template-columns:1fr}
+  .power-arrow{transform:rotate(90deg);min-height:20px}
+  .power-meta{grid-template-columns:1fr 1fr}
   main{padding:13px 9px 31px}
   .site-head{align-items:flex-start;padding:2px 4px 10px;margin-bottom:8px}
   .site-head h1{font-size:22px;line-height:1.15}
@@ -310,6 +333,12 @@ td{color:#62776e;background:#fff}
   <div class="submark">Lv.0–4500</div>
 </header>
 
+<nav class="mode-tabs" aria-label="초월석 계산 모드">
+  <button type="button" class="mode-tab active" data-mode="allocation">최적 배분</button>
+  <button type="button" class="mode-tab" data-mode="power">전투력 재분배</button>
+</nav>
+
+<div id="allocationPane" class="mode-pane active">
 <div class="workspace">
   <section class="panel input-panel">
     <div class="input-head">
@@ -356,6 +385,48 @@ td{color:#62776e;background:#fff}
     <summary>100레벨 구간별 비용</summary>
     <div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th></tr></thead><tbody></tbody></table></div>
   </details>
+</section>
+</div>
+
+<section id="powerPane" class="mode-pane">
+  <div class="workspace">
+    <section class="panel input-panel">
+      <div class="input-head"><h2>전투력 기준</h2></div>
+      <div class="power-grid">
+        <div class="field">
+          <label for="currentPower">현재 전투력</label>
+          <input id="currentPower" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 28,983,639">
+        </div>
+        <div class="field">
+          <label for="resetPower">초월석 초기화 후 전투력</label>
+          <input id="resetPower" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 20,000,000">
+        </div>
+      </div>
+      <div class="field">
+        <label for="powerStones">초기화 후 보유 초월석</label>
+        <input id="powerStones" type="text" inputmode="numeric" autocomplete="off" placeholder="수량 입력">
+      </div>
+
+      <div class="input-head" style="margin-top:17px;margin-bottom:10px"><h2>현재 초월 레벨</h2></div>
+      <div class="power-levels">
+        <div class="field"><label for="plv0">청람결정</label><input id="plv0" type="number" min="0" max="4500" step="1" value="0"></div>
+        <div class="field"><label for="plv1">성해공명</label><input id="plv1" type="number" min="0" max="4500" step="1" value="0"></div>
+        <div class="field"><label for="plv2">차원각인</label><input id="plv2" type="number" min="0" max="4500" step="1" value="0"></div>
+        <div class="field"><label for="plv3">영겁성핵</label><input id="plv3" type="number" min="0" max="4500" step="1" value="0"></div>
+      </div>
+      <button id="runPower" type="button">재분배 후 전투력 계산</button>
+      <div id="powerStatus" class="status" aria-live="polite"></div>
+      <p class="input-note">현재 전투력과 초기화 후 전투력의 차이를 현재 초월 레벨 효과와 대조해, 같은 계정 기준으로 재분배 후 전투력을 환산합니다.</p>
+    </section>
+
+    <section class="panel result-panel">
+      <h2>재분배 결과</h2>
+      <div id="powerResult" class="result-main">
+        <div class="result-empty">전투력·초월석·현재 초월 레벨을 입력하면 결과가 표시됩니다.</div>
+      </div>
+      <div id="powerFinalLevels"></div>
+    </section>
+  </div>
 </section>
 </main>
 
@@ -603,6 +674,88 @@ td{color:#62776e;background:#fff}
     ).join("");
   }
 
+  function parseWholeNumber(raw){
+    const t=String(raw??"").trim().replace(/,/g,"").replace(/\s+/g,"");
+    if(!/^\d+$/.test(t))return NaN;
+    const n=Number(t);
+    return Number.isSafeInteger(n)?n:NaN;
+  }
+  function formatPower(n){
+    return Math.round(n).toLocaleString("ko-KR");
+  }
+  function currentEffectScore(levels){
+    let score=0;
+    for(let i=0;i<4;i++)score+=levelEffect[i][clampLv(levels[i])];
+    return score;
+  }
+  function runPowerCalc(){
+    const status=document.getElementById("powerStatus");
+    const button=document.getElementById("runPower");
+    const current=parseWholeNumber(document.getElementById("currentPower").value);
+    const reset=parseWholeNumber(document.getElementById("resetPower").value);
+    const pool=parseWholeNumber(document.getElementById("powerStones").value);
+    const levels=[0,1,2,3].map(i=>clampLv(document.getElementById("plv"+i).value));
+
+    if(!Number.isFinite(current)||!Number.isFinite(reset)||!Number.isFinite(pool)){
+      status.innerHTML='<span class="bad">현재 전투력·초기화 후 전투력·초월석 수량을 정수로 입력해 주세요.</span>';
+      return;
+    }
+    if(current<reset){
+      status.innerHTML='<span class="bad">현재 전투력이 초기화 후 전투력보다 작습니다. 입력값을 확인해 주세요.</span>';
+      return;
+    }
+    const nowScore=currentEffectScore(levels);
+    if(nowScore<=0 && current>reset){
+      status.innerHTML='<span class="bad">현재 초월 레벨 4종을 입력해 주세요. 전투력 환산 기준이 필요합니다.</span>';
+      return;
+    }
+
+    button.disabled=true;
+    status.textContent="재분배 후 전투력 계산 중...";
+    setTimeout(()=>{
+      try{
+        const calcPool=Math.min(pool,TOTAL_MAX);
+        const exact=optimizeExact(calcPool);
+        if(!exact.best)throw new Error("최적 배분을 찾지 못했습니다.");
+        const best=exact.best;
+        let left=best.left;
+        if(pool>TOTAL_MAX)left+=pool-TOTAL_MAX;
+
+        const currentGain=Math.max(0,current-reset);
+        let predicted=reset;
+        if(currentGain>0 && nowScore>0){
+          predicted=reset+currentGain*(best.score/nowScore);
+        }
+        const delta=predicted-current;
+        const pct=current>0?delta/current*100:0;
+
+        document.getElementById("powerResult").innerHTML=
+          '<div class="power-result-grid">'+
+            '<div class="power-box"><div class="k">현재 전투력</div><div class="v">'+formatPower(current)+'</div></div>'+
+            '<div class="power-arrow">→</div>'+
+            '<div class="power-box after"><div class="k">재분배 후 예상 전투력</div><div class="v">'+formatPower(predicted)+'</div></div>'+
+          '</div>'+
+          '<div class="power-meta">'+
+            '<div>전투력 차이<b>'+(delta>=0?'+':'')+formatPower(delta)+'</b></div>'+
+            '<div>상승률<b>'+(pct>=0?'+':'')+pct.toFixed(3)+'%</b></div>'+
+            '<div>사용 초월석<b>'+fmt(best.used)+'</b></div>'+
+            '<div>잔여 초월석<b>'+fmt(left)+'</b></div>'+
+          '</div>';
+
+        document.getElementById("powerFinalLevels").innerHTML=
+          '<div class="power-final-levels">최적 레벨 · '+
+          best.levels.map((lv,i)=>shortNames[i]+' Lv.'+lv).join(' · ')+
+          '</div>';
+
+        status.innerHTML='<span class="ok">계산 완료. 현재 계정의 초기화 전·후 전투력 차이로 보정한 예상값입니다.</span>';
+      }catch(err){
+        console.error(err);
+        status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
+      }
+      button.disabled=false;
+    },20);
+  }
+
   function run(){
     const status=document.getElementById("status"), button=document.getElementById("run");
     const raw=document.getElementById("stones").value.trim();
@@ -632,6 +785,17 @@ td{color:#62776e;background:#fff}
   }
   document.getElementById("run").addEventListener("click",run);
   document.getElementById("stones").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
+  document.getElementById("runPower").addEventListener("click",runPowerCalc);
+  ["currentPower","resetPower","powerStones","plv0","plv1","plv2","plv3"].forEach(id=>{
+    document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")runPowerCalc();});
+  });
+  document.querySelectorAll(".mode-tab").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".mode-tab").forEach(x=>x.classList.toggle("active",x===btn));
+      document.getElementById("allocationPane").classList.toggle("active",btn.dataset.mode==="allocation");
+      document.getElementById("powerPane").classList.toggle("active",btn.dataset.mode==="power");
+    });
+  });
   renderCostTable(); document.getElementById("status").textContent="";
 })();
 </script>
