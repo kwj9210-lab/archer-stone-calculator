@@ -12,11 +12,15 @@ main{width:min(900px,100%);margin:auto;padding:22px 14px 44px}
 h1{margin:0 0 6px;font-size:25px;color:#22694f}.sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:16px}
 .card{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:13px}
 .card h2{font-size:17px;margin:0 0 12px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.materials{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.materials{grid-template-columns:repeat(3,minmax(0,1fr))}.ticket-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 label{font-size:12px;font-weight:800;color:#657c72}
 input{width:100%;min-height:46px;margin-top:6px;padding:10px 11px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:16px;font-weight:800;outline:none}
 input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)}
 .hint{margin-top:6px;font-size:11px;color:var(--muted)}
+.ticket-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.ticket-box{border:1px solid #d7ebdf;border-radius:13px;padding:12px;background:#fbfffc}
+.ticket-box:nth-child(2){background:#fffdf1;border-color:#eee0aa}.ticket-box:nth-child(3){background:#f4fbff;border-color:#cfe7f2}
+.ticket-k{font-size:11px;color:var(--muted);font-weight:800}.ticket-v{font-size:20px;font-weight:950;color:#1a9368;margin-top:4px;line-height:1.25}
 .results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .result{border:1px solid #d7ebdf;border-radius:15px;padding:14px;background:#fbfffc}
 .result:nth-child(2){background:#fffdf1;border-color:#eee0aa}.result:nth-child(3){background:#f4fbff;border-color:#cfe7f2}
@@ -25,7 +29,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 .break{margin-top:9px;padding-top:9px;border-top:1px solid #e1eee7;font-size:11px;color:#71867c;line-height:1.6}
 .note{font-size:11.5px;color:#71867c;line-height:1.6;margin:10px 2px 0}
 .bad{color:#c95b5b;font-weight:800}
-@media(max-width:700px){main{padding:14px 9px 34px}h1{font-size:21px}.grid,.materials,.results{grid-template-columns:1fr}.card{padding:13px}.time{font-size:22px}}
+@media(max-width:700px){main{padding:14px 9px 34px}h1{font-size:21px}.grid,.materials,.results,.ticket-grid,.ticket-summary{grid-template-columns:1fr}.card{padding:13px}.time{font-size:22px}}
 
 /* unified top hero */
 .page-hero{
@@ -97,13 +101,21 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 
 <section class="card">
 <h2>1. 입장권 / 던전 숙련도</h2>
-<div class="grid">
-<label>1시간 입장권 획득 수
-<input id="ticketHour" type="text" inputmode="text" placeholder="예: 81,000,000 또는 8100만"></label>
+<div class="grid ticket-grid">
+<label>1시간 입장권 획득 수 · 핫타임 미적용
+<input id="ticketHourNormal" type="text" inputmode="text" placeholder="예: 135,743 또는 13.57만"></label>
+<label>1시간 입장권 획득 수 · 핫타임 적용
+<input id="ticketHourHot" type="text" inputmode="text" placeholder="미적용 입력 시 ×4 자동 계산"></label>
 <label>던전 숙련도 단계
 <input id="mastery" type="number" min="1" max="200" step="1" value="160"></label>
 </div>
 <div id="mult" class="hint">160단계 · ×41.25</div>
+<div class="hint">핫타임은 4배 기준입니다. 두 입장권 칸 중 하나만 입력하면 다른 칸이 자동 계산됩니다.</div>
+<div class="ticket-summary">
+  <div class="ticket-box"><div class="ticket-k">평일 24시간 획득량</div><div id="weekdayTicket" class="ticket-v">-</div><div class="hint">일반 20시간 + 핫타임 4시간</div></div>
+  <div class="ticket-box"><div class="ticket-k">주말 24시간 획득량</div><div id="weekendTicket" class="ticket-v">-</div><div class="hint">24시간 전체 핫타임</div></div>
+  <div class="ticket-box"><div class="ticket-k">주간 평균 24시간 획득량</div><div id="avgTicket" class="ticket-v">-</div><div class="hint">평일 5일 + 주말 2일 평균</div></div>
+</div>
 </section>
 
 <section class="card">
@@ -136,6 +148,7 @@ const base100k=[1526775,2508670,4587000]; // 기존 각인석 계산기와 동�
 const IMMORTAL_RAW=247880000;
 const TRANSCEND_DIRECT_RAW=100000000;
 const ABSOLUTE_DIRECT_RAW=600000000;
+const HOT_MULT=4;
 function targetRequirement(grade,ownedImmortal,ownedTranscend){
   if(grade==="불멸 마석"){
     return {req:IMMORTAL_RAW,usedImmortal:0,usedTranscend:0,needImmortal:1,needTranscend:0};
@@ -186,16 +199,44 @@ function duration(hours){
   const a=[]; if(d)a.push(d+"일"); if(h)a.push(h+"시간"); if(m)a.push(m+"분");
   return a.join(" ")||"1분 미만";
 }
+let syncingTicket=false;
+function setTicketValue(id,value){
+  document.getElementById(id).value=Number.isFinite(value)&&value>0?Math.round(value).toLocaleString("ko-KR"):"";
+}
+function syncTickets(source){
+  if(syncingTicket)return;
+  syncingTicket=true;
+  const normalEl=document.getElementById("ticketHourNormal");
+  const hotEl=document.getElementById("ticketHourHot");
+  if(source==="normal"){
+    const v=parseAmount(normalEl.value);
+    if(Number.isFinite(v)&&v>0)setTicketValue("ticketHourHot",v*HOT_MULT);
+    else hotEl.value="";
+  }else{
+    const v=parseAmount(hotEl.value);
+    if(Number.isFinite(v)&&v>0)setTicketValue("ticketHourNormal",v/HOT_MULT);
+    else normalEl.value="";
+  }
+  syncingTicket=false;
+}
 function calculate(){
   const level=Math.max(1,Math.min(200,Math.floor(Number(document.getElementById("mastery").value)||1)));
   document.getElementById("mastery").value=level;
   const mult=1.25+.25*level;
   document.getElementById("mult").textContent=level+"단계 · ×"+mult.toFixed(2);
-  const ticketHour=parseAmount(document.getElementById("ticketHour").value);
+  const ticketHourNormal=parseAmount(document.getElementById("ticketHourNormal").value);
+  const ticketHourHot=parseAmount(document.getElementById("ticketHourHot").value);
+  const weekday24=(Number.isFinite(ticketHourNormal)?ticketHourNormal:0)*20+(Number.isFinite(ticketHourHot)?ticketHourHot:0)*4;
+  const weekend24=(Number.isFinite(ticketHourHot)?ticketHourHot:0)*24;
+  const weekTotal=weekday24*5+weekend24*2;
+  const avg24=weekTotal/7;
+  document.getElementById("weekdayTicket").textContent=weekday24>0?fmt(weekday24)+"장":"-";
+  document.getElementById("weekendTicket").textContent=weekend24>0?fmt(weekend24)+"장":"-";
+  document.getElementById("avgTicket").textContent=avg24>0?fmt(avg24)+"장":"-";
   const stock=[0,1,2].map(i=>parseAmount(document.getElementById("r"+i).value));
   const ownedImmortal=Math.max(0,Math.floor(Number(document.getElementById("immortal").value)||0));
   const ownedTranscend=Math.max(0,Math.floor(Number(document.getElementById("transcend").value)||0));
-  const invalid=!Number.isFinite(ticketHour)||stock.some(v=>!Number.isFinite(v));
+  const invalid=(!Number.isFinite(ticketHourNormal)&&document.getElementById("ticketHourNormal").value.trim()!=="")||(!Number.isFinite(ticketHourHot)&&document.getElementById("ticketHourHot").value.trim()!=="")||stock.some(v=>!Number.isFinite(v));
   if(invalid){
     document.getElementById("results").innerHTML='<div class="bad">입력값을 확인해 주세요. 숫자, 콤마, 조/억/만 표기를 사용할 수 있습니다.</div>';
     return;
@@ -209,11 +250,12 @@ function calculate(){
     const shortage=stock.map(v=>Math.max(0,req-v));
     const runs=shortage.map((v,i)=>v>0?v/per100k[i]*100000:0);
     const tickets=Math.ceil(runs.reduce((a,b)=>a+b,0)*2);
-    const hours=ticketHour>0?tickets/ticketHour:(tickets===0?0:Infinity);
+    const hours=avg24>0?tickets/(avg24/24):(tickets===0?0:Infinity);
     html+='<div class="result">'+
       '<div class="grade">'+grade+' 1개</div>'+
       '<div class="time">'+duration(hours)+'</div>'+
       '<div class="meta">예상 필요 입장권 <b>'+fmt(tickets)+'장</b><br>'+
+      '주간 평균 기준 하루 획득 <b>'+(avg24>0?fmt(avg24)+'장':'-')+'</b><br>'+
       '원재료 필요량 각 <b>'+fmt(req)+'개</b>'+
       (grade==="초월 마석"
         ?'<br>보유 불멸 사용 <b>'+info.usedImmortal+'개</b> · 추가 제작 불멸 <b>'+info.needImmortal+'개</b>'
@@ -227,7 +269,9 @@ function calculate(){
   }
   document.getElementById("results").innerHTML=html;
 }
-["ticketHour","mastery","r0","r1","r2","immortal","transcend"].forEach(id=>document.getElementById(id).addEventListener("input",calculate));
+document.getElementById("ticketHourNormal").addEventListener("input",()=>{syncTickets("normal");calculate();});
+document.getElementById("ticketHourHot").addEventListener("input",()=>{syncTickets("hot");calculate();});
+["mastery","r0","r1","r2","immortal","transcend"].forEach(id=>document.getElementById(id).addEventListener("input",calculate));
 calculate();
 </script>
 </main></body></html>
