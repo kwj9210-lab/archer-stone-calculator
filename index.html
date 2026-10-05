@@ -323,7 +323,7 @@ th:first-child,td:first-child{text-align:left}
 <section class="card">
 <h2>4. 내 던전 숙련도</h2>
 <div class="grid2">
-<label>숙련도 단계<input id="masteryLevel" type="number" min="1" max="507" step="1" value="160"></label>
+<label>숙련도 단계<input id="masteryLevel" type="text" inputmode="numeric" value="160" placeholder="1~507"></label>
 <label>숙련도 배율<input id="masteryMult" type="number" value="41.25" readonly aria-readonly="true"></label>
 </div>
 <div class="note">던전 숙련도는 최대 507단계입니다. 1단계 ×1.50부터 단계당 +0.25배씩 증가하며, 507단계에서 최대 ×128이 적용됩니다.</div>
@@ -460,22 +460,27 @@ function calc(){
 }
 function syncMastery(){
  var field=el('masteryLevel');
- var raw=String(field.value).trim();
- if(raw==='')return;
+ var raw=String(field.value).replace(/[^0-9]/g,'');
+ if(field.value!==raw)field.value=raw;
+ if(raw===''){
+   el('masteryMult').value='';
+   return;
+ }
  var lv=Math.floor(Number(raw));
- if(!Number.isFinite(lv))return;
- lv=Math.max(1,Math.min(507,lv));
- if(Number(field.value)!==lv)field.value=lv;
+ if(!Number.isFinite(lv)||lv<1){
+   el('masteryMult').value='';
+   return;
+ }
+ if(lv>507){lv=507;field.value='507';}
  el('masteryMult').value=(1.25+.25*lv).toFixed(2);
  calc();
 }
 el('masteryLevel').addEventListener('input',syncMastery);
-el('masteryLevel').addEventListener('change',syncMastery);
 el('ticketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
 el('clearStones').addEventListener('click',function(){state[type].stones=Array(G.length).fill(0);render()});
 document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){saveCurrent();type=this.dataset.type;document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.type===type)});render()})});
-syncMastery();
 render();
+syncMastery();
 })();
 </script>
 </body>
