@@ -107,7 +107,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 <label>1시간 입장권 획득 수 · 핫타임 적용
 <input id="ticketHourHot" type="text" inputmode="text" placeholder="미적용 입력 시 ×4 자동 계산"></label>
 <label>던전 숙련도 단계
-<input id="mastery" type="number" min="1" max="200" step="1" value="160"></label>
+<input id="mastery" type="number" min="1" max="507" step="1" value="160"></label>
 </div>
 <div id="mult" class="hint">160단계 · ×41.25</div>
 <div class="hint">핫타임은 4배 기준입니다. 두 입장권 칸 중 하나만 입력하면 다른 칸이 자동 계산됩니다.</div>
@@ -220,7 +220,7 @@ function syncTickets(source){
   syncingTicket=false;
 }
 function calculate(){
-  const level=Math.max(1,Math.min(200,Math.floor(Number(document.getElementById("mastery").value)||1)));
+  const level=Math.max(1,Math.min(507,Math.floor(Number(document.getElementById("mastery").value)||1)));
   document.getElementById("mastery").value=level;
   const mult=1.25+.25*level;
   document.getElementById("mult").textContent=level+"단계 · ×"+mult.toFixed(2);
