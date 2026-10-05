@@ -11,7 +11,7 @@ body{margin:0;min-height:100vh;background:linear-gradient(135deg,var(--bg),var(-
 main{width:min(900px,100%);margin:auto;padding:22px 14px 44px}
 h1{margin:0 0 6px;font-size:25px;color:#22694f}.sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:16px}
 .card{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:13px}
-.card h2{font-size:17px;margin:0 0 12px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}.howto{font-size:11px;font-weight:700;color:var(--muted);margin-left:8px}
+.card h2{font-size:17px;margin:0 0 12px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.materials{grid-template-columns:repeat(3,minmax(0,1fr))}.ticket-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 label{font-size:12px;font-weight:800;color:#657c72}
 input{width:100%;min-height:46px;margin-top:6px;padding:10px 11px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:16px;font-weight:800;outline:none}
@@ -29,7 +29,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 .break{margin-top:9px;padding-top:9px;border-top:1px solid #e1eee7;font-size:11px;color:#71867c;line-height:1.6}
 .note{font-size:11.5px;color:#71867c;line-height:1.6;margin:10px 2px 0}
 .bad{color:#c95b5b;font-weight:800}
-@media(max-width:700px){main{padding:14px 9px 34px}h1{font-size:21px}.grid,.materials,.results,.ticket-grid,.ticket-summary{grid-template-columns:1fr}.card{padding:13px}.time{font-size:22px}.howto{display:block;margin:5px 0 0;line-height:1.45}}
+@media(max-width:700px){main{padding:14px 9px 34px}h1{font-size:21px}.grid,.materials,.results,.ticket-grid,.ticket-summary{grid-template-columns:1fr}.card{padding:13px}.time{font-size:22px}}
 
 /* unified top hero */
 .page-hero{
@@ -60,6 +60,44 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
   margin:0;
   align-items:center;
 }
+.site-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.help-details{margin:0;position:relative}
+.help-details summary{
+  list-style:none;
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:7px 12px;
+  border:1px solid #bfe2ce;
+  border-radius:11px;
+  background:#effcf5;
+  color:#39715b;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  user-select:none;
+}
+.help-details summary::-webkit-details-marker{display:none}
+.help-details summary::after{content:"＋";margin-left:7px;color:var(--accent);font-size:15px;line-height:1}
+.help-details[open] summary::after{content:"－"}
+.help-box{
+  position:absolute;
+  left:0;
+  top:calc(100% + 8px);
+  z-index:20;
+  width:360px;
+  max-width:calc(100vw - 36px);
+  padding:13px 14px;
+  border:1px solid #cce7d8;
+  border-radius:13px;
+  background:#ffffff;
+  box-shadow:0 14px 34px rgba(69,126,98,.18);
+  color:#5f756b;
+  font-size:12px;
+  line-height:1.65;
+}
+.help-box div+div{margin-top:6px}
+.guide-title{font-weight:900;color:#315d4d;margin-bottom:3px}
 .page-hero .hero-actions{margin-top:13px}
 .page-hero .tabs,.page-hero .mode-tabs{margin:13px 0 0}
 .page-hero .tab,.page-hero .mode-tab{
@@ -85,6 +123,9 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
     box-shadow:0 5px 14px rgba(69,126,98,.08);
   }
   .page-hero h1,.page-hero .site-head h1{font-size:20px;line-height:1.2}
+  .site-title-row{gap:7px}
+  .help-details summary{min-height:32px;padding:5px 9px;font-size:12px}
+  .help-box{width:min(430px,calc(100vw - 24px))}
   .page-hero .hero-sub{margin-top:5px;font-size:11px;line-height:1.45}
   .page-hero .hero-actions{margin-top:9px}
   .page-hero .tabs,.page-hero .mode-tabs{margin:9px 0 0}
@@ -95,12 +136,27 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 </head>
 <body><main>
 <section class="page-hero">
-<h1>마석 제작시간 계산기</h1>
-<div class="hero-sub sub">시간당 던전 입장권 획득량·던전 숙련도·현재 재료 보유량을 기준으로 불멸/초월/절대 마석 1개까지 걸리는 예상 시간을 계산합니다.</div>
+  <div class="site-title-row">
+    <h1>마석 제작시간 계산기</h1>
+    <details class="help-details site-guide">
+      <summary>사용법</summary>
+      <div class="help-box">
+        <div>
+          <div class="guide-title">입장권 입력</div>
+          <div>핫타임 <b>미적용값·적용값 중 하나만 입력해도 됩니다.</b> 입력한 값을 기준으로 다른 값이 자동 계산됩니다.</div>
+        </div>
+        <div>
+          <div class="guide-title">제작시간 계산</div>
+          <div>던전 숙련도와 현재 보유 재료, 보유 불멸·초월 마석을 입력하면 부족분을 기준으로 불멸·초월·절대 마석 1개 제작 예상시간을 계산합니다.</div>
+        </div>
+      </div>
+    </details>
+  </div>
+  <div class="hero-sub sub">시간당 던전 입장권 획득량·던전 숙련도·현재 재료 보유량을 기준으로 불멸/초월/절대 마석 1개까지 걸리는 예상 시간을 계산합니다.</div>
 </section>
 
 <section class="card">
-<h2>1. 입장권 / 던전 숙련도 <span class="howto">사용방법: 핫타임 미적용·적용값 중 하나만 입력해도 됩니다. 입력한 값을 기준으로 다른 값이 자동 계산됩니다.</span></h2>
+<h2>1. 입장권 / 던전 숙련도</h2>
 <div class="grid ticket-grid">
 <label>1시간 입장권 획득 수 · 핫타임 미적용
 <input id="ticketHourNormal" type="text" inputmode="text" placeholder="예: 135,743 또는 13.57만"></label>
