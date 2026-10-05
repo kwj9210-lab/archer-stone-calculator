@@ -11,7 +11,7 @@ body{margin:0;min-height:100vh;background:linear-gradient(135deg,var(--bg),var(-
 main{width:min(900px,100%);margin:auto;padding:22px 14px 44px}
 h1{margin:0 0 6px;font-size:25px;color:#22694f}.sub{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:16px}
 .card{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:13px}
-.card h2{font-size:17px;margin:0 0 12px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}
+.card h2{font-size:17px;margin:0 0 12px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}.howto{font-size:11px;font-weight:700;color:var(--muted);margin-left:8px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.materials{grid-template-columns:repeat(3,minmax(0,1fr))}.ticket-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 label{font-size:12px;font-weight:800;color:#657c72}
 input{width:100%;min-height:46px;margin-top:6px;padding:10px 11px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:16px;font-weight:800;outline:none}
@@ -29,7 +29,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 .break{margin-top:9px;padding-top:9px;border-top:1px solid #e1eee7;font-size:11px;color:#71867c;line-height:1.6}
 .note{font-size:11.5px;color:#71867c;line-height:1.6;margin:10px 2px 0}
 .bad{color:#c95b5b;font-weight:800}
-@media(max-width:700px){main{padding:14px 9px 34px}h1{font-size:21px}.grid,.materials,.results,.ticket-grid,.ticket-summary{grid-template-columns:1fr}.card{padding:13px}.time{font-size:22px}}
+@media(max-width:700px){main{padding:14px 9px 34px}h1{font-size:21px}.grid,.materials,.results,.ticket-grid,.ticket-summary{grid-template-columns:1fr}.card{padding:13px}.time{font-size:22px}.howto{display:block;margin:5px 0 0;line-height:1.45}}
 
 /* unified top hero */
 .page-hero{
@@ -100,7 +100,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 </section>
 
 <section class="card">
-<h2>1. 입장권 / 던전 숙련도</h2>
+<h2>1. 입장권 / 던전 숙련도 <span class="howto">사용방법: 핫타임 미적용·적용값 중 하나만 입력해도 됩니다. 입력한 값을 기준으로 다른 값이 자동 계산됩니다.</span></h2>
 <div class="grid ticket-grid">
 <label>1시간 입장권 획득 수 · 핫타임 미적용
 <input id="ticketHourNormal" type="text" inputmode="text" placeholder="예: 135,743 또는 13.57만"></label>
