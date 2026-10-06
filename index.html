@@ -386,6 +386,19 @@ var type='maseok',state={};
 function el(id){return document.getElementById(id)}
 function val(id){return Math.max(0,Number(el(id).value)||0)}
 function fmt(v){return Math.round(v).toLocaleString('ko-KR')}
+function fmtKoreanUnit(v){
+ v=Math.max(0,Math.round(v));
+ if(v<10000)return v.toLocaleString('ko-KR');
+ var e=Math.floor(v/100000000);
+ var m=Math.floor((v%100000000)/10000);
+ var rest=v%10000;
+ var parts=[];
+ if(e)parts.push(e.toLocaleString('ko-KR')+'억');
+ if(m)parts.push(m.toLocaleString('ko-KR')+'만');
+ if(!e&&!m)parts.push(rest.toLocaleString('ko-KR'));
+ else if(rest)parts.push(rest.toLocaleString('ko-KR'));
+ return parts.join(' ');
+}
 function initState(t){
  if(state[t])return;
  state[t]={stones:Array(G.length).fill(0),raw:Array(configs[t].resources.length).fill(0),target:G.length-1,count:1};
@@ -451,7 +464,7 @@ function calc(){
  });
  el('resourceResults').innerHTML=html;
  var tickets=totalRuns*2,short=Math.max(0,tickets-val('ticketsNow')),dia=short*val('ticketPrice');
- el('ticketsTotal').textContent=fmt(tickets)+'장';el('totalRuns').textContent=fmt(totalRuns)+'회';el('ticketShort').textContent=fmt(short)+'장';el('diamondNeed').textContent=fmt(dia)+' 다이아';
+ el('ticketsTotal').textContent=fmt(tickets)+'장';el('totalRuns').textContent=fmtKoreanUnit(totalRuns)+'회';el('ticketShort').textContent=fmtKoreanUnit(short)+'장';el('diamondNeed').textContent=fmtKoreanUnit(dia)+' 다이아';
  el('ticketLabel').textContent='총 필요 입장권';
  var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
  var remain=inv.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
