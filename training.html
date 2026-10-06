@@ -22,6 +22,8 @@ button{width:100%;min-height:50px;border:0;border-radius:12px;padding:11px 14px;
 <section class="panel"><h2>수련장 타겟 체력</h2><div id="summary" class="result-main"></div><div class="scroll"><table><thead><tr><th>수련장</th><th>타겟 체력</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
 </main><script>
 const hp={
+210:1165370799,220:1306329830,230:1450088558,240:1596054202,250:1743842194,260:1893182521,270:2043875054,280:2195765470,290:2348731118,300:2502672164,
+310:2657505757,320:2813162033,330:2969581280,340:3126711874,350:3284508738,360:3442932170,370:3601946938,380:3761521560,390:3921627740,400:4082239907,
 410:4243334834,420:4404891338,430:4566890014,440:4729313025,450:4892143917,460:5055367465,470:5218969540,480:5382936993,490:5547257562,500:5711919777,
 510:5876912892,520:6042226817,530:6207852058,540:6373779667,550:6540001196,560:6706508658,570:6873294486,580:7040351505,590:7207672901,600:7375252191,
 610:7543083207,620:7711160065,630:7879477153,640:8048029107,650:8216810799,660:8385817318,670:8555043963,680:8724486220,690:8894139761,700:9064000425,
@@ -33,7 +35,7 @@ function fmt(v){const e=Math.floor(v/100000000),m=Math.floor((v%100000000)/10000
 function render(){
  let n=Math.round((Number(document.getElementById('stage').value)||410)/10)*10;n=Math.max(210,Math.min(1000,n));document.getElementById('stage').value=n;
  const v=hp[n];
- document.getElementById('summary').innerHTML=v?'<div class="bestline">'+n+'만-100 · '+fmt(v)+'</div><div class="small">타겟 체력 '+v.toLocaleString('ko-KR')+'</div>':'<div class="bestline">'+n+'만-100</div><div class="small">210만-100 ~ 400만-100 구간은 현재 제공된 표에서 수치가 확인되지 않아 값을 넣지 않았습니다.</div>';
+ document.getElementById('summary').innerHTML=v?'<div class="bestline">'+n+'만-100 · '+fmt(v)+'</div><div class="small">타겟 체력 '+v.toLocaleString('ko-KR')+'</div>':'<div class="bestline">'+n+'만-100</div><div class="small">해당 구간의 타겟 체력 자료가 없습니다.</div>';
  document.getElementById('status').innerHTML=v?'<span class="ok">조회 완료.</span>':'<span class="bad">해당 구간 체력 자료 미확인.</span>';
  let rows='';for(let x=210;x<=1000;x+=10){const q=hp[x];rows+='<tr><td>'+x+'만-100</td><td>'+(q?fmt(q):'—')+'</td></tr>'}document.getElementById('rows').innerHTML=rows;
 }
