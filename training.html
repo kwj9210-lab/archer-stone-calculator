@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>궁수키우기 수련장 타겟 체력</title>
+<style>
+:root{--bg:#f4fff8;--surface:#fff;--line:#cfe9d9;--text:#29463b;--muted:#70847b;--accent:#35c98c;--bad:#d96889;--good:#1a9b6c}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;background:linear-gradient(135deg,#f4fff8,#fff9ea)}
+main{width:min(980px,100%);margin:auto;padding:22px 18px 44px}.page-hero{margin:0 0 14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(247,255,249,.92));box-shadow:0 8px 22px rgba(69,126,98,.10)}
+.site-head{display:flex;justify-content:space-between;align-items:center}.site-head h1{margin:0;font-size:27px;color:#22694f}.submark{font-size:12px;font-weight:800;color:#5d8575;background:#e5f8ee;border:1px solid #bfe2ce;border-radius:999px;padding:5px 10px}.hero-sub{margin:6px 0 0;color:var(--muted);font-size:12px}
+.wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 8px 22px rgba(69,126,98,.11)}.input-panel{position:sticky;top:14px}
+h2{margin:0 0 16px;font-size:17px;padding-left:9px;border-left:4px solid #58cf98;color:#315d4d}.field{margin-bottom:12px}.field label{display:block;margin-bottom:7px;color:#657c72;font-size:12px;font-weight:700}
+input{width:100%;min-height:50px;padding:11px 12px;border:1px solid #cde7d7;border-radius:11px;background:#fbfffc;color:var(--text);font-size:17px;font-weight:800;outline:none}
+button{width:100%;min-height:50px;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;font-size:15px;font-weight:900;cursor:pointer}
+.status{min-height:18px;margin-top:10px;font-size:12px}.bad{color:var(--bad);font-weight:700}.ok{color:var(--good);font-weight:700}.small{color:var(--muted);font-size:11.5px;line-height:1.6}
+.result-main{margin-bottom:10px;padding:13px 14px;border:1px solid #d8ebce;border-left:4px solid var(--accent);border-radius:13px;background:linear-gradient(135deg,#f0fbf5,#fffbe9)}.bestline{font-size:20px;font-weight:900;margin-bottom:7px;color:#257455}
+.scroll{overflow-x:auto;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:520px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:12px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
+@media(max-width:760px){main{padding:8px 7px 26px}.page-hero{margin:0 0 8px;padding:12px;border-radius:14px}.site-head h1{font-size:20px}.submark{display:none}.wrap{grid-template-columns:1fr;gap:8px}.panel{padding:11px;border-radius:13px}.input-panel{position:static}h2{font-size:15px;margin-bottom:11px}input,button{min-height:44px;font-size:14px}.scroll{overflow:visible}table{min-width:0;table-layout:fixed}th,td{font-size:10.5px;white-space:normal}.bestline{font-size:16px}}
+</style></head><body><main>
+<section class="page-hero"><header class="site-head"><h1>수련장</h1><div class="submark">210만-100 ~ 1000만-100</div></header><div class="hero-sub">수련장 구간별 타겟 체력을 조회합니다.</div></section>
+<div class="wrap"><section class="panel input-panel"><h2>구간 조회</h2>
+<div class="field"><label for="stage">확인할 수련장 구간</label><input id="stage" type="number" min="210" max="1000" step="10" value="410"></div>
+<button id="run" type="button">타겟 체력 확인</button><div id="status" class="status"></div></section>
+<section class="panel"><h2>수련장 타겟 체력</h2><div id="summary" class="result-main"></div><div class="scroll"><table><thead><tr><th>수련장</th><th>타겟 체력</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
+</main><script>
+const hp={
+410:4243334834,420:4404891338,430:4566890014,440:4729313025,450:4892143917,460:5055367465,470:5218969540,480:5382936993,490:5547257562,500:5711919777,
+510:5876912892,520:6042226817,530:6207852058,540:6373779667,550:6540001196,560:6706508658,570:6873294486,580:7040351505,590:7207672901,600:7375252191,
+610:7543083207,620:7711160065,630:7879477153,640:8048029107,650:8216810799,660:8385817318,670:8555043963,680:8724486220,690:8894139761,700:9064000425,
+710:9234064215,720:9404327282,730:9574785922,740:9745436567,750:9916275774,760:10087300225,770:10258506714,780:10429892144,790:10601453524,800:10773187960,
+810:10945092650,820:11117164885,830:11289402037,840:11461801561,850:11634360991,860:11807077931,870:11979950059,880:12152975119,890:12326150919,900:12499475332,
+910:12672946286,920:12846561769,930:13020319822,940:13194218540,950:13368256066,960:13542430593,970:13716740360,980:13891183651,990:14065758793,1000:14240464153
+};
+function fmt(v){const e=Math.floor(v/100000000),m=Math.floor((v%100000000)/10000),r=v%10000;return (e?e+'억 ':'')+(m?m+'만 ':'')+r}
+function render(){
+ let n=Math.round((Number(document.getElementById('stage').value)||410)/10)*10;n=Math.max(210,Math.min(1000,n));document.getElementById('stage').value=n;
+ const v=hp[n];
+ document.getElementById('summary').innerHTML=v?'<div class="bestline">'+n+'만-100 · '+fmt(v)+'</div><div class="small">타겟 체력 '+v.toLocaleString('ko-KR')+'</div>':'<div class="bestline">'+n+'만-100</div><div class="small">210만-100 ~ 400만-100 구간은 현재 제공된 표에서 수치가 확인되지 않아 값을 넣지 않았습니다.</div>';
+ document.getElementById('status').innerHTML=v?'<span class="ok">조회 완료.</span>':'<span class="bad">해당 구간 체력 자료 미확인.</span>';
+ let rows='';for(let x=210;x<=1000;x+=10){const q=hp[x];rows+='<tr><td>'+x+'만-100</td><td>'+(q?fmt(q):'—')+'</td></tr>'}document.getElementById('rows').innerHTML=rows;
+}
+document.getElementById('run').onclick=render;document.getElementById('stage').addEventListener('input',render);render();
+</script></body></html>
