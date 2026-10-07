@@ -186,7 +186,7 @@ function render(){
  const req=sanctuaryReq(f);
  const seals=cumulativeSeals(f);
  const one=cumulativeOneMaterial(f);
- result.innerHTML='<b>'+fmt(f)+'층</b> · 1회 수련의 인장 <b>'+fmtKor(f)+'개</b> · 1회 소탕 <b>'+fmtKor(rewardEach(f))+'개</b> · 필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
+ result.innerHTML='1회 수련의 인장 <b>'+fmtKor(f)+'개</b> · 1회 소탕 <b>'+fmtKor(rewardEach(f))+'개</b> · 필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
   '누적 수련의 인장 '+fmtKor(seals)+'개 · 재료 1종 '+fmtKor(one)+'개 · 5종 '+fmtKor(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
