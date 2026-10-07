@@ -72,6 +72,20 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <div class="note">층수는 1~3000 직접 입력. 입력한 정확한 층의 필요 관통·명중을 표시합니다.</div>
 </section>
 
+<section class="card">
+<h2>누적 + 소탕 계산</h2>
+<div class="sweepGrid">
+<label>필요 재료 수량
+<input id="targetMaterial" type="text" inputmode="numeric" value="50000000" placeholder="예: 50000000">
+</label>
+<label>내 최고 클리어 층수
+<input id="maxClearFloor" type="text" inputmode="numeric" value="3000" placeholder="1~3000">
+</label>
+<div id="targetResult" class="result"></div>
+</div>
+<div class="note">재료 1종 기준. 1층부터 최고 클리어 층까지의 누적 클리어 보상을 먼저 적용하고, 부족분만 최고 클리어 층 소탕으로 채웁니다.</div>
+</section>
+
 <details id="list" open>
 <summary>100~3000층 · 100층 단위 전체 보기</summary>
 <div class="tableWrap">
@@ -175,6 +189,7 @@ function parseFloor(v){
 
 const floor=document.getElementById('floor'),result=document.getElementById('result'),rows=document.getElementById('rows');
 const sweepFloor=document.getElementById('sweepFloor'),needQty=document.getElementById('needQty'),sweepResult=document.getElementById('sweepResult');
+const targetMaterial=document.getElementById('targetMaterial'),maxClearFloor=document.getElementById('maxClearFloor'),targetResult=document.getElementById('targetResult');
 
 function render(){
  const f=parseFloor(floor.value);
@@ -212,6 +227,29 @@ function renderSweep(){
   '필요 소탕 <b>'+fmtKor(runs)+'회</b> · 수련의 인장 <b>'+fmtKor(seals)+'개</b><br>'+
   '총 획득 '+fmtKor(received)+'개'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
 }
+
+function renderTarget(){
+ const need=parseQty(targetMaterial.value);
+ const f=parseFloor(maxClearFloor.value);
+ if(!Number.isFinite(need)){
+  targetResult.textContent='필요 재료 수량을 숫자로 입력해 주세요.';
+  return;
+ }
+ if(!Number.isFinite(f)){
+  targetResult.textContent='최고 클리어 층수를 1~3000 사이 정수로 입력해 주세요.';
+  return;
+ }
+ const cumulative=cumulativeOneMaterial(f);
+ const per=rewardEach(f);
+ const shortage=Math.max(0,need-cumulative);
+ const runs=shortage===0?0:Math.ceil(shortage/per);
+ const sweepGain=runs*per;
+ const total=cumulative+sweepGain;
+ const extra=Math.max(0,total-need);
+ targetResult.innerHTML='누적 클리어 <b>'+fmtKor(cumulative)+'개</b> · 부족 '+fmtKor(shortage)+'개<br>'+
+  '최고층 1회 소탕 '+fmtKor(per)+'개 · 필요 소탕 <b>'+fmtKor(runs)+'회</b><br>'+
+  '소탕 획득 '+fmtKor(sweepGain)+'개 · 최종 <b>'+fmtKor(total)+'개</b>'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
+}
 const frag=document.createDocumentFragment();
 for(let f=100;f<=3000;f+=100){
  const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
@@ -224,7 +262,10 @@ rows.appendChild(frag);
 floor.addEventListener('input',render);
 sweepFloor.addEventListener('input',renderSweep);
 needQty.addEventListener('input',renderSweep);
+targetMaterial.addEventListener('input',renderTarget);
+maxClearFloor.addEventListener('input',renderTarget);
 render();
 renderSweep();
+renderTarget();
 </script>
 </main></body></html>
