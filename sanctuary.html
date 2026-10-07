@@ -55,25 +55,25 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="result" class="result"></div>
 </div>
-<div class="note">관통·명중은 성역 보스 기준입니다. 3000층 기준 필요 관통 66,000 / 필요 명중 172,000.</div>
+<div class="note">500층 이상 관통·명중은 성역 보스 기준 확인값입니다. 100~400층 관통·명중은 아직 원본값 미확정이라 숫자를 임의로 넣지 않았습니다.</div>
 </section>
 
 <section class="card">
 <h2>소탕 계산</h2>
 <div class="sweepGrid">
 <label>클리어층
-<select id="sweepFloor"></select>
+<input id="sweepFloor" type="text" inputmode="numeric" value="3000" placeholder="1~3000">
 </label>
 <label>필요수량
 <input id="needQty" type="text" inputmode="numeric" value="50000000" placeholder="예: 50000000">
 </label>
 <div id="sweepResult" class="result"></div>
 </div>
-<div class="note">선택한 클리어층의 1회 보상(재료 1종 기준)을 그대로 반복해서 받는 것으로 계산합니다. 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
+<div class="note">클리어층은 1~3000 직접 입력. 해당 층 1회 보상은 15×층-5이며, 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
 </section>
 
 <details id="list" open>
-<summary>500~3000층 · 100층 단위 전체 보기</summary>
+<summary>100~3000층 · 100층 단위 전체 보기</summary>
 <div class="tableWrap">
 <table>
 <thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>누적 입장권</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
@@ -87,8 +87,6 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <script>
 const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
 
-// APK 0.1.90 확인값.
-// 초월탑 500~3000 방어 배열을 성역 보스가 각각 ×2 사용.
 const B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
 const B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
 const B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
@@ -119,6 +117,7 @@ function towerReq(f){
  return [tower3000Value(f,B3),tower3000Value(f,E3)];
 }
 function sanctuaryReq(f){
+ if(f<500)return null;
  const [b,e]=towerReq(f);
  return [b*2,e*2];
 }
@@ -131,31 +130,40 @@ function parseQty(v){
  const n=Number(t);
  return Number.isSafeInteger(n)?n:NaN;
 }
+function parseFloor(v){
+ const n=parseQty(v);
+ return Number.isFinite(n)&&n>=1&&n<=3000?n:NaN;
+}
 
 const floor=document.getElementById('floor'),result=document.getElementById('result'),rows=document.getElementById('rows');
 const sweepFloor=document.getElementById('sweepFloor'),needQty=document.getElementById('needQty'),sweepResult=document.getElementById('sweepResult');
 
-for(let f=500;f<=3000;f+=100){
+for(let f=100;f<=3000;f+=100){
  const o=document.createElement('option');
  o.value=f;o.textContent=f.toLocaleString('ko-KR')+'층';
  if(f===3000)o.selected=true;
  floor.appendChild(o);
- const so=o.cloneNode(true);
- sweepFloor.appendChild(so);
 }
 function render(){
  const f=Number(floor.value);
- const [p,a]=sanctuaryReq(f);
+ const req=sanctuaryReq(f);
  const tickets=cumulativeTickets(f);
  const one=cumulativeOneMaterial(f);
- result.innerHTML='<b>'+fmt(f)+'층</b> · 필요 관통 <b>'+fmt(p)+'</b> / 필요 명중 <b>'+fmt(a)+'</b><br>'+
+ const stats=req
+  ? '필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b>'
+  : '필요 관통 / 명중 <b>미확정</b>';
+ result.innerHTML='<b>'+fmt(f)+'층</b> · '+stats+'<br>'+
   '누적 입장권 '+fmt(tickets)+'장 · 재료 1종 '+fmt(one)+'개 · 5종 '+fmt(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
 }
 function renderSweep(){
- const f=Number(sweepFloor.value);
+ const f=parseFloor(sweepFloor.value);
  const need=parseQty(needQty.value);
+ if(!Number.isFinite(f)){
+  sweepResult.textContent='클리어층을 1~3000 사이 정수로 입력해 주세요.';
+  return;
+ }
  if(!Number.isFinite(need)){
   sweepResult.textContent='필요수량을 숫자로 입력해 주세요.';
   return;
@@ -170,16 +178,16 @@ function renderSweep(){
   '총 획득 '+fmt(received)+'개'+(extra>0?' · 초과 '+fmt(extra)+'개':'');
 }
 const frag=document.createDocumentFragment();
-for(let f=500;f<=3000;f+=100){
- const [p,a]=sanctuaryReq(f),one=cumulativeOneMaterial(f);
+for(let f=100;f<=3000;f+=100){
+ const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
  const tr=document.createElement('tr');
  tr.id='f'+f;
- tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td><td>'+fmt(cumulativeTickets(f))+'</td><td>'+fmt(one)+'</td><td>'+fmt(one*5)+'</td>';
+ tr.innerHTML='<td>'+fmt(f)+'</td><td>'+(req?fmt(req[0]):'미확정')+'</td><td>'+(req?fmt(req[1]):'미확정')+'</td><td>'+fmt(cumulativeTickets(f))+'</td><td>'+fmt(one)+'</td><td>'+fmt(one*5)+'</td>';
  frag.appendChild(tr);
 }
 rows.appendChild(frag);
 floor.addEventListener('change',render);
-sweepFloor.addEventListener('change',renderSweep);
+sweepFloor.addEventListener('input',renderSweep);
 needQty.addEventListener('input',renderSweep);
 render();
 renderSweep();
