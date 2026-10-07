@@ -15,8 +15,10 @@ h1{margin:0;font-size:27px;color:#22694f}.sub{margin-top:6px;font-size:12px;line
 .card{padding:16px;margin-bottom:14px}
 h2{font-size:17px;margin:0 0 12px}
 .lookup{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:end}
+.sweepGrid{display:grid;grid-template-columns:160px 1fr 1.25fr;gap:10px;align-items:end}
 label{font-size:13px;font-weight:800}
-select{width:100%;margin-top:6px;border:1px solid #b9ddc8;border-radius:12px;padding:13px;font-size:17px;font-weight:800;color:var(--text);background:#fbfffc;outline:none}
+select,input{width:100%;margin-top:6px;border:1px solid #b9ddc8;border-radius:12px;padding:13px;font-size:17px;font-weight:800;color:var(--text);background:#fbfffc;outline:none}
+select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.12)}
 .result{min-height:54px;border-radius:12px;background:#effbf4;padding:13px 14px;font-size:14px;font-weight:850;color:var(--strong);line-height:1.65}
 .result b{font-size:17px}
 details{overflow:hidden}
@@ -34,7 +36,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 .back{display:inline-block;margin-top:14px;color:#267d68;font-weight:800;text-decoration:none}
 @media(max-width:620px){
  main{padding:12px 8px 36px}.page-hero,.card,details{border-radius:14px}.page-hero{padding:12px}h1{font-size:21px}
- .lookup{grid-template-columns:1fr}.card{padding:12px}select{font-size:16px;padding:11px}
+ .lookup,.sweepGrid{grid-template-columns:1fr}.card{padding:12px}select,input{font-size:16px;padding:11px}
  table{font-size:11px}th,td{padding:8px 5px}.tableWrap{overflow:auto}
 }
 </style>
@@ -54,6 +56,20 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <div id="result" class="result"></div>
 </div>
 <div class="note">관통·명중은 성역 보스 기준입니다. 3000층 기준 필요 관통 66,000 / 필요 명중 172,000.</div>
+</section>
+
+<section class="card">
+<h2>소탕 계산</h2>
+<div class="sweepGrid">
+<label>클리어층
+<select id="sweepFloor"></select>
+</label>
+<label>필요수량
+<input id="needQty" type="text" inputmode="numeric" value="50000000" placeholder="예: 50000000">
+</label>
+<div id="sweepResult" class="result"></div>
+</div>
+<div class="note">선택한 클리어층의 1회 보상(재료 1종 기준)을 그대로 반복해서 받는 것으로 계산합니다. 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
 </section>
 
 <details id="list" open>
@@ -108,13 +124,24 @@ function sanctuaryReq(f){
 }
 function cumulativeTickets(n){return n*(n+1)/2}
 function cumulativeOneMaterial(n){return n*(15*n+5)/2}
+function rewardEach(f){return 15*f-5}
+function parseQty(v){
+ const t=String(v).replace(/,/g,'').trim();
+ if(!/^\d+$/.test(t))return NaN;
+ const n=Number(t);
+ return Number.isSafeInteger(n)?n:NaN;
+}
 
 const floor=document.getElementById('floor'),result=document.getElementById('result'),rows=document.getElementById('rows');
+const sweepFloor=document.getElementById('sweepFloor'),needQty=document.getElementById('needQty'),sweepResult=document.getElementById('sweepResult');
+
 for(let f=500;f<=3000;f+=100){
  const o=document.createElement('option');
  o.value=f;o.textContent=f.toLocaleString('ko-KR')+'층';
  if(f===3000)o.selected=true;
  floor.appendChild(o);
+ const so=o.cloneNode(true);
+ sweepFloor.appendChild(so);
 }
 function render(){
  const f=Number(floor.value);
@@ -126,6 +153,22 @@ function render(){
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
 }
+function renderSweep(){
+ const f=Number(sweepFloor.value);
+ const need=parseQty(needQty.value);
+ if(!Number.isFinite(need)){
+  sweepResult.textContent='필요수량을 숫자로 입력해 주세요.';
+  return;
+ }
+ const per=rewardEach(f);
+ const runs=need===0?0:Math.ceil(need/per);
+ const tickets=runs*f;
+ const received=runs*per;
+ const extra=received-need;
+ sweepResult.innerHTML='<b>'+fmt(f)+'층</b> · 1회 '+fmt(per)+'개<br>'+
+  '필요 소탕 <b>'+fmt(runs)+'회</b> · 입장권 <b>'+fmt(tickets)+'장</b><br>'+
+  '총 획득 '+fmt(received)+'개'+(extra>0?' · 초과 '+fmt(extra)+'개':'');
+}
 const frag=document.createDocumentFragment();
 for(let f=500;f<=3000;f+=100){
  const [p,a]=sanctuaryReq(f),one=cumulativeOneMaterial(f);
@@ -136,6 +179,9 @@ for(let f=500;f<=3000;f+=100){
 }
 rows.appendChild(frag);
 floor.addEventListener('change',render);
+sweepFloor.addEventListener('change',renderSweep);
+needQty.addEventListener('input',renderSweep);
 render();
+renderSweep();
 </script>
 </main></body></html>
