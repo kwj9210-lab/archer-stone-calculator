@@ -9,7 +9,7 @@
 header{position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-bottom:1px solid #cfe9d9;padding:9px 12px;box-shadow:0 4px 16px rgba(69,126,98,.10);backdrop-filter:blur(10px)}
 .bar{max-width:1060px;margin:auto;display:flex;align-items:center;gap:12px}
 .title{font-weight:950;font-size:17px;white-space:nowrap;color:#22694f;letter-spacing:-.4px}
-.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;flex:1}
+.tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;flex:1}
 .tabs button{
   --tab:#35c98c;--tab2:#54cbd6;--wash:#f3fcf7;
   position:relative;overflow:hidden;
@@ -45,6 +45,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-
 #tabTower{--tab:#7b78cf;--tab2:#a092e6;--wash:#f5f3ff}
 #tabTrial{--tab:#cb6e96;--tab2:#e79ab3;--wash:#fff2f7}
 #tabTraining{--tab:#e18755;--tab2:#e8b15f;--wash:#fff7ef}
+#tabSanctuary{--tab:#38a86f;--tab2:#6bcf9d;--wash:#f0fbf5}
 .tab-label{min-width:0;line-height:1.1}
 .short{display:none}
 main{height:calc(100vh - 63px)}
@@ -56,7 +57,7 @@ header{padding:6px 7px 7px}
 .title{display:none}
 .tabs{
   display:grid;
-  grid-template-columns:repeat(6,minmax(0,1fr));
+  grid-template-columns:repeat(7,minmax(0,1fr));
   gap:6px;
   width:100%;
 }
@@ -93,6 +94,7 @@ main{height:calc(100vh - 105px)}
 <button id="tabTower" type="button"><span class="tab-label"><span class="full">초월의 탑</span><span class="short">초월의 탑</span></span></button>
 <button id="tabTrial" type="button"><span class="tab-label"><span class="full">시련의 관문</span><span class="short">시련의 관문</span></span></button>
 <button id="tabTraining" type="button"><span class="tab-label"><span class="full">수련장</span><span class="short">수련장</span></span></button>
+<button id="tabSanctuary" type="button"><span class="tab-label"><span class="full">오행의 성역</span><span class="short">오행성역</span></span></button>
 </div></div></header>
 <main>
 <iframe id="engrave" class="active" src="index.html" title="각인석 계산기"></iframe>
@@ -101,19 +103,20 @@ main{height:calc(100vh - 105px)}
 <iframe id="tower" src="tower.html" title="초월의 탑"></iframe>
 <iframe id="trial" src="trial.html" title="시련의 관문"></iframe>
 <iframe id="training" src="training.html" title="수련장"></iframe>
+<iframe id="sanctuary" src="sanctuary.html" title="오행의 성역"></iframe>
 </main>
 <script>
-const ts=document.getElementById('tabStone'),te=document.getElementById('tabEngrave'),tc=document.getElementById('tabCraft'),tt=document.getElementById('tabTower'),tr=document.getElementById('tabTrial'),tg=document.getElementById('tabTraining');
-const s=document.getElementById('stone'),e=document.getElementById('engrave'),c=document.getElementById('craft'),t=document.getElementById('tower'),r=document.getElementById('trial'),g=document.getElementById('training');
+const ts=document.getElementById('tabStone'),te=document.getElementById('tabEngrave'),tc=document.getElementById('tabCraft'),tt=document.getElementById('tabTower'),tr=document.getElementById('tabTrial'),tg=document.getElementById('tabTraining'),ta=document.getElementById('tabSanctuary');
+const s=document.getElementById('stone'),e=document.getElementById('engrave'),c=document.getElementById('craft'),t=document.getElementById('tower'),r=document.getElementById('trial'),g=document.getElementById('training'),a=document.getElementById('sanctuary');
 function show(which){
- const stone=which==='stone',engrave=which==='engrave',craft=which==='craft',tower=which==='tower',trial=which==='trial',training=which==='training';
- ts.classList.toggle('active',stone); te.classList.toggle('active',engrave); tc.classList.toggle('active',craft); tt.classList.toggle('active',tower); tr.classList.toggle('active',trial); tg.classList.toggle('active',training);
- s.classList.toggle('active',stone); e.classList.toggle('active',engrave); c.classList.toggle('active',craft); t.classList.toggle('active',tower); r.classList.toggle('active',trial); g.classList.toggle('active',training);
+ const stone=which==='stone',engrave=which==='engrave',craft=which==='craft',tower=which==='tower',trial=which==='trial',training=which==='training',sanctuary=which==='sanctuary';
+ ts.classList.toggle('active',stone); te.classList.toggle('active',engrave); tc.classList.toggle('active',craft); tt.classList.toggle('active',tower); tr.classList.toggle('active',trial); tg.classList.toggle('active',training); ta.classList.toggle('active',sanctuary);
+ s.classList.toggle('active',stone); e.classList.toggle('active',engrave); c.classList.toggle('active',craft); t.classList.toggle('active',tower); r.classList.toggle('active',trial); g.classList.toggle('active',training); a.classList.toggle('active',sanctuary);
  if(history.replaceState) history.replaceState(null,'','#'+which);
 }
-ts.onclick=()=>show('stone'); te.onclick=()=>show('engrave'); tc.onclick=()=>show('craft'); tt.onclick=()=>show('tower'); tr.onclick=()=>show('trial'); tg.onclick=()=>show('training');
+ts.onclick=()=>show('stone'); te.onclick=()=>show('engrave'); tc.onclick=()=>show('craft'); tt.onclick=()=>show('tower'); tr.onclick=()=>show('trial'); tg.onclick=()=>show('training'); ta.onclick=()=>show('sanctuary');
 const init=(location.hash||'').replace('#','');
-if(['engrave','craft','stone','tower','trial','training'].includes(init)) show(init);
+if(['engrave','craft','stone','tower','trial','training','sanctuary'].includes(init)) show(init);
 </script>
 <!-- deploy refresh 2026-09-30: sweep decomposition fix 55c70e1 -->
 </body></html>
