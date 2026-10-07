@@ -12,14 +12,26 @@ input{width:100%;min-height:50px;padding:11px 12px;border:1px solid #cde7d7;bord
 button{width:100%;min-height:50px;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(135deg,#35c98c,#54cbd6);color:#fff;font-size:15px;font-weight:900;cursor:pointer}
 .status{min-height:18px;margin-top:10px;font-size:12px}.bad{color:var(--bad);font-weight:700}.ok{color:var(--good);font-weight:700}.small{color:var(--muted);font-size:11.5px;line-height:1.6}
 .result-main{margin-bottom:10px;padding:13px 14px;border:1px solid #d8ebce;border-left:4px solid var(--accent);border-radius:13px;background:linear-gradient(135deg,#f0fbf5,#fffbe9)}.bestline{font-size:20px;font-weight:900;margin-bottom:7px;color:#257455}
-.scroll{overflow-x:auto;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:520px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:12px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
+.scroll{overflow-x:auto;margin-top:8px}
+details.table-details{margin-top:10px;border:1px solid #d6eadf;border-radius:14px;overflow:hidden;background:#fff}
+details.table-details summary{cursor:pointer;padding:13px 14px;font-weight:900;color:#315d4d;background:#fbfffc;list-style:none}
+details.table-details summary::-webkit-details-marker{display:none}
+details.table-details summary:after{content:"＋";float:right;color:#258261}
+details.table-details[open] summary:after{content:"－"}
+details.table-details .scroll{margin-top:0;border-top:1px solid #e0eee6}
+table{width:100%;border-collapse:collapse;min-width:520px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:12px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
 @media(max-width:760px){main{padding:8px 7px 26px}.page-hero{margin:0 0 8px;padding:12px;border-radius:14px}.site-head h1{font-size:20px}.submark{display:none}.wrap{grid-template-columns:1fr;gap:8px}.panel{padding:11px;border-radius:13px}.input-panel{position:static}h2{font-size:15px;margin-bottom:11px}input,button{min-height:44px;font-size:14px}.scroll{overflow:visible}table{min-width:0;table-layout:fixed}th,td{font-size:10.5px;white-space:normal}.bestline{font-size:16px}}
 </style></head><body><main>
-<section class="page-hero"><header class="site-head"><h1>수련장</h1><div class="submark">210만-100 ~ 1000만-100</div></header><div class="hero-sub">수련장 구간별 타겟 체력을 조회합니다.</div></section>
+<section class="page-hero"><header class="site-head"><h1>수련장</h1><div class="submark">최대 5000만-100</div></header><div class="hero-sub">수련장 구간별 타겟 체력을 조회합니다.</div></section>
 <div class="wrap"><section class="panel input-panel"><h2>구간 조회</h2>
-<div class="field"><label for="stage">확인할 수련장 구간</label><input id="stage" type="number" min="210" max="1000" step="10" value="410"></div>
+<div class="field"><label for="stage">확인할 수련장 구간</label><input id="stage" type="number" min="1" max="5000" step="1" value="1000"></div>
 <button id="run" type="button">타겟 체력 확인</button><div id="status" class="status"></div></section>
-<section class="panel"><h2>수련장 타겟 체력</h2><div id="summary" class="result-main"></div><div class="scroll"><table><thead><tr><th>수련장</th><th>타겟 체력</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
+<section class="panel"><h2>수련장 타겟 체력</h2><div id="summary" class="result-main"></div>
+<details class="table-details" open>
+<summary>200만 이후 · 100만 단위 전체 표</summary>
+<div class="scroll"><table><thead><tr><th>수련장</th><th>타겟 체력</th></tr></thead><tbody id="rows"></tbody></table></div>
+</details>
+</section></div>
 </main><script>
 const hp={
 210:1165370799,220:1306329830,230:1450088558,240:1596054202,250:1743842194,260:1893182521,270:2043875054,280:2195765470,290:2348731118,300:2502672164,
@@ -33,11 +45,11 @@ const hp={
 };
 function fmt(v){const e=Math.floor(v/100000000),m=Math.floor((v%100000000)/10000),r=v%10000;return (e?e+'억 ':'')+(m?m+'만 ':'')+r}
 function render(){
- let n=Math.round((Number(document.getElementById('stage').value)||410)/10)*10;n=Math.max(210,Math.min(1000,n));document.getElementById('stage').value=n;
+ let n=Math.floor(Number(document.getElementById('stage').value)||1000);n=Math.max(1,Math.min(5000,n));document.getElementById('stage').value=n;
  const v=hp[n];
- document.getElementById('summary').innerHTML=v?'<div class="bestline">'+n+'만-100 · '+fmt(v)+'</div><div class="small">타겟 체력 '+v.toLocaleString('ko-KR')+'</div>':'<div class="bestline">'+n+'만-100</div><div class="small">해당 구간의 타겟 체력 자료가 없습니다.</div>';
- document.getElementById('status').innerHTML=v?'<span class="ok">조회 완료.</span>':'<span class="bad">해당 구간 체력 자료 미확인.</span>';
- let rows='';for(let x=210;x<=1000;x+=10){const q=hp[x];rows+='<tr><td>'+x+'만-100</td><td>'+(q?fmt(q):'—')+'</td></tr>'}document.getElementById('rows').innerHTML=rows;
+ document.getElementById('summary').innerHTML=v?'<div class="bestline">'+n+'만-100 · '+fmt(v)+'</div><div class="small">타겟 체력 '+v.toLocaleString('ko-KR')+'</div>':'<div class="bestline">'+n+'만-100</div><div class="small">해당 구간의 실제 타겟 체력 수치는 아직 확인되지 않았습니다.</div>';
+ document.getElementById('status').innerHTML=v?'<span class="ok">조회 완료.</span>':'<span class="bad">실제 체력 수치 미확인.</span>';
+ let rows='';for(let x=200;x<=5000;x+=100){const q=hp[x];rows+='<tr><td>'+x+'만-100</td><td>'+(q?fmt(q):'미확인')+'</td></tr>'}document.getElementById('rows').innerHTML=rows;
 }
 document.getElementById('run').onclick=render;document.getElementById('stage').addEventListener('input',render);render();
 </script></body></html>
