@@ -390,20 +390,28 @@ coverage:'혼돈급 생명석까지 반영했습니다. 혼돈급은 절대 생�
 var type='maseok',state={};
 function el(id){return document.getElementById(id)}
 function val(id){return Math.max(0,Number(el(id).value)||0)}
-function fmt(v){return Math.round(v).toLocaleString('ko-KR')}
-function fmtKoreanUnit(v){
+function fmt(v){
  v=Math.max(0,Math.round(v));
  if(v<10000)return v.toLocaleString('ko-KR');
- var e=Math.floor(v/100000000);
- var m=Math.floor((v%100000000)/10000);
- var rest=v%10000;
- var parts=[];
- if(e)parts.push(e.toLocaleString('ko-KR')+'억');
- if(m)parts.push(m.toLocaleString('ko-KR')+'만');
- if(!e&&!m)parts.push(rest.toLocaleString('ko-KR'));
- else if(rest)parts.push(rest.toLocaleString('ko-KR'));
- return parts.join(' ');
+ var units=[
+  {value:10000000000000000,label:'경'},
+  {value:1000000000000,label:'조'},
+  {value:100000000,label:'억'},
+  {value:10000,label:'만'}
+ ];
+ var parts=[],remain=v;
+ units.forEach(function(u){
+  if(remain>=u.value){
+   var q=Math.floor(remain/u.value);
+   parts.push(q.toLocaleString('ko-KR')+u.label);
+   remain-=q*u.value;
+  }
+ });
+ if(remain)parts.push(remain.toLocaleString('ko-KR'));
+ return parts.join('');
 }
+function fmtKoreanUnit(v){return fmt(v)}
+function fmtPlain(v){return Math.round(v).toLocaleString('ko-KR')}
 function initState(t){
  if(state[t])return;
  state[t]={stones:Array(G.length).fill(0),raw:Array(configs[t].resources.length).fill(0),target:G.length-1,count:1};
@@ -462,7 +470,7 @@ function calc(){
      sweepText=parts.length?parts.join(' · '):'소탕 0회';
    }
    var approx100k=Math.round(per100k/10000);
-   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmt(approx100k)+'만)</span></div><div class="strong">'+sweepText+'</div></div>';
+   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong">'+sweepText+'</div></div>';
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div></div>';
   }
