@@ -86,6 +86,25 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 
 <script>
 const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
+function fmtKor(n){
+ n=Math.max(0,Math.trunc(n));
+ const units=[
+  [10000000000000000,'경'],
+  [1000000000000,'조'],
+  [100000000,'억'],
+  [10000,'만']
+ ];
+ let out='',remain=n;
+ for(const [v,label] of units){
+  if(remain>=v){
+   const q=Math.floor(remain/v);
+   out+=q.toLocaleString('ko-KR')+label;
+   remain-=q*v;
+  }
+ }
+ if(remain>0||out==='')out+=remain.toLocaleString('ko-KR');
+ return out;
+}
 
 // APK 저층 앵커 중 100층 단위 확인값.
 const LOW_REQ={
@@ -158,7 +177,7 @@ function render(){
  const tickets=cumulativeTickets(f);
  const one=cumulativeOneMaterial(f);
  result.innerHTML='<b>'+fmt(f)+'층</b> · 필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
-  '누적 입장권 '+fmt(tickets)+'장 · 재료 1종 '+fmt(one)+'개 · 5종 '+fmt(one*5)+'개';
+  '누적 입장권 '+fmtKor(tickets)+'장 · 재료 1종 '+fmtKor(one)+'개 · 5종 '+fmtKor(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
 }
@@ -179,8 +198,8 @@ function renderSweep(){
  const received=runs*per;
  const extra=received-need;
  sweepResult.innerHTML='<b>'+fmt(f)+'층</b> · 1회 '+fmt(per)+'개<br>'+
-  '필요 소탕 <b>'+fmt(runs)+'회</b> · 입장권 <b>'+fmt(tickets)+'장</b><br>'+
-  '총 획득 '+fmt(received)+'개'+(extra>0?' · 초과 '+fmt(extra)+'개':'');
+  '필요 소탕 <b>'+fmtKor(runs)+'회</b> · 입장권 <b>'+fmtKor(tickets)+'장</b><br>'+
+  '총 획득 '+fmtKor(received)+'개'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
 }
 const frag=document.createDocumentFragment();
 for(let f=100;f<=3000;f+=100){
