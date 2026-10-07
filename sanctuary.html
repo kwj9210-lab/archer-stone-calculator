@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>오행의 성역 계산기</title>
+<style>
+:root{--bg:#f4fff8;--card:#fff;--line:#cfe9d9;--text:#29463b;--muted:#71867c;--accent:#35c98c;--strong:#198b64}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#f4fff8,#fff9ea);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+main{width:min(860px,100%);margin:auto;padding:22px 14px 50px}
+.page-hero,.card,details{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 22px rgba(69,126,98,.09)}
+.page-hero{padding:16px;margin-bottom:14px;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(247,255,249,.92))}
+h1{margin:0;font-size:27px;color:#22694f}.sub{margin-top:6px;font-size:12px;line-height:1.55;color:var(--muted)}
+.card{padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 12px}
+.lookup{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:end}
+label{font-size:13px;font-weight:800}
+select{width:100%;margin-top:6px;border:1px solid #b9ddc8;border-radius:12px;padding:13px;font-size:17px;font-weight:800;color:var(--text);background:#fbfffc;outline:none}
+.result{min-height:54px;border-radius:12px;background:#effbf4;padding:13px 14px;font-size:14px;font-weight:850;color:var(--strong);line-height:1.65}
+.result b{font-size:17px}
+details{overflow:hidden}
+summary{cursor:pointer;padding:15px 16px;font-weight:900;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"＋";float:right;color:var(--strong)}
+details[open] summary:after{content:"－"}
+.tableWrap{max-height:68vh;overflow:auto;border-top:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 8px;border-bottom:1px solid #e4f1e9;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:center}
+thead th{position:sticky;top:0;background:#effbf4;z-index:1}
+tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outline-offset:-2px}
+.note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.55}
+.back{display:inline-block;margin-top:14px;color:#267d68;font-weight:800;text-decoration:none}
+@media(max-width:620px){
+ main{padding:12px 8px 36px}.page-hero,.card,details{border-radius:14px}.page-hero{padding:12px}h1{font-size:21px}
+ .lookup{grid-template-columns:1fr}.card{padding:12px}select{font-size:16px;padding:11px}
+ table{font-size:11px}th,td{padding:8px 5px}.tableWrap{overflow:auto}
+}
+</style>
+</head>
+<body><main>
+<section class="page-hero">
+<h1>오행의 성역</h1>
+<div class="sub">현재 최대 3000층. 확인값은 100층 단위로 표시합니다.</div>
+</section>
+
+<section class="card">
+<h2>층수 조회</h2>
+<div class="lookup">
+<label>층수
+<select id="floor"></select>
+</label>
+<div id="result" class="result"></div>
+</div>
+<div class="note">관통·명중은 성역 보스 기준입니다. 3000층 기준 필요 관통 66,000 / 필요 명중 172,000.</div>
+</section>
+
+<details id="list" open>
+<summary>500~3000층 · 100층 단위 전체 보기</summary>
+<div class="tableWrap">
+<table>
+<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>누적 입장권</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+</details>
+
+<a class="back" href="index.html">← 각인석 계산기로 돌아가기</a>
+
+<script>
+const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
+
+// APK 0.1.90 확인값.
+// 초월탑 500~3000 방어 배열을 성역 보스가 각각 ×2 사용.
+const B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
+const B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
+const B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
+
+function tower1000Value(f,vals){
+ const level=Math.max(501,Math.min(1000,f));
+ if(level===1000)return vals[vals.length-1];
+ const i=Math.floor((level-501)/100),t=level-i*100-500;
+ return vals[i]+Math.trunc(((vals[i+1]-vals[i])*t+50)/100);
+}
+function tower1500Value(f,vals){
+ const level=Math.max(1001,Math.min(1500,f));
+ if(level===1500)return vals[vals.length-1];
+ const i=Math.floor((level-1001)/100),t=level-i*100-1000;
+ return vals[i]+Math.trunc((vals[i+1]-vals[i])/100)*t;
+}
+function tower3000Value(f,vals){
+ const level=Math.max(1501,Math.min(3000,f));
+ if(level===3000)return vals[vals.length-1];
+ const i=Math.floor((level-1501)/500);
+ const t=level-i*500-1500;
+ return vals[i]+Math.trunc((vals[i+1]-vals[i])/500)*t;
+}
+function towerReq(f){
+ if(f===500)return [B1[0],E1[0]];
+ if(f<=1000)return [tower1000Value(f,B1),tower1000Value(f,E1)];
+ if(f<=1500)return [tower1500Value(f,B2),tower1500Value(f,E2)];
+ return [tower3000Value(f,B3),tower3000Value(f,E3)];
+}
+function sanctuaryReq(f){
+ const [b,e]=towerReq(f);
+ return [b*2,e*2];
+}
+function cumulativeTickets(n){return n*(n+1)/2}
+function cumulativeOneMaterial(n){return n*(15*n+5)/2}
+
+const floor=document.getElementById('floor'),result=document.getElementById('result'),rows=document.getElementById('rows');
+for(let f=500;f<=3000;f+=100){
+ const o=document.createElement('option');
+ o.value=f;o.textContent=f.toLocaleString('ko-KR')+'층';
+ if(f===3000)o.selected=true;
+ floor.appendChild(o);
+}
+function render(){
+ const f=Number(floor.value);
+ const [p,a]=sanctuaryReq(f);
+ const tickets=cumulativeTickets(f);
+ const one=cumulativeOneMaterial(f);
+ result.innerHTML='<b>'+fmt(f)+'층</b> · 필요 관통 <b>'+fmt(p)+'</b> / 필요 명중 <b>'+fmt(a)+'</b><br>'+
+  '누적 입장권 '+fmt(tickets)+'장 · 재료 1종 '+fmt(one)+'개 · 5종 '+fmt(one*5)+'개';
+ document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
+ const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
+}
+const frag=document.createDocumentFragment();
+for(let f=500;f<=3000;f+=100){
+ const [p,a]=sanctuaryReq(f),one=cumulativeOneMaterial(f);
+ const tr=document.createElement('tr');
+ tr.id='f'+f;
+ tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td><td>'+fmt(cumulativeTickets(f))+'</td><td>'+fmt(one)+'</td><td>'+fmt(one*5)+'</td>';
+ frag.appendChild(tr);
+}
+rows.appendChild(frag);
+floor.addEventListener('change',render);
+render();
+</script>
+</main></body></html>
