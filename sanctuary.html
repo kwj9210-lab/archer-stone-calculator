@@ -15,7 +15,8 @@ h1{margin:0;font-size:27px;color:#22694f}.sub{margin-top:6px;font-size:12px;line
 .card{padding:16px;margin-bottom:14px}
 h2{font-size:17px;margin:0 0 12px}
 .lookup{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:end}
-.sweepGrid{display:grid;grid-template-columns:160px 1fr 1.25fr;gap:10px;align-items:end}
+.sweepGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.sweepResultFull{grid-column:1/-1}
 .targetGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 .targetResultFull{grid-column:1/-1}
 label{font-size:13px;font-weight:800}
@@ -58,7 +59,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <label>필요수량
 <input id="needQty" type="text" inputmode="numeric" value="50000000" placeholder="예: 50000000">
 </label>
-<div id="sweepResult" class="result"></div>
+<div id="sweepResult" class="result sweepResultFull"></div>
 </div>
 <div class="note">클리어층은 1~3000 직접 입력. 1회 소탕 시 수련의 인장은 클리어층 수만큼 소모됩니다. 해당 층 1회 보상은 15×층-5이며, 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
 </section>
