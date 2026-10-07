@@ -48,17 +48,6 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </section>
 
 <section class="card">
-<h2>층수 조회</h2>
-<div class="lookup">
-<label>층수
-<select id="floor"></select>
-</label>
-<div id="result" class="result"></div>
-</div>
-<div class="note">관통·명중은 성역 보스 기준입니다. 100~3000층의 100층 단위 확인값을 표시합니다.</div>
-</section>
-
-<section class="card">
 <h2>소탕 계산</h2>
 <div class="sweepGrid">
 <label>클리어층
@@ -70,6 +59,17 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <div id="sweepResult" class="result"></div>
 </div>
 <div class="note">클리어층은 1~3000 직접 입력. 해당 층 1회 보상은 15×층-5이며, 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
+</section>
+
+<section class="card">
+<h2>층수 조회</h2>
+<div class="lookup">
+<label>층수
+<input id="floor" type="text" inputmode="numeric" value="3000" placeholder="1~3000">
+</label>
+<div id="result" class="result"></div>
+</div>
+<div class="note">층수는 1~3000 직접 입력. 입력한 정확한 층의 필요 관통·명중을 표시합니다.</div>
 </section>
 
 <details id="list" open>
@@ -106,13 +106,25 @@ function fmtKor(n){
  return out;
 }
 
-// APK 저층 앵커 중 100층 단위 확인값.
-const LOW_REQ={
-  100:[250,600],
-  200:[700,2000],
-  300:[1100,3500],
-  400:[1750,5500]
-};
+// APK 저층 원본 앵커.
+const LOW_F=[1,2,50,100,200,300,400,500];
+const LOW_B=[0,2,100,250,700,1100,1750,2500];
+const LOW_E=[0,2,200,600,2000,3500,5500,8000];
+
+function lowValue(f,vals){
+ const level=Math.max(1,Math.min(500,f));
+ for(let i=0;i<LOW_F.length-1;i++){
+  const a=LOW_F[i],b=LOW_F[i+1];
+  if(level<=b){
+   if(level===a)return vals[i];
+   if(level===b)return vals[i+1];
+   const num=(vals[i+1]-vals[i])*(level-a);
+   const den=b-a;
+   return vals[i]+Math.round(num/den);
+  }
+ }
+ return vals[vals.length-1];
+}
 
 const B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
 const B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
@@ -138,8 +150,7 @@ function tower3000Value(f,vals){
  return vals[i]+Math.trunc((vals[i+1]-vals[i])/500)*t;
 }
 function towerReq(f){
- if(LOW_REQ[f])return LOW_REQ[f];
- if(f===500)return [B1[0],E1[0]];
+ if(f<=500)return [lowValue(f,LOW_B),lowValue(f,LOW_E)];
  if(f<=1000)return [tower1000Value(f,B1),tower1000Value(f,E1)];
  if(f<=1500)return [tower1500Value(f,B2),tower1500Value(f,E2)];
  return [tower3000Value(f,B3),tower3000Value(f,E3)];
@@ -165,14 +176,13 @@ function parseFloor(v){
 const floor=document.getElementById('floor'),result=document.getElementById('result'),rows=document.getElementById('rows');
 const sweepFloor=document.getElementById('sweepFloor'),needQty=document.getElementById('needQty'),sweepResult=document.getElementById('sweepResult');
 
-for(let f=100;f<=3000;f+=100){
- const o=document.createElement('option');
- o.value=f;o.textContent=f.toLocaleString('ko-KR')+'층';
- if(f===3000)o.selected=true;
- floor.appendChild(o);
-}
 function render(){
- const f=Number(floor.value);
+ const f=parseFloor(floor.value);
+ if(!Number.isFinite(f)){
+  result.textContent='층수를 1~3000 사이 정수로 입력해 주세요.';
+  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
+  return;
+ }
  const req=sanctuaryReq(f);
  const tickets=cumulativeTickets(f);
  const one=cumulativeOneMaterial(f);
@@ -210,7 +220,7 @@ for(let f=100;f<=3000;f+=100){
  frag.appendChild(tr);
 }
 rows.appendChild(frag);
-floor.addEventListener('change',render);
+floor.addEventListener('input',render);
 sweepFloor.addEventListener('input',renderSweep);
 needQty.addEventListener('input',renderSweep);
 render();
