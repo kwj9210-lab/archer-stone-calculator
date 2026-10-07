@@ -322,16 +322,12 @@ th:first-child,td:first-child{text-align:left}
 
 <section class="card">
 <h2>4. 내 던전 숙련도</h2>
-<div class="grid2">
+<div class="grid3">
 <label>숙련도 단계<input id="masteryLevel" type="text" inputmode="numeric" value="160" placeholder="1~507"></label>
-<label>숙련도 배율<input id="masteryMult" type="number" value="41.25" readonly aria-readonly="true"></label>
+<label>숙련도 배율<input id="masteryMult" type="text" value="41.25" readonly aria-readonly="true"></label>
+<label>수련장 단계<input id="masteryTrainingStage" type="text" value="306만-1" readonly aria-readonly="true"></label>
 </div>
-<div class="grid2" style="margin-top:10px">
-<label>수련장 단계<input id="trainingStageForMastery" type="text" inputmode="text" placeholder="예: 450만-1 또는 4500000"></label>
-<label>해당 숙련도<input id="masteryFromStage" type="text" value="" placeholder="수련장 단계를 입력하세요" readonly aria-readonly="true"></label>
-</div>
-<div id="masteryStageInfo" class="note">수련장 단계를 입력하면 해당 던전 숙련도 단계와 배율을 바로 표시합니다.</div>
-<div class="note">던전 숙련도는 최대 507단계입니다. 1단계 ×1.50부터 단계당 +0.25배씩 증가하며, 507단계에서 최대 ×128이 적용됩니다.</div>
+<div class="note">숙련도 단계를 입력하면 숙련도 배율과 필요한 수련장 단계가 자동으로 표시됩니다. 최대 507단계 · ×128 · 수련장 1000만-1.</div>
 </section>
 
 <section class="card result-card">
@@ -489,39 +485,7 @@ function calc(){
  var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
  el('summary').innerHTML='보유 '+c.name+' 반영 후 필요한 재료: <b>'+req+'</b><br>신규 제작 과정: '+(craft||'추가 제작 없음')+(remain?'<br>남는 입력 '+c.name+': '+remain:'');
 }
-function syncMastery(){
- var field=el('masteryLevel');
- var raw=String(field.value).replace(/[^0-9]/g,'');
- if(field.value!==raw)field.value=raw;
- if(raw===''){
-   el('masteryMult').value='';
-   return;
- }
- var lv=Math.floor(Number(raw));
- if(!Number.isFinite(lv)||lv<1){
-   el('masteryMult').value='';
-   return;
- }
- if(lv>507){lv=507;field.value='507';}
- el('masteryMult').value=(1.25+.25*lv).toFixed(2);
- calc();
-}
-function parseTrainingStage(raw){
- raw=String(raw||'').trim().replace(/,/g,'').replace(/\s+/g,'');
- if(!raw)return null;
- var man=raw.match(/^(\d+(?:\.\d+)?)만(?:-\d+)?$/);
- if(man)return Math.floor(Number(man[1])*10000);
- var num=raw.match(/^(\d+)(?:-\d+)?$/);
- if(num)return Math.floor(Number(num[1]));
- return null;
-}
-function masteryLevelFromTrainingStage(stage){
- if(!Number.isFinite(stage)||stage<20000)return 0;
- if(stage<=160000)return Math.min(15,Math.floor(stage/10000)-1);
- return Math.min(507,15+Math.floor((stage-160000)/20000));
-}
 function masteryRequiredStage(lv){
- if(lv<=0)return 20000;
  if(lv<=15)return (lv+1)*10000;
  return 160000+(lv-15)*20000;
 }
@@ -529,37 +493,33 @@ function stageText(stage){
  if(stage%10000===0)return fmtPlain(stage/10000)+'만-1';
  return fmtPlain(stage)+'-1';
 }
-function syncMasteryFromStage(){
- var field=el('trainingStageForMastery'),out=el('masteryFromStage'),info=el('masteryStageInfo');
- var stage=parseTrainingStage(field.value);
- if(stage===null){
-   out.value='';
-   info.textContent='수련장 단계를 입력하면 해당 던전 숙련도 단계와 배율을 바로 표시합니다.';
+function syncMastery(){
+ var field=el('masteryLevel');
+ var raw=String(field.value).replace(/[^0-9]/g,'');
+ if(field.value!==raw)field.value=raw;
+ if(raw===''){
+   el('masteryMult').value='';
+   el('masteryTrainingStage').value='';
    return;
  }
- var lv=masteryLevelFromTrainingStage(stage);
- if(lv<1){
-   out.value='숙련도 미달';
-   info.textContent='1단계 조건은 수련장 2만-1입니다.';
+ var lv=Math.floor(Number(raw));
+ if(!Number.isFinite(lv)||lv<1){
+   el('masteryMult').value='';
+   el('masteryTrainingStage').value='';
    return;
  }
- var mult=(1.25+.25*lv).toFixed(2);
- out.value=lv+'단계 · ×'+mult;
- if(lv>=507){
-   info.textContent='최대 숙련도 507단계 · ×128';
- }else{
-   var next=lv+1,need=masteryRequiredStage(next);
-   info.textContent='현재 '+lv+'단계 · 다음 '+next+'단계 조건: 수련장 '+stageText(need);
- }
+ if(lv>507){lv=507;field.value='507';}
+ var mult=1.25+.25*lv;
+ el('masteryMult').value=(lv===507?'128':mult.toFixed(2));
+ el('masteryTrainingStage').value=stageText(masteryRequiredStage(lv));
+ calc();
 }
 el('masteryLevel').addEventListener('input',syncMastery);
-el('trainingStageForMastery').addEventListener('input',syncMasteryFromStage);
 el('ticketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
 el('clearStones').addEventListener('click',function(){state[type].stones=Array(G.length).fill(0);render()});
 document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){saveCurrent();type=this.dataset.type;document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.type===type)});render()})});
 render();
 syncMastery();
-syncMasteryFromStage();
 })();
 </script>
 </body>
