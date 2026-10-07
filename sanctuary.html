@@ -58,7 +58,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="sweepResult" class="result"></div>
 </div>
-<div class="note">클리어층은 1~3000 직접 입력. 해당 층 1회 보상은 15×층-5이며, 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
+<div class="note">클리어층은 1~3000 직접 입력. 1회 소탕 시 수련의 인장은 클리어층 수만큼 소모됩니다. 해당 층 1회 보상은 15×층-5이며, 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
 </section>
 
 <section class="card">
@@ -76,7 +76,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <summary>100~3000층 · 100층 단위 전체 보기</summary>
 <div class="tableWrap">
 <table>
-<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>누적 입장권</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
+<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>누적 수련의 인장</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
 <tbody id="rows"></tbody>
 </table>
 </div>
@@ -159,7 +159,7 @@ function sanctuaryReq(f){
  const [b,e]=towerReq(f);
  return [b*2,e*2];
 }
-function cumulativeTickets(n){return n*(n+1)/2}
+function cumulativeSeals(n){return n*(n+1)/2}
 function cumulativeOneMaterial(n){return n*(15*n+5)/2}
 function rewardEach(f){return 15*f-5}
 function parseQty(v){
@@ -184,10 +184,10 @@ function render(){
   return;
  }
  const req=sanctuaryReq(f);
- const tickets=cumulativeTickets(f);
+ const seals=cumulativeSeals(f);
  const one=cumulativeOneMaterial(f);
  result.innerHTML='<b>'+fmt(f)+'층</b> · 필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
-  '누적 입장권 '+fmtKor(tickets)+'장 · 재료 1종 '+fmtKor(one)+'개 · 5종 '+fmtKor(one*5)+'개';
+  '누적 수련의 인장 '+fmtKor(tickets)+'장 · 재료 1종 '+fmtKor(one)+'개 · 5종 '+fmtKor(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
 }
@@ -204,11 +204,11 @@ function renderSweep(){
  }
  const per=rewardEach(f);
  const runs=need===0?0:Math.ceil(need/per);
- const tickets=runs*f;
+ const seals=runs*f;
  const received=runs*per;
  const extra=received-need;
  sweepResult.innerHTML='<b>'+fmt(f)+'층</b> · 1회 '+fmt(per)+'개<br>'+
-  '필요 소탕 <b>'+fmtKor(runs)+'회</b> · 입장권 <b>'+fmtKor(tickets)+'장</b><br>'+
+  '필요 소탕 <b>'+fmtKor(runs)+'회</b> · 수련의 인장 <b>'+fmtKor(tickets)+'장</b><br>'+
   '총 획득 '+fmtKor(received)+'개'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
 }
 const frag=document.createDocumentFragment();
@@ -216,7 +216,7 @@ for(let f=100;f<=3000;f+=100){
  const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
  const tr=document.createElement('tr');
  tr.id='f'+f;
- tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+fmtKor(cumulativeTickets(f))+'</td><td>'+fmtKor(one)+'</td><td>'+fmtKor(one*5)+'</td>';
+ tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+fmtKor(cumulativeSeals(f))+'</td><td>'+fmtKor(one)+'</td><td>'+fmtKor(one*5)+'</td>';
  frag.appendChild(tr);
 }
 rows.appendChild(frag);
