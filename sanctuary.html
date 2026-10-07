@@ -216,7 +216,7 @@ for(let f=100;f<=3000;f+=100){
  const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
  const tr=document.createElement('tr');
  tr.id='f'+f;
- tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+fmt(cumulativeTickets(f))+'</td><td>'+fmt(one)+'</td><td>'+fmt(one*5)+'</td>';
+ tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+fmtKor(cumulativeTickets(f))+'</td><td>'+fmtKor(one)+'</td><td>'+fmtKor(one*5)+'</td>';
  frag.appendChild(tr);
 }
 rows.appendChild(frag);
