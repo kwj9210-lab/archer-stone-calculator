@@ -17,8 +17,7 @@ h2{font-size:17px;margin:0 0 12px}
 .lookup{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:end}
 .sweepGrid{display:grid;grid-template-columns:160px 1fr 1.25fr;gap:10px;align-items:end}
 .targetGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
-.targetLeft{display:grid;gap:10px}
-.targetLeft .result{margin-top:0}
+.targetResultFull{grid-column:1/-1}
 label{font-size:13px;font-weight:800}
 select,input{width:100%;margin-top:6px;border:1px solid #b9ddc8;border-radius:12px;padding:13px;font-size:17px;font-weight:800;color:var(--text);background:#fbfffc;outline:none}
 select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.12)}
@@ -78,15 +77,13 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <section class="card">
 <h2>누적 + 소탕 계산</h2>
 <div class="targetGrid">
-<div class="targetLeft">
 <label>필요 재료 수량
 <input id="targetMaterial" type="text" inputmode="numeric" value="50000000" placeholder="예: 50000000">
 </label>
-<div id="targetResult" class="result"></div>
-</div>
 <label>내 최고 클리어 층수
 <input id="maxClearFloor" type="text" inputmode="numeric" value="3000" placeholder="1~3000">
 </label>
+<div id="targetResult" class="result targetResultFull"></div>
 </div>
 <div class="note">재료 1종 기준. 1층부터 최고 클리어 층까지의 누적 클리어 보상을 먼저 적용하고, 부족분만 최고 클리어 층 소탕으로 채웁니다.</div>
 </section>
