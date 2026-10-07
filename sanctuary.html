@@ -55,7 +55,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="result" class="result"></div>
 </div>
-<div class="note">500층 이상 관통·명중은 성역 보스 기준 확인값입니다. 100~400층 관통·명중은 아직 원본값 미확정이라 숫자를 임의로 넣지 않았습니다.</div>
+<div class="note">관통·명중은 성역 보스 기준입니다. 100~3000층의 100층 단위 확인값을 표시합니다.</div>
 </section>
 
 <section class="card">
@@ -87,6 +87,14 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <script>
 const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
 
+// APK 저층 앵커 중 100층 단위 확인값.
+const LOW_REQ={
+  100:[250,600],
+  200:[700,2000],
+  300:[1100,3500],
+  400:[1750,5500]
+};
+
 const B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
 const B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
 const B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
@@ -111,13 +119,13 @@ function tower3000Value(f,vals){
  return vals[i]+Math.trunc((vals[i+1]-vals[i])/500)*t;
 }
 function towerReq(f){
+ if(LOW_REQ[f])return LOW_REQ[f];
  if(f===500)return [B1[0],E1[0]];
  if(f<=1000)return [tower1000Value(f,B1),tower1000Value(f,E1)];
  if(f<=1500)return [tower1500Value(f,B2),tower1500Value(f,E2)];
  return [tower3000Value(f,B3),tower3000Value(f,E3)];
 }
 function sanctuaryReq(f){
- if(f<500)return null;
  const [b,e]=towerReq(f);
  return [b*2,e*2];
 }
@@ -149,10 +157,7 @@ function render(){
  const req=sanctuaryReq(f);
  const tickets=cumulativeTickets(f);
  const one=cumulativeOneMaterial(f);
- const stats=req
-  ? '필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b>'
-  : '필요 관통 / 명중 <b>미확정</b>';
- result.innerHTML='<b>'+fmt(f)+'층</b> · '+stats+'<br>'+
+ result.innerHTML='<b>'+fmt(f)+'층</b> · 필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
   '누적 입장권 '+fmt(tickets)+'장 · 재료 1종 '+fmt(one)+'개 · 5종 '+fmt(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
@@ -182,7 +187,7 @@ for(let f=100;f<=3000;f+=100){
  const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
  const tr=document.createElement('tr');
  tr.id='f'+f;
- tr.innerHTML='<td>'+fmt(f)+'</td><td>'+(req?fmt(req[0]):'미확정')+'</td><td>'+(req?fmt(req[1]):'미확정')+'</td><td>'+fmt(cumulativeTickets(f))+'</td><td>'+fmt(one)+'</td><td>'+fmt(one*5)+'</td>';
+ tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+fmt(cumulativeTickets(f))+'</td><td>'+fmt(one)+'</td><td>'+fmt(one*5)+'</td>';
  frag.appendChild(tr);
 }
 rows.appendChild(frag);
