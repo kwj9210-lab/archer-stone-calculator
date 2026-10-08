@@ -97,7 +97,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="result" class="result"></div>
 </div>
-<div class="note">층수는 1~3000 직접 입력. 입력한 정확한 층의 필요 관통·명중을 표시합니다.</div>
+<div class="note">층수는 1~3000 직접 입력. 입력한 정확한 층의 보스 HP와 필요 관통·명중을 표시합니다.</div>
 </section>
 
 <section class="card">
@@ -118,7 +118,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <summary>100~3000층 · 100층 단위 전체 보기</summary>
 <div class="tableWrap">
 <table>
-<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>1회 소탕 획득량</th><th>누적 수련의 인장</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
+<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>보스 HP</th><th>1회 소탕 획득량</th><th>누적 수련의 인장</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
 <tbody id="rows"></tbody>
 </table>
 </div>
@@ -201,6 +201,70 @@ function sanctuaryReq(f){
  const [b,e]=towerReq(f);
  return [b*2,e*2];
 }
+
+// 오행의 성역 보스 HP: 해당 층 참조 스테이지 HP ×100.
+// 참조 스테이지 = 398,999,999 + 층×1,000,000.
+// 절대 HP 표기는 시련의 관문에서 검증한 동일 스테이지 HP 성장축을 사용.
+const HP_ANCHOR_STAGE=53526499;
+const HP_ANCHOR_COEFF=1903;
+const HP_ANCHOR_SUFFIX='EIJBIN';
+
+function stageHpLog(s){
+ if(s<5000000)return 0;
+ let cur=5000000,total=0;
+ while(cur<=s){
+  const q=Math.floor((cur-3000000)/100000);
+  const end=q*100000+3099999;
+  const last=Math.min(s,end);
+  total+=(last-cur+1)*Math.log10(2900+400*q);
+  cur=last+1;
+ }
+ return total;
+}
+function suffixIndex(txt){
+ let n=0;
+ txt=String(txt||'').trim().toUpperCase();
+ for(const ch of txt){
+  if(ch<'A'||ch>'Z')return null;
+  n=n*26+(ch.charCodeAt(0)-64);
+ }
+ return n;
+}
+function suffixFromIndex(n){
+ n=Math.max(0,Math.floor(n));
+ if(n===0)return '';
+ let out='';
+ while(n>0){
+  n--;
+  out=String.fromCharCode(65+(n%26))+out;
+  n=Math.floor(n/26);
+ }
+ return out;
+}
+function effectFromPart(coeff,suffix){
+ const idx=suffixIndex(suffix);
+ if(idx===null||!(coeff>0))return null;
+ return idx+(Math.log10(coeff)/4-.5);
+}
+function fmtCoeff(v){
+ if(v>=1000)return String(Math.round(v));
+ if(v>=100)return v.toFixed(1).replace(/\.0$/,'');
+ if(v>=10)return v.toFixed(2).replace(/0+$/,'').replace(/\.$/,'');
+ return v.toFixed(3).replace(/0+$/,'').replace(/\.$/,'');
+}
+function gameText(effect){
+ if(!Number.isFinite(effect))return '계산 범위 밖';
+ const idx=Math.floor(effect),frac=effect-idx;
+ const coeff=Math.pow(10,4*(frac+.5));
+ return fmtCoeff(coeff)+suffixFromIndex(idx);
+}
+const HP_ANCHOR_EFFECT=effectFromPart(HP_ANCHOR_COEFF,HP_ANCHOR_SUFFIX);
+const HP_ANCHOR_LOG=stageHpLog(HP_ANCHOR_STAGE);
+function sanctuaryBossHp(f){
+ const refStage=398999999+f*1000000;
+ const stageEffect=HP_ANCHOR_EFFECT+(stageHpLog(refStage)-HP_ANCHOR_LOG)/4;
+ return gameText(stageEffect+0.5);
+}
 function cumulativeSeals(n){return n*(n+1)/2}
 function cumulativeOneMaterial(n){return n*(15*n+5)/2}
 function rewardEach(f){return 15*f-5}
@@ -231,6 +295,7 @@ function render(){
  const seals=cumulativeSeals(f);
  const one=cumulativeOneMaterial(f);
  result.innerHTML='1회 수련의 인장 <b>'+fmtKor(f)+'개</b> · 1회 소탕 <b>'+fmtKor(rewardEach(f))+'개</b><br>'+
+  '보스 HP <b>'+sanctuaryBossHp(f)+'</b><br>'+
   '필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
   '누적 수련의 인장 '+fmtKor(seals)+'개 · 재료 1종 '+fmtKor(one)+'개 · 5종 '+fmtKor(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
@@ -289,7 +354,7 @@ for(let f=100;f<=3000;f+=100){
  const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
  const tr=document.createElement('tr');
  tr.id='f'+f;
- tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+fmtKor(rewardEach(f))+'</td><td>'+fmtKor(cumulativeSeals(f))+'</td><td>'+fmtKor(one)+'</td><td>'+fmtKor(one*5)+'</td>';
+ tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+sanctuaryBossHp(f)+'</td><td>'+fmtKor(rewardEach(f))+'</td><td>'+fmtKor(cumulativeSeals(f))+'</td><td>'+fmtKor(one)+'</td><td>'+fmtKor(one*5)+'</td>';
  frag.appendChild(tr);
 }
 rows.appendChild(frag);
