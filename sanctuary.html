@@ -24,6 +24,15 @@ select,input{width:100%;margin-top:6px;border:1px solid #b9ddc8;border-radius:12
 select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.12)}
 .result{min-height:54px;border-radius:12px;background:#effbf4;padding:13px 14px;font-size:14px;font-weight:850;color:var(--strong);line-height:1.65}
 .result b{font-size:17px}
+.seal-total{
+ display:inline-block;
+ padding:2px 7px;
+ border-radius:7px;
+ background:#fff0b8;
+ border:1px solid #edcf65;
+ color:#936900;
+ font-weight:950;
+}
 details{overflow:hidden}
 summary{cursor:pointer;padding:15px 16px;font-weight:900;list-style:none}
 summary::-webkit-details-marker{display:none}
@@ -252,7 +261,7 @@ function renderTarget(){
  const extra=Math.max(0,total-need);
  targetResult.innerHTML='누적 클리어 <b>'+fmtKor(cumulative)+'개</b> · 부족 '+fmtKor(shortage)+'개<br>'+
   '최고층 1회 소탕 '+fmtKor(per)+'개 · 1회 수련의 인장 '+fmtKor(f)+'개 · 필요 소탕 <b>'+fmtKor(runs)+'회</b><br>'+
-  '소탕 획득 '+fmtKor(sweepGain)+'개 · 필요 수련의 인장 <b>'+fmtKor(sweepSeals)+'개</b><br>'+ 
+  '소탕 획득 '+fmtKor(sweepGain)+'개 · 필요 수련의 인장 <span class="seal-total">'+fmtKor(sweepSeals)+'개</span><br>'+ 
   '최종 <b>'+fmtKor(total)+'개</b>'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
 }
 const frag=document.createDocumentFragment();
