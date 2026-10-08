@@ -250,7 +250,7 @@ function renderTarget(){
  const total=cumulative+sweepGain;
  const extra=Math.max(0,total-need);
  targetResult.innerHTML='누적 클리어 <b>'+fmtKor(cumulative)+'개</b> · 부족 '+fmtKor(shortage)+'개<br>'+
-  '최고층 1회 소탕 '+fmtKor(per)+'개 · 필요 소탕 <b>'+fmtKor(runs)+'회</b><br>'+
+  '최고층 1회 소탕 '+fmtKor(per)+'개 · 1회 수련의 인장 '+fmtKor(f)+'개 · 필요 소탕 <b>'+fmtKor(runs)+'회</b><br>'+
   '소탕 획득 '+fmtKor(sweepGain)+'개 · 최종 <b>'+fmtKor(total)+'개</b>'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
 }
 const frag=document.createDocumentFragment();
