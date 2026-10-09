@@ -72,6 +72,10 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
 button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 @media(max-width:750px){main{padding:10px 8px 35px}.card,.hero{padding:12px}.section-grid{grid-template-columns:1fr}.engrave-grid{grid-template-columns:1fr}.fields.three{grid-template-columns:repeat(2,minmax(0,1fr))}.total-layout{grid-template-columns:repeat(2,minmax(0,1fr))}.total-box{grid-column:1/-1}.detail-strip{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:21px}.eng-row{grid-template-columns:minmax(0,1fr) 105px}.eng-row input{text-align:center}}
 @media(max-width:390px){.fields,.fields.three,.free-options{grid-template-columns:1fr}.total-box strong{font-size:28px}.eng-row{grid-template-columns:minmax(0,1fr) 76px}}
+
+.readout{margin-top:6px;min-height:42px;padding:10px;border:1px solid #c9e5d4;border-radius:11px;background:#f0fff6;color:#177451;font-size:17px;font-weight:900}
+.compare-note{display:none;margin-top:9px;padding:10px 12px;background:#f5fff9;border:1px solid #c8e6d2;border-radius:11px;color:#246e52;font-size:12px;font-weight:850}
+.compare-note.show{display:block}
 </style>
 </head>
 <body>
@@ -84,7 +88,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
     <p><b>① 기본값</b> · 능력치·갑파 패시브·정밀술을 입력합니다.</p>
     <p><b>② 정령·코스튬</b> · 정령 관통과 보유 코스튬 개수, 장착 효과를 입력합니다.</p>
     <p><b>③ 각인석</b> · 마석·경화석·생명석의 등급별 장착 수량을 입력합니다. 각 종류는 기본 최대 11칸입니다.</p>
-    <p><b>④ 결과</b> · 최종 관통을 자동 합산하고 ‘초월의 탑’으로 전달할 수 있습니다.</p>
+    <p><b>④ 오행 개방</b> · 완료 단계의 누적 관통을 합산하고 성역 도전층 필요 관통을 확인합니다.</p><p><b>⑤ 결과</b> · 스킬·추가 관통을 반영해 게임 표시 관통과 비교할 수 있습니다.</p>
     <p><b>예시</b> · 마석 전설 2개는 52 × 2 = 관통 <b>104</b>를 더합니다.</p>
    </div>
   </details>
@@ -95,10 +99,12 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 <section class="card">
  <h2>01 · 기본 관통</h2>
  <div class="fields three">
-  <div class="field"><label for="statAbility">능력치 (최대 350)</label><input id="statAbility" type="number" min="0" max="350" step="1" value="0"></div>
+  <div class="field"><label for="arrowGrade">활 등급 번호 (APK 0~31)</label><select id="arrowGrade"></select></div>
+<div class="field"><label for="statAbility" id="abilityMaxLabel">능력치 관통 (현재 등급 MAX 350)</label><input id="statAbility" type="number" min="0" max="350" step="1" value="0"></div>
   <div class="field"><label for="statPassive">갑파 패시브 (최대 450)</label><input id="statPassive" type="number" min="0" max="450" step="1" value="0"></div>
   <div class="field"><label for="statPrecision">정밀술 (최대 273)</label><input id="statPrecision" type="number" min="0" max="273" step="1" value="0"></div>
  </div>
+ <div class="note">APK 0.1.91의 arrow_stat_caps 기준 30등급은 최대 350, 31등급은 최대 360입니다. 패시브 450·정밀술 273은 첨부 참고본 수치로, 전체 APK 검증값과는 구분합니다.</div>
 </section>
 <section class="card">
  <h2>02 · 정령</h2>
@@ -132,24 +138,54 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <div class="note">자유 각인 슬롯 1개에 선택한 각인석 1개의 관통을 추가합니다.</div>
  </div>
 </section>
+
+<section class="card">
+<h2>05 · 오행 개방 누적 관통</h2>
+<div class="fields">
+ <div class="field"><label for="openingCompleted">오행 개방 완료 단계 (0~100)</label><input id="openingCompleted" type="number" min="0" max="100" step="1" value="0"></div>
+ <div class="field"><label>완료 단계 누적 관통</label><div class="readout" id="openingGain">+0</div></div>
+</div>
+<div class="note">오행 개방 완료 보상만 합산합니다. 현재 강화 중인 단계가 완료되기 전에는 단계 완료 관통을 더하지 않습니다. 100단계 완료 시 +15,000입니다.</div>
+</section>
+<div class="section-grid">
+<section class="card">
+<h2>06 · 오행의 성역</h2>
+<div class="fields">
+ <div class="field"><label for="sanctuaryFloor">성역 도전 층수 (0~5000)</label><input id="sanctuaryFloor" type="number" min="0" max="5000" step="1" value="0"></div>
+ <div class="field"><label>해당 층 필요 관통</label><div class="readout" id="sanctuaryNeed">미선택</div></div>
+</div>
+<div class="note" id="sanctuaryComment">성역은 강화 재료 획득처이며, 층수나 요구 관통을 획득 관통에 더하지 않습니다.</div>
+</section>
+<section class="card">
+<h2>07 · 스킬·추가 관통</h2>
+<div class="fields">
+ <div class="field"><label for="skillPierce">스킬 추가 관통 (직접 확인값)</label><input id="skillPierce" type="number" min="0" step="1" value="0"></div>
+ <div class="field"><label for="otherPierce">기타 추가 관통 (직접 확인값)</label><input id="otherPierce" type="number" min="0" step="1" value="0"></div>
+</div>
+<div class="note">APK에 스킬의 PierceFlat 효과 항목이 있습니다. 게임에서 적용된 수치만 입력하고 기존 능력치·정밀술과 중복되지 않도록 확인하세요.</div>
+<div class="field" style="margin-top:11px"><label for="observedPen">게임 표시 최종 관통 (비교용 · 선택)</label><input id="observedPen" type="number" min="0" step="1" placeholder="현재 게임 표시 관통 입력"></div>
+</section>
+</div>
 <section class="card summary" id="summary">
- <h2>05 · 관통 Total 계산 결과</h2>
+ <h2>08 · 관통 Total 계산 결과</h2>
  <div class="total-layout">
   <div class="total-box"><div class="headline">최종 관통</div><strong id="penetrationTotal" aria-live="polite">0</strong><div class="note">유효한 입력값일 때 자동 계산</div></div>
   <div class="mini-box"><span>기본 능력치</span><b id="partBasic">0</b></div>
   <div class="mini-box"><span>정령</span><b id="partSpirit">0</b></div>
   <div class="mini-box"><span>코스튬</span><b id="partCostume">0</b></div>
   <div class="mini-box"><span>각인석</span><b id="partEngrave">0</b></div>
+<div class="mini-box"><span>오행 개방</span><b id="partOpening">0</b></div>
+<div class="mini-box"><span>스킬·기타</span><b id="partExtra">0</b></div>
  </div>
  <div class="detail-strip">
   <div>마석 합계<b id="sumRune0">0</b></div><div>경화석 합계<b id="sumRune1">0</b></div><div>생명석 합계<b id="sumRune2">0</b></div><div>자유 각인<b id="sumExtra">0</b></div><div>코스튬 상세<b id="sumCostume">0</b></div>
  </div>
- <div id="validationError" class="error" role="alert"></div>
+ <div id="validationError" class="error" role="alert"></div><div id="observedDiff" class="compare-note"></div>
  <div class="actions">
   <button id="sendTower" class="action" type="button">초월의 탑에 관통 전달 →</button>
   <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
  </div>
- <div class="note">이 화면은 사진에 나온 관통 합산 항목을 기준으로 합니다. 정령 관통 미확인 구간은 직접 입력하며, 게임에서 확인되지 않은 추가 관통 효과는 합산하지 않습니다. 입력 정보는 이 브라우저에 자동 저장됩니다.</div>
+ <div class="note">검증 구분: 기본 능력치 등급별 상한은 APK CSV, 오행 개방은 기존 APK 분석식, 정령 일부 단계·코스튬·각인석은 첨부 참고자료 기반입니다. 나머지 모든 APK 상한과 정령의 전체 단계식은 별도 검증이 필요합니다. 입력은 브라우저에 자동 저장됩니다.</div>
 </section>
 </main>
 <script>
