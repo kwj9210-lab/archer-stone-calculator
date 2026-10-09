@@ -415,6 +415,21 @@ td{color:#62776e;background:#fff}
 .usage-title .usage-panel .example{padding-top:8px;border-top:1px solid #e0eee5}
 @media(max-width:620px){.usage-title{gap:7px}.usage-title .usage-guide > summary{padding:6px 9px}}
 
+/* 초기화 전 재투자 기능 */
+.reinvest-total{margin:10px 0 13px;padding:12px;border:1px solid #cfe9d9;border-radius:12px;background:#effbf4;color:#377b60;font-size:12px;line-height:1.75}
+.reinvest-total strong{display:block;margin-top:6px;font-size:16px;color:#176d50;overflow-wrap:anywhere}
+.reset-calibration{margin:10px 0 14px;padding:11px 12px;border:1px solid #cfe7d8;border-radius:12px;background:#fbfffc}
+.reset-calibration summary{cursor:pointer;list-style:none;font-size:12px;font-weight:800;color:#39715b}
+.reset-calibration summary::-webkit-details-marker{display:none}
+.reset-calibration summary::after{content:" ▾";color:#198b64}
+.reset-calibration[open] summary::after{content:" ▴"}
+.comparison-table{display:grid;gap:6px;margin-top:11px}
+.comparison-row{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:6px;border-bottom:1px solid #dfede3;padding:7px 0;align-items:center;font-size:12px}
+.comparison-row span:nth-child(2),.comparison-row span:nth-child(3){text-align:right}
+.comparison-row.headline{font-weight:850;color:#22694f;background:#effbf4;padding:8px}
+.projection-note{margin-top:11px;font-size:11.5px;line-height:1.65;color:#697e72}
+.power-box .v{font-size:clamp(15px,2vw,22px)}
+@media(max-width:760px){.comparison-row{font-size:11px}.power-box .v{font-size:17px}}
 </style>
 </head>
 <body>
@@ -426,25 +441,25 @@ td{color:#62776e;background:#fff}
     <details class="usage-guide">
 <summary>사용방법 <span aria-hidden="true">▾</span></summary>
 <div class="usage-panel">
-<p><b>① 최적 배분</b> · 초기화 후 보유 초월석 총량을 입력하고 계산하면 4개 강화 항목의 추천 레벨이 나옵니다.</p>
-<p><b>② 전투력 재분배</b> · 현재·초기화 후 전투력, 현재 초월 레벨과 재배분할 초월석을 입력합니다.</p>
-<p><b>③ 결과 확인</b> · 추천 레벨, 사용·잔여 초월석, 재분배 후 예상 전투력을 확인합니다.</p>
-<p class="example"><b>예시</b> · 초월석 <b>100,000개</b> 보유 시 최적 배분 탭에 수량을 입력하고 계산을 누르세요.</p>
+<p><b>① 현재 상태</b> · 전투력, 4종 현재 레벨, 미사용 초월석만 입력하세요.</p>
+<p><b>② 자동 합산</b> · 현재 강화에 쓴 초월석과 미사용 초월석을 합쳐 전체 재투자 수량을 계산합니다.</p>
+<p><b>③ 결과 확인</b> · 최적 레벨·잔여량·공격력 효과 차이와 참고 예상 전투력을 비교합니다.</p>
+<p class="example"><b>예시</b> · 10만 개 투자 + 미사용 2만 개라면 12만 개로 재투자합니다. 초기화 후 전투력은 선택 입력입니다.</p>
 </div>
 </details>
   </div>
   <div class="submark">Lv.0–4500</div>
 </header>
-<div class="hero-sub">보유 초월석 기준 최적 배분과 현재 전투력 기준 재분배 결과를 계산합니다.</div>
+<div class="hero-sub">초기화 없이 현재 초월 레벨·미사용 초월석·전투력으로 재배분 결과를 비교합니다.</div>
 <div class="hero-actions">
 <nav class="mode-tabs" aria-label="초월석 계산 모드">
-  <button type="button" class="mode-tab active" data-mode="allocation">최적 배분</button>
-  <button type="button" class="mode-tab" data-mode="power">전투력 재분배</button>
+  <button type="button" class="mode-tab active" data-mode="power">초기화 전 재분배</button>
+  <button type="button" class="mode-tab" data-mode="allocation">초월석 최적 배분</button>
 </nav>
 </div>
 </section>
 
-<div id="allocationPane" class="mode-pane active">
+<div id="allocationPane" class="mode-pane">
 <div class="workspace">
   <section class="panel input-panel">
     <div class="input-head">
@@ -485,25 +500,22 @@ td{color:#62776e;background:#fff}
 </section>
 </div>
 
-<section id="powerPane" class="mode-pane">
+<section id="powerPane" class="mode-pane active">
   <div class="workspace">
     <section class="panel input-panel">
       <div class="input-head"><h2>전투력 기준</h2></div>
       <div class="power-grid">
         <div class="field">
           <label for="currentPower">현재 전투력</label>
-          <input id="currentPower" type="text" inputmode="text" autocomplete="off" placeholder="예: 24억 6852만 7875"><div id="currentPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
+          <input id="currentPower" type="text" inputmode="text" autocomplete="off" placeholder="예: 24억 6852만 7875 / 719AYXLEBX">
+          <div id="currentPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
         </div>
         <div class="field">
-          <label for="resetPower">초월석 초기화 후 전투력</label>
-          <input id="resetPower" type="text" inputmode="text" autocomplete="off" placeholder="숫자 / 한글 억·만 / 게임 영문 표기"><div id="resetPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
+          <label for="powerStones">현재 미사용 초월석</label>
+          <input id="powerStones" type="text" inputmode="numeric" autocomplete="off" value="0" placeholder="아직 투자하지 않은 초월석">
+          <div class="input-note" style="margin-top:5px">현재 레벨에 이미 투자한 초월석은 아래에서 자동 합산합니다.</div>
         </div>
       </div>
-      <div class="field">
-        <label for="powerStones">초기화 후 보유 초월석</label>
-        <input id="powerStones" type="text" inputmode="numeric" autocomplete="off" placeholder="수량 입력">
-      </div>
-
       <div class="input-head" style="margin-top:17px;margin-bottom:10px"><h2>현재 초월 레벨</h2></div>
       <div class="power-levels">
         <div class="field"><label for="plv0">청람결정</label><input id="plv0" type="number" min="0" max="4500" step="1" value="0"></div>
@@ -511,14 +523,28 @@ td{color:#62776e;background:#fff}
         <div class="field"><label for="plv2">차원각인</label><input id="plv2" type="number" min="0" max="4500" step="1" value="0"></div>
         <div class="field"><label for="plv3">영겁성핵</label><input id="plv3" type="number" min="0" max="4500" step="1" value="0"></div>
       </div>
-      <div id="currentStoneSpent" class="input-note" style="margin-top:8px">현재 레벨 투입 초월석 · 0개</div>
-      <button id="runPower" type="button">재분배 후 전투력 계산</button>
+      <div class="reinvest-total" aria-live="polite">
+        <div id="currentStoneSpent">현재 레벨 투자 초월석 · 0개</div>
+        <div id="powerPoolBreakdown">미사용 초월석 · 0개</div>
+        <strong id="reinvestPool">재투자 가능한 총 초월석 · 0개</strong>
+        <div id="perStoneSpent" class="input-note" style="margin-top:5px"></div>
+      </div>
+      <details class="reset-calibration">
+        <summary>초기화 후 실측 전투력 보정 (선택)</summary>
+        <div class="field" style="margin-top:12px">
+          <label for="resetPower">초월석 초기화 후 전투력</label>
+          <input id="resetPower" type="text" inputmode="text" autocomplete="off" placeholder="알고 있을 때만 입력하세요">
+          <div id="resetPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
+        </div>
+        <div class="input-note">입력하지 않으면 공격력 효과지수 비율을 전체 전투력에 적용한 가정값입니다. 입력하면 현재와 초기화 후 실측값 차이로 보정합니다.</div>
+      </details>
+      <button id="runPower" type="button">전체 초월석 최적 재분배 계산</button>
       <div id="powerStatus" class="status" aria-live="polite"></div>
-      <p class="input-note">현재 전투력은 <b>24억 6852만 7875</b> 같은 한글 표기와 <b>719AYXLEBX 9116AYXLEBW</b> 같은 게임 영문 표기를 모두 입력할 수 있습니다. 영문 표기도 한글 전투력 값으로 자동 변환합니다.<br>초월석 비용·레벨별 공격력 효과·최적 배분은 APK 복원식을 사용하고, 최종 전투력은 초기화 전·후 실측 차이로 계정별 보정합니다.</p>
+      <p class="input-note">전투력은 <b>24억 6852만 7875</b> 또는 <b>719AYXLEBX 9116AYXLEBW</b>처럼 입력할 수 있습니다. 강화 비용·공격력 효과·최적 배분은 APK 복원식을 유지합니다.<br><b>주의:</b> 초기화 후 실측값이 없는 참고 전투력은 효과 비율에 비례한다는 가정이므로 실제 게임 전투력과 다를 수 있습니다.</p>
     </section>
 
     <section class="panel result-panel">
-      <h2>재분배 결과</h2>
+      <h2>현재 배분 ↔ 최적 재분배 결과</h2>
       <div id="powerResult" class="result-main">
         <div class="result-empty">전투력·초월석·현재 초월 레벨을 입력하면 결과가 표시됩니다.</div>
       </div>
@@ -841,119 +867,154 @@ td{color:#62776e;background:#fff}
     for(let i=0;i<4;i++)used+=levelCost[i][clampLv(levels[i])];
     return used;
   }
+
+  function readUnusedPool(){
+    const raw=String(document.getElementById("powerStones").value).replace(/,/g,"").trim();
+    if(!/^\d+$/.test(raw))return NaN;
+    const n=Number(raw);
+    return Number.isSafeInteger(n)&&n>=0?n:NaN;
+  }
+  function readCurrentLevels(){
+    const levels=[];
+    for(let i=0;i<4;i++){
+      const raw=String(document.getElementById("plv"+i).value).trim();
+      if(!/^\d+$/.test(raw))return null;
+      const n=Number(raw);
+      if(!Number.isSafeInteger(n)||n<0||n>4500)return null;
+      levels.push(n);
+    }
+    return levels;
+  }
+  function reinvestmentData(){
+    const levels=readCurrentLevels(),unused=readUnusedPool();
+    if(!levels||!Number.isFinite(unused))return null;
+    const invested=currentStoneCost(levels),pool=invested+unused;
+    return Number.isSafeInteger(pool)?{levels,invested,unused,pool}:null;
+  }
   function updateCurrentStoneSpent(){
-    const levels=[0,1,2,3].map(i=>clampLv(document.getElementById("plv"+i).value));
-    document.getElementById("currentStoneSpent").textContent="현재 레벨 투입 초월석 · "+fmt(currentStoneCost(levels))+"개";
+    const data=reinvestmentData();
+    if(!data){
+      document.getElementById("currentStoneSpent").textContent="현재 투자량 · 입력 확인";
+      document.getElementById("powerPoolBreakdown").textContent="미사용 초월석 · 입력 확인";
+      document.getElementById("reinvestPool").textContent="재투자 가능 수량 · 입력값 확인";
+      document.getElementById("perStoneSpent").textContent="레벨은 0~4500, 미사용 초월석은 0 이상 정수로 입력하세요.";
+      return;
+    }
+    document.getElementById("currentStoneSpent").textContent="현재 레벨 투자 초월석 · "+fmt(data.invested)+"개";
+    document.getElementById("powerPoolBreakdown").textContent="미사용 초월석 · "+fmt(data.unused)+"개";
+    document.getElementById("reinvestPool").textContent="재투자 가능한 총 초월석 · "+fmt(data.pool)+"개";
+    document.getElementById("perStoneSpent").textContent=names.map((n,i)=>n+" "+fmt(levelCost[i][data.levels[i]])+"개").join(" · ");
   }
   function currentEffectScore(levels){
-    let score=0;
-    for(let i=0;i<4;i++)score+=levelEffect[i][clampLv(levels[i])];
-    return score;
+    return levels.reduce((sum,lv,i)=>sum+levelEffect[i][lv],0);
+  }
+  function suffixFromIndex(n){
+    if(!Number.isSafeInteger(n)||n<0)return "";
+    let s="";
+    while(n>0){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26);}
+    return s;
+  }
+  function powerMagnitude(raw){
+    const v=parseGamePowerText(raw);
+    if(!v||v.kind!=="number")return null;
+    if(v.source!=="game"){
+      if(!(v.value>0)||!Number.isFinite(v.value))return null;
+      return {log:Math.log10(v.value),kind:"numeric",label:formatKoreanPower(v.value)};
+    }
+    const parts=[...String(raw).toUpperCase().matchAll(/(\d+(?:\.\d+)?)\s*([A-Z]+)/g)];
+    let log=-Infinity;
+    for(const x of parts){
+      const coeff=Number(x[1]),idx=suffixIndex(x[2]);
+      if(coeff>0&&Number.isSafeInteger(idx))log=Math.max(log,Math.log10(coeff)+4*idx);
+    }
+    return Number.isFinite(log)?{log,kind:"game",label:String(raw).trim()}:null;
+  }
+  function projectedPower(base,factor){
+    if(!base||!(factor>0)||!Number.isFinite(factor))return null;
+    const lg=base.log+Math.log10(factor);
+    if(!Number.isFinite(lg))return null;
+    if(base.kind==="numeric"&&lg<=15.5){
+      const n=Math.pow(10,lg);
+      return Number.isFinite(n)?formatKoreanPower(n):null;
+    }
+    let idx=Math.max(0,Math.floor(lg/4));
+    let coeff=Math.pow(10,lg-idx*4);
+    if(coeff>=10000){coeff/=10000;idx++;}
+    if(coeff<1){coeff*=10000;idx--;}
+    if(!Number.isSafeInteger(idx)||idx<0)return null;
+    const digits=coeff>=1000?0:coeff>=100?1:coeff>=10?2:3;
+    let shown=Number(coeff.toFixed(digits));
+    if(shown>=10000){idx++;shown=1;}
+    return shown+suffixFromIndex(idx);
+  }
+  // 보정값이 없다면 초월 효과 비율을 전체 전투력에 적용하는 가정만 가능하다.
+  function projectionScale(current,reset,oldScore,newScore){
+    if(!(oldScore>0))return {factor:null,type:"none"};
+    const ratio=newScore/oldScore;
+    if(!Number.isFinite(ratio)||ratio<=0)return {factor:null,type:"none"};
+    if(!reset)return {factor:ratio,type:"assumption"};
+    const resetFraction=Math.pow(10,reset.log-current.log);
+    if(!Number.isFinite(resetFraction)||resetFraction>1+1e-8||resetFraction<0)return {factor:null,type:"invalid"};
+    const b=Math.min(1,resetFraction);
+    return {factor:b+(1-b)*ratio,type:"calibrated"};
   }
   function runPowerCalc(){
-    const status=document.getElementById("powerStatus");
-    const button=document.getElementById("runPower");
-    const current=parseGamePowerText(document.getElementById("currentPower").value);
-    const reset=parseGamePowerText(document.getElementById("resetPower").value);
-    const poolRaw=String(document.getElementById("powerStones").value).replace(/,/g,"").trim();
-    const pool=/^\d+$/.test(poolRaw)?Number(poolRaw):NaN;
-    const levels=[0,1,2,3].map(i=>clampLv(document.getElementById("plv"+i).value));
-    const invested=currentStoneCost(levels);
-
-    if(!current||!reset||!Number.isFinite(pool)){
-      status.innerHTML='<span class="bad">전투력 표기 또는 초월석 수량을 확인해 주세요.</span>';
-      return;
-    }
-    const currentPowerScore=gameTextToKoreanScore(current);
-    const resetPowerScore=gameTextToKoreanScore(reset);
-    if(!Number.isFinite(currentPowerScore)||!Number.isFinite(resetPowerScore)){
-      status.innerHTML='<span class="bad">전투력 표기를 변환하지 못했습니다.</span>';
-      return;
-    }
-    if(currentPowerScore<resetPowerScore){
-      status.innerHTML='<span class="bad">현재 전투력이 초기화 후 전투력보다 작습니다. 입력값을 확인해 주세요.</span>';
-      return;
-    }
-    if(pool<invested){
-      status.innerHTML='<span class="bad">초기화 후 보유 초월석이 현재 레벨에 투입된 '+fmt(invested)+'개보다 적습니다. 초월석 수량을 확인해 주세요.</span>';
-      return;
-    }
-    const nowScore=currentEffectScore(levels);
-    const hasCurrentGain=currentPowerScore>resetPowerScore;
-    if(nowScore<=0 && hasCurrentGain){
-      status.innerHTML='<span class="bad">현재 초월 레벨 4종을 입력해 주세요. 전투력 환산 기준이 필요합니다.</span>';
-      return;
-    }
-
-    button.disabled=true;
-    status.textContent="재분배 후 전투력 계산 중...";
+    const status=document.getElementById("powerStatus"),button=document.getElementById("runPower");
+    const data=reinvestmentData(),current=powerMagnitude(document.getElementById("currentPower").value);
+    const resetRaw=document.getElementById("resetPower").value.trim();
+    const reset=resetRaw?powerMagnitude(resetRaw):null;
+    if(!data){status.innerHTML='<span class="bad">현재 초월 레벨 또는 미사용 초월석을 확인해 주세요.</span>';return;}
+    if(!current){status.innerHTML='<span class="bad">현재 전투력 표기를 확인해 주세요.</span>';return;}
+    if(resetRaw&&!reset){status.innerHTML='<span class="bad">초기화 후 실측 전투력 표기를 확인해 주세요.</span>';return;}
+    if(reset&&reset.log>current.log+1e-9){status.innerHTML='<span class="bad">초기화 후 전투력이 현재보다 큽니다. 입력값을 확인해 주세요.</span>';return;}
+    button.disabled=true;status.textContent="전체 초월석 최적 배분 계산 중...";
     setTimeout(()=>{
       try{
-        const calcPool=Math.min(pool,TOTAL_MAX);
-        const exact=optimizeExact(calcPool);
-        if(!exact.best)throw new Error("최적 배분을 찾지 못했습니다.");
-        const best=exact.best;
-        let left=best.left;
-        if(pool>TOTAL_MAX)left+=pool-TOTAL_MAX;
-
-        let currentLabel="",predictedLabel="",deltaLabel="",pctLabel="—";
-        if(current.kind==="number"){
-          const currentGain=Math.max(0,current.value-reset.value);
-          let predicted=reset.value;
-          if(currentGain>0&&nowScore>0)predicted=reset.value+currentGain*(best.score/nowScore);
-          const delta=predicted-current.value;
-          const pct=current.value>0?delta/current.value*100:0;
-          currentLabel=formatKoreanPower(current.value);
-          predictedLabel=formatKoreanPower(predicted);
-          deltaLabel=(delta>=0?"+":"")+formatPower(delta);
-          pctLabel=(pct>=0?"+":"")+pct.toFixed(3)+"%";
-        }else{
-          const gainEffect=Math.max(0,current.effect-reset.effect);
-          const predictedEffect=reset.effect+(nowScore>0?gainEffect*(best.score/nowScore):0);
-          const diffEffect=predictedEffect-current.effect;
-          currentLabel=current.text;
-          predictedLabel="현재 대비 "+(diffEffect>=0?"+":"")+diffEffect.toFixed(6)+" 효과지수";
-          deltaLabel=(diffEffect>=0?"+":"")+diffEffect.toFixed(6);
+        const exact=optimizeExact(Math.min(data.pool,TOTAL_MAX)),best=exact.best;
+        if(!best)throw new Error("best allocation not found");
+        const left=data.pool-best.used,oldScore=currentEffectScore(data.levels);
+        const model=projectionScale(current,reset,oldScore,best.score);
+        if(model.type==="invalid"){
+          status.innerHTML='<span class="bad">전투력 실측값의 크기를 확인해 주세요.</span>';return;
         }
-
+        const predicted=model.factor===null?null:projectedPower(current,model.factor);
+        const change=model.factor===null?null:(model.factor-1)*100;
+        const ePct=oldScore>0?(best.score/oldScore-1)*100:null;
+        const mode=model.type==="calibrated"?"실측 보정 예상":model.type==="assumption"?"참고 예상":"전투력 추정 불가";
+        const powerText=predicted?"≈ "+predicted:"현재 레벨 효과가 0이어서 추정 불가";
+        const pct=change===null?"계산 불가":(change>=0?"+":"")+change.toFixed(3)+"%";
         document.getElementById("powerResult").innerHTML=
           '<div class="power-result-grid">'+
-            '<div class="power-box"><div class="k">현재 전투력</div><div class="v">'+currentLabel+'</div></div>'+
-            '<div class="power-arrow">→</div>'+
-            '<div class="power-box after"><div class="k">재분배 후 예상 전투력</div><div class="v">'+predictedLabel+'</div></div>'+
-          '</div>'+
+          '<div class="power-box"><div class="k">현재 전투력</div><div class="v">'+current.label+'</div></div>'+
+          '<div class="power-arrow">→</div>'+
+          '<div class="power-box after"><div class="k">재투자 후 '+mode+'</div><div class="v">'+powerText+'</div></div></div>'+
           '<div class="power-meta">'+
-            '<div>전투력 변화<b>'+deltaLabel+'</b></div>'+
-            '<div>상승률<b>'+pctLabel+'</b></div>'+
-            '<div>사용 초월석<b>'+fmt(best.used)+'</b></div>'+
-            '<div>잔여 초월석<b>'+fmt(left)+'</b></div>'+
+          '<div>현재 투자량<b>'+fmt(data.invested)+'개</b></div>'+
+          '<div>미사용 초월석<b>'+fmt(data.unused)+'개</b></div>'+
+          '<div>재투자 전체 수량<b>'+fmt(data.pool)+'개</b></div>'+
+          '<div>재투자 후 잔여<b>'+fmt(left)+'개</b></div>'+
+          '<div>전투력 모델 변화율<b>'+pct+'</b></div>'+
+          '<div>공격력 효과지수 변화<b>'+(ePct===null?"비교 불가":(ePct>=0?"+":"")+ePct.toFixed(3)+"%")+'</b></div></div>'+
+          '<div class="projection-note">'+
+          (model.type==="calibrated"?
+            '초기화 후 실측 전투력과 현재 전투력의 차이로 계정별 보정한 값입니다.':
+            '초월석 공격력 효과지수 비율을 전체 전투력에 적용한 가정값입니다. 초월석 이외 능력치를 분리하지 못하므로 게임 실제 전투력과 다를 수 있습니다.')+
           '</div>';
-
         document.getElementById("powerFinalLevels").innerHTML=
           '<div class="joint-card" style="margin-top:10px">'+
-            '<div class="joint-rank featured">초월석 재분배 결과</div>'+
-            '<div class="joint-levels">'+
-              best.levels.map((lv,i)=>
-                '<div class="target">'+
-                  '<div class="name">'+names[i]+'</div>'+
-                  '<div class="lv">Lv.'+lv+'</div>'+
-                  '<div class="small">현재 Lv.'+levels[i]+' → 재분배 Lv.'+lv+'</div>'+
-                  '<div class="small">배분 초월석 '+fmt(levelCost[i][lv])+'개</div>'+
-                '</div>'
-              ).join('')+
-            '</div>'+
-            '<div class="joint-foot">총 사용 '+fmt(best.used)+'개 · 잔여 '+fmt(left)+'개</div>'+
-          '</div>';
-
-        status.innerHTML='<span class="ok">계산 완료. 영문 큰수도 한글 전투력 값으로 변환해 같은 기준으로 계산했습니다.</span>';
+          '<div class="joint-rank featured">현재 배분 ↔ 최적 재투자 추천</div>'+
+          '<div class="comparison-table"><div class="comparison-row headline"><span>초월 항목</span><span>현재</span><span>추천</span></div>'+
+          names.map((n,i)=>'<div class="comparison-row"><span>'+n+'</span><span>Lv.'+data.levels[i]+'</span><span>Lv.'+best.levels[i]+'</span></div>').join("")+
+          '<div class="comparison-row"><span>투자 초월석</span><span>'+fmt(data.invested)+'개</span><span>'+fmt(best.used)+'개</span></div>'+
+          '<div class="comparison-row"><span>공격력 효과지수</span><span>'+oldScore.toFixed(3)+'</span><span>'+best.score.toFixed(3)+'</span></div></div>'+
+          '<div class="joint-foot">공격력 효과지수 차이 '+(best.score-oldScore>=0?"+":"")+(best.score-oldScore).toFixed(3)+
+          ' · 추천 배분 사용 '+fmt(best.used)+'개 · 잔여 '+fmt(left)+'개</div></div>';
+        status.innerHTML='<span class="ok">계산 완료 · '+mode+'</span>';
       }catch(err){
-        console.error(err);
-        status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
-      }
-      button.disabled=false;
+        console.error(err);status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 입력값을 확인해 주세요.</span>';
+      }finally{button.disabled=false;}
     },20);
   }
-
   function run(){
     const status=document.getElementById("status"), button=document.getElementById("run");
     const raw=document.getElementById("stones").value.trim();
@@ -986,7 +1047,7 @@ td{color:#62776e;background:#fff}
   document.getElementById("runPower").addEventListener("click",runPowerCalc);
   document.getElementById("currentPower").addEventListener("input",()=>updatePowerPreview("currentPower","currentPowerPreview"));
   document.getElementById("resetPower").addEventListener("input",()=>updatePowerPreview("resetPower","resetPowerPreview"));
-  ["plv0","plv1","plv2","plv3"].forEach(id=>document.getElementById(id).addEventListener("input",updateCurrentStoneSpent));
+  ["plv0","plv1","plv2","plv3","powerStones"].forEach(id=>document.getElementById(id).addEventListener("input",updateCurrentStoneSpent));
   updateCurrentStoneSpent();
   ["currentPower","resetPower","powerStones","plv0","plv1","plv2","plv3"].forEach(id=>{
     document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")runPowerCalc();});
