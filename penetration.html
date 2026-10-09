@@ -85,7 +85,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <h1>관통 Total</h1>
   <details class="guide"><summary>사용방법 ▾</summary>
    <div class="guide-body">
-    <p><b>① 기본값</b> · 능력치·갑파 패시브·정밀술을 입력합니다.</p>
+    <p><b>① 기본값</b> · 활 등급과 능력치·갑파 패시브를 입력하고 정밀술은 레벨로 자동 계산할 수 있습니다.</p>
     <p><b>② 정령·코스튬</b> · 정령 관통과 보유 코스튬 개수, 장착 효과를 입력합니다.</p>
     <p><b>③ 각인석</b> · 마석·경화석·생명석의 등급별 장착 수량을 입력합니다. 각 종류는 기본 최대 11칸입니다.</p>
     <p><b>④ 오행 개방</b> · 완료 단계의 누적 관통을 합산하고 성역 도전층 필요 관통을 확인합니다.</p><p><b>⑤ 결과</b> · 스킬·추가 관통을 반영해 게임 표시 관통과 비교할 수 있습니다.</p>
@@ -102,9 +102,10 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <div class="field"><label for="arrowGrade">활 등급 번호 (APK 0~31)</label><select id="arrowGrade"></select></div>
 <div class="field"><label for="statAbility" id="abilityMaxLabel">능력치 관통 (현재 등급 MAX 350)</label><input id="statAbility" type="number" min="0" max="350" step="1" value="0"></div>
   <div class="field"><label for="statPassive">갑파 패시브 (참고 MAX 450)</label><input id="statPassive" type="number" min="0" max="450" step="1" value="0"></div>
-  <div class="field"><label for="statPrecision">정밀술 (참고 MAX 273)</label><input id="statPrecision" type="number" min="0" max="273" step="1" value="0"></div>
+  <div class="field"><label for="precisionLevel">정밀술 강화 레벨 (APK 0~300)</label><input id="precisionLevel" type="number" min="0" max="300" step="1" value="0"></div>
+<div class="field"><label for="statPrecision">정밀술 관통 (Lv300 MAX 3,570)</label><input id="statPrecision" type="number" min="0" max="3570" step="1" value="0"></div>
  </div>
- <div class="note">APK 0.1.91의 arrow_stat_caps 기준 30등급은 최대 350, 31등급은 최대 360입니다. 패시브 450·정밀술 273은 첨부 참고본 수치로, 전체 APK 검증값과는 구분합니다.</div>
+ <div class="note">APK 0.1.91의 arrow_stat_caps 기준 30등급은 최대 350, 31등급은 최대 360입니다. 정밀술은 APK TranscendenceBalance 정밀 강화 슬롯에서 300레벨 MAX 및 관통 최대 3,570을 확인했습니다. Lv100에서는 273입니다. 패시브 450은 첨부 참고본 수치로 아직 상한 독립 검증이 필요합니다.</div>
 </section>
 <section class="card">
  <h2>02 · 정령</h2>
@@ -188,7 +189,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <button id="sendTower" class="action" type="button">초월의 탑에 관통 전달 →</button>
   <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
  </div>
- <div class="note">검증 구분: 기본 능력치 등급별 상한은 APK CSV, 오행 개방은 기존 APK 분석식, 정령 단계식은 APK 네이티브 코드, 코스튬·각인석은 첨부 참고자료 기반입니다. 나머지 패시브·코스튬·각인석의 MAX 및 추가 효과의 적용 조건은 개별 확인이 필요합니다. 입력은 브라우저에 자동 저장됩니다.</div>
+ <div class="note">검증 구분: 기본 능력치 등급별 상한은 APK CSV, 오행 개방은 기존 APK 분석식, 정령 단계식과 정밀술 300레벨/3,570 관통은 APK 네이티브 코드, 코스튬·각인석은 첨부 참고자료 기반입니다. 나머지 패시브·코스튬·각인석의 MAX 및 추가 효과의 적용 조건은 개별 확인이 필요합니다. 입력은 브라우저에 자동 저장됩니다.</div>
 </section>
 </main>
 <script>
@@ -198,6 +199,13 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  const stones=[{"name":"마석","values":[4,6,10,15,22,34,52,62,73,85]},{"name":"경화석","values":[12,18,30,45,66,102,156,186,219,255]},{"name":"생명석","values":[8,12,20,30,44,68,104,124,146,170]}];
  function spiritFlat(level){return level===0?0:Math.round(1+299*(level-1)/29);}
  const spiritKnown={"0":0};
+ // APK TranscendenceBalance.GetPrecisionPierceBonus (slot 4, mode 0)
+ function precisionPierce(level){
+   if(level<=49)return 2*level;
+   if(level<=89)return 3*level-49;
+   if(level<=100)return 5*level-227;
+   return 273+Math.floor((100+(level-100)*3297)/200);
+ }
  const costumes=[
   {id:"costumeCash",max:6,per:3},
   {id:"costumeWorld",max:7,per:10},
@@ -237,7 +245,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 
  const $=id=>document.getElementById(id);
  const fmt=n=>n.toLocaleString("ko-KR");
- const inputIds=["arrowGrade","statAbility","statPassive","statPrecision","spiritStage","spiritPen","openingCompleted","sanctuaryFloor","skillPierce","otherPierce","observedPen","spiritMultiplier",
+ const inputIds=["arrowGrade","statAbility","statPassive","statPrecision","precisionLevel","spiritStage","spiritPen","openingCompleted","sanctuaryFloor","skillPierce","otherPierce","observedPen","spiritMultiplier",
   "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
   "extraEnabled","extraType","extraRank"];
  let countInputs=[],lastValidTotal=null;
@@ -298,6 +306,13 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
      localStorage.setItem(SAVE_KEY,JSON.stringify(data));
    }catch(_){}
  }
+ function precisionLevelChange(){
+   const raw=String($("precisionLevel").value).trim(),lvl=Number(raw);
+   if(/^\d+$/.test(raw)&&Number.isSafeInteger(lvl)&&lvl>=0&&lvl<=300){
+     $("statPrecision").value=String(precisionPierce(lvl));
+   }else $("statPrecision").value="";
+   update();
+ }
  function spiritStageChange(){
    const raw=String($("spiritStage").value).trim(),n=Number(raw);
    if(/^\d+$/.test(raw)&&Number.isInteger(n)&&n>=0&&n<=100){
@@ -317,7 +332,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    const abilityMax=50+10*grade;
    $("abilityMaxLabel").textContent="능력치 관통 (현재 등급 MAX "+abilityMax+")";
    $("statAbility").max=String(abilityMax);
-   const base=parseIntField("statAbility",abilityMax,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",273,errors);
+   const base=parseIntField("statAbility",abilityMax,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",3570,errors);
    const stage=parseIntField("spiritStage",100,errors);
    const spiritMultiplier=Number($("spiritMultiplier").value);
    if(spiritMultiplier!==1&&spiritMultiplier!==5)errors.push("정령 적용 배율을 확인하세요.");
@@ -409,6 +424,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  if($("spiritStage").value==="0"&&$("spiritPen").value==="")$("spiritPen").value="0";
  document.querySelectorAll("input,select").forEach(el=>{
    if(el.id==="spiritStage")el.addEventListener("change",spiritStageChange);
+   else if(el.id==="precisionLevel")el.addEventListener("change",precisionLevelChange);
    else el.addEventListener("input",update);
    el.addEventListener("change",update);
  });
