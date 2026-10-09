@@ -201,12 +201,48 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   {id:"costumeDiamond",max:3,per:3}
  ];
  const SAVE_KEY="archer:penetration-total:v1";
+ // APK arrow_stat_caps: grade 0 = 50, grade 31 = 360.
+ function openingFlat(s){return 50*s+Math.floor(s*(s-1)*100/99);}
+ // 기존 APK 0.1.91 성역 계산기와 동일한 요구 관통 계산.
+ function sanctuaryRequired(f){
+   if(f===0)return null;
+   if(f<=500){
+     const floors=[1,2,50,100,200,300,400,500];
+     const values=[0,2,100,250,700,1100,1750,2500];
+     for(let i=0;i<floors.length-1;i++){
+       if(f<=floors[i+1])return 2*(values[i]+Math.round((values[i+1]-values[i])*(f-floors[i])/(floors[i+1]-floors[i])));
+     }
+   }
+   if(f<=1000){
+     if(f===1000)return 12000;
+     const v=[2500,3000,3600,4300,5100,6000],i=Math.floor((f-501)/100),t=f-i*100-500;
+     return 2*(v[i]+Math.trunc(((v[i+1]-v[i])*t+50)/100));
+   }
+   if(f<=1500){
+     if(f===1500)return 24000;
+     const v=[6000,7000,8100,9300,10600,12000],i=Math.floor((f-1001)/100),t=f-i*100-1000;
+     return 2*(v[i]+Math.trunc((v[i+1]-v[i])/100)*t);
+   }
+   if(f<=3000){
+     if(f===3000)return 66000;
+     const v=[12000,18000,25000,33000],i=Math.floor((f-1501)/500),t=f-i*500-1500;
+     return 2*(v[i]+Math.trunc((v[i+1]-v[i])/500)*t);
+   }
+   return 2*(33000+16*(f-3000));
+ }
+
  const $=id=>document.getElementById(id);
  const fmt=n=>n.toLocaleString("ko-KR");
- const inputIds=["statAbility","statPassive","statPrecision","spiritStage","spiritPen",
+ const inputIds=["arrowGrade","statAbility","statPassive","statPrecision","spiritStage","spiritPen","openingCompleted","sanctuaryFloor","skillPierce","otherPierce","observedPen",
   "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
   "extraEnabled","extraType","extraRank"];
  let countInputs=[],lastValidTotal=null;
+ for(let grade=0;grade<=31;grade++){
+   const opt=document.createElement("option");opt.value=String(grade);
+   opt.textContent=grade+"등급 · MAX "+(50+10*grade);
+   $("arrowGrade").appendChild(opt);
+ }
+ $("arrowGrade").value="30";
  const grid=$("engraveGrid");
  stones.forEach((stone,t)=>{
    const card=document.createElement("div");
@@ -278,7 +314,11 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  }
  function update(){
    const errors=[];
-   const base=parseIntField("statAbility",350,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",273,errors);
+   const grade=parseIntField("arrowGrade",31,errors);
+   const abilityMax=50+10*grade;
+   $("abilityMaxLabel").textContent="능력치 관통 (현재 등급 MAX "+abilityMax+")";
+   $("statAbility").max=String(abilityMax);
+   const base=parseIntField("statAbility",abilityMax,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",273,errors);
    const stage=parseIntField("spiritStage",100,errors);
    const spirit=parseIntField("spiritPen",1000000000,errors);
    const costume=costumes.reduce((acc,row)=>acc+parseIntField(row.id,row.max,errors)*row.per,0)+($("diamondWear").checked?5:0);
@@ -305,14 +345,41 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    }
    updateSpiritHelp(stage,$("spiritStage").getAttribute("aria-invalid")==="true");
    const engraving=runeSums.reduce((a,b)=>a+b,0)+extra;
-   const total=base+spirit+costume+engraving;
+   const completed=parseIntField("openingCompleted",100,errors);
+   const opening=openingFlat(completed);
+   $("openingGain").textContent="+"+fmt(opening)+" 관통 · +"+fmt(opening)+" 명중";
+   const floor=parseIntField("sanctuaryFloor",5000,errors);
+   const needed=sanctuaryRequired(floor);
+   $("sanctuaryNeed").textContent=needed===null?"미선택":fmt(needed);
+   const skill=parseIntField("skillPierce",1000000000,errors);
+   const other=parseIntField("otherPierce",1000000000,errors);
+   const extraGain=skill+other;
+   const total=base+spirit+costume+engraving+opening+extraGain;
+   $("sanctuaryComment").textContent=needed===null?
+     "성역은 오행 개방 강화 재료의 획득처입니다. 층수와 요구 관통을 합계에 더하지 않습니다.":
+     "성역 "+fmt(floor)+"층 필요 관통 "+fmt(needed)+" · 현재 계산값 "+fmt(total)+
+     " · "+(total>=needed?"관통 조건 충족":"부족 "+fmt(needed-total))+
+     ". 성역은 관통을 직접 지급하지 않습니다.";
    $("partBasic").textContent=fmt(base);$("partSpirit").textContent=fmt(spirit);
    $("partCostume").textContent=fmt(costume);$("partEngrave").textContent=fmt(engraving);
+   $("partOpening").textContent=fmt(opening);$("partExtra").textContent=fmt(extraGain);
    runeSums.forEach((v,i)=>$("sumRune"+i).textContent="+"+fmt(v));
    $("sumExtra").textContent="+"+fmt(extra);
    $("sumCostume").textContent="+"+fmt(costume);
+   let observed=null;
+   const observedRaw=String($("observedPen").value).trim();
+   if(observedRaw!==""){
+     const v=/^\d+$/.test(observedRaw)?Number(observedRaw):NaN;
+     if(Number.isSafeInteger(v)&&v>=0&&v<=1000000000)observed=v;
+     else errors.push("게임 표시 관통은 0~1,000,000,000 사이 정수로 입력하세요.");
+   }
+   $("observedPen").setAttribute("aria-invalid",observedRaw!==""&&observed===null?"true":"false");
    const good=errors.length===0;
    $("penetrationTotal").textContent=good?fmt(total):"입력 확인";
+   $("observedDiff").classList.toggle("show",good&&observed!==null);
+   $("observedDiff").textContent=good&&observed!==null?
+     "게임 표시 "+fmt(observed)+" · 계산 "+fmt(total)+" · 차이 "+fmt(observed-total)+
+     (observed===total?" (일치)":" (빠진 요소 또는 중복 입력을 확인하세요.)"):"";
    $("validationError").classList.toggle("on",!good);
    $("validationError").textContent=errors.slice(0,5).join(" ");
    $("sendTower").disabled=!good;
@@ -324,7 +391,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    for(const id of allIds()){
      const el=$(id);if(el.type==="checkbox")el.checked=false;else el.value="0";
    }
-   $("extraType").value="0";$("extraRank").value="0";
+   $("extraType").value="0";$("extraRank").value="0";$("arrowGrade").value="30";$("observedPen").value="";
    update();
  }
  function sendTower(){
