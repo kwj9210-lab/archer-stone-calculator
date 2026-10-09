@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>오행 개방 · 1~100단계 시뮬레이터</title>
+<style>
+:root{--bg:#f4fff8;--text:#29463b;--muted:#637c70;--line:#cfe7d8;--accent:#198d66;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);background:linear-gradient(125deg,#f3fff7,#fff9eb);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+main{width:min(1050px,100%);margin:auto;padding:16px 13px 48px}
+header,.card,details{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 20px #326f4d0c}
+header{padding:17px;margin-bottom:12px;background:linear-gradient(110deg,#fff,#effcf3)}
+h1{margin:0;color:#18714f;font-size:24px}h2{font-size:17px;margin:0 0 12px}
+.sub,.note{font-size:12px;line-height:1.65;color:var(--muted)}
+.sub{margin-top:6px}.note{margin-top:11px}
+.card{padding:15px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fields5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:11px}
+label{font-weight:800;font-size:12px;min-width:0;display:block}
+input,select{width:100%;margin-top:5px;padding:11px;border:1px solid #bddccc;border-radius:10px;background:#fbfffc;color:var(--text);font-size:16px;font-weight:750;outline:none;min-width:0}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 2px #198d6622}
+input:disabled{background:#f1f4f1;color:#9baea2}
+.essence{padding:10px;border:1px solid #e2e9de;background:#fcfffc;border-radius:12px}
+.essence h3{font-size:14px;margin:0 0 5px}.essence small{font-size:11px;color:#607c6d;font-weight:600}
+.gold h3{color:#ac7b22}.wood h3{color:#30946a}.water h3{color:#3485b6}.fire h3{color:#bd6251}.earth h3{color:#886b4c}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stat{padding:12px;background:#f0fbf4;border:1px solid #def0e3;border-radius:12px;overflow-wrap:anywhere}
+.stat.wide{grid-column:1/-1}
+.stat .small{display:block;color:#638372;font-size:12px;font-weight:700;margin-bottom:5px}
+.stat strong{display:block;color:#187855;font-size:17px;line-height:1.55;overflow-wrap:anywhere}
+.big{font-size:20px!important}
+.result{background:#effbf4;padding:12px;border-radius:12px;color:#1a805e;font-weight:750;line-height:1.8;font-size:13px;overflow-wrap:anywhere}
+.result.error{color:#b3453d;background:#fff2ed}
+.progress{height:9px;background:#e2eee5;border-radius:15px;overflow:hidden;margin:10px 0 5px}
+.progress div{height:100%;background:linear-gradient(90deg,#60c9aa,#23946e);transition:width .2s}
+.tableWrap{overflow:auto;max-height:75vh;border-top:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:right;padding:9px 8px;white-space:nowrap;border-bottom:1px solid #e8f0ea}
+th:first-child,td:first-child{text-align:center}
+th{background:#effbf4;position:sticky;top:0;z-index:2;color:#3e7059}
+tr.selected{background:#dcf9e7;font-weight:900}
+tr:hover{background:#f3fff7}tr{cursor:pointer}
+details{overflow:hidden;margin-bottom:12px}
+summary{padding:15px;cursor:pointer;font-weight:850}
+.summarynote{font-size:11px;color:#647d6e;font-weight:500}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.link{color:#188563;font-weight:750;text-decoration:none}
+.pill{font-size:11px;color:#197651;background:#e2f7eb;border:1px solid #c6ecd7;border-radius:18px;padding:4px 8px}
+@media(max-width:680px){main{padding:10px 8px 38px}.card{padding:12px}h1{font-size:21px}.fields5{grid-template-columns:repeat(2,minmax(0,1fr))}.essence:last-child{grid-column:1/-1}.grid2{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.stat strong{font-size:15px}.stat .big{font-size:17px!important}th,td{padding:8px 5px;font-size:11px}}
+@media(max-width:350px){.stats{grid-template-columns:1fr}.stat.wide{grid-column:auto}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>오행 개방</h1>
+<div class="sub">궁수키우기 RPG 0.1.91 · 1~100단계 · 금강·청림·현수·홍염·태산 강화 비용 및 능력치 계산</div>
+<div class="row" style="margin-top:9px"><span class="pill">APK 규칙 적용</span><span class="pill">5종 각 100레벨</span><span class="pill">단계 완성 보상 포함</span></div>
+</header>
+
+<section class="card">
+<h2>진행 단계와 목표</h2>
+<div class="grid2">
+<label>현재 완료 단계 (0~100)<input id="completed" type="number" min="0" max="100" step="1" value="19"></label>
+<label>목표 완료 단계 (1~100)<input id="goal" type="number" min="1" max="100" step="1" value="20"></label>
+</div>
+<div class="progress"><div id="progressBar" style="width:19%"></div></div>
+<div class="note" id="progressText">19 / 100단계 완료</div>
+</section>
+
+<section class="card">
+<h2>현재 단계 기운별 레벨 · 보유 재료</h2>
+<div class="note" id="currentStageLabel">20단계 강화 중 · 기운별 Lv. 0~100</div>
+<div class="fields5" id="elements">
+<div class="essence gold"><h3>금강</h3><label>현재 레벨<input id="lv0" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock0" type="text" inputmode="numeric" value="0"></label></div>
+<div class="essence wood"><h3>청림</h3><label>현재 레벨<input id="lv1" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock1" type="text" inputmode="numeric" value="0"></label></div>
+<div class="essence water"><h3>현수</h3><label>현재 레벨<input id="lv2" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock2" type="text" inputmode="numeric" value="0"></label></div>
+<div class="essence fire"><h3>홍염</h3><label>현재 레벨<input id="lv3" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock3" type="text" inputmode="numeric" value="0"></label></div>
+<div class="essence earth"><h3>태산</h3><label>현재 레벨<input id="lv4" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock4" type="text" inputmode="numeric" value="0"></label></div>
+</div>
+<div class="note">5종 재료는 종류가 다르므로 보유량도 각각 입력합니다. 현재 레벨은 현재 진행 중인 단계의 기운별 레벨입니다.</div>
+</section>
+
+<section class="card">
+<h2>선택 단계 강화 · 능력치</h2>
+<div class="stats">
+<div class="stat"><span class="small">현재 진행 단계 · 기운 1종 1레벨 비용</span><strong id="oneCost"></strong></div>
+<div class="stat"><span class="small">현재 진행 단계 · 기운 1종 Lv.0→100</span><strong id="oneHundred"></strong></div>
+<div class="stat"><span class="small">목표 단계 완성 시 추가 관통 / 명중</span><strong id="lastFlat"></strong></div>
+<div class="stat"><span class="small">목표 단계 완성 공격력 보상</span><strong id="lastAttack"></strong></div>
+<div class="stat"><span class="small">현재 관통 / 명중 누적</span><strong id="nowFlat"></strong></div>
+<div class="stat"><span class="small">목표 달성 관통 / 명중 누적</span><strong id="goalFlat"></strong></div>
+<div class="stat wide"><span class="small">현재 공격력 상승 배율 (완료 단계 + 기운 레벨)</span><strong id="nowAttack" class="big"></strong></div>
+<div class="stat wide"><span class="small">목표까지 완성한 최종 공격력 상승 배율</span><strong id="goalAttack" class="big"></strong></div>
+</div>
+<div class="note">공격력은 게임에 표시되는 배율 체계 기준입니다. 실제 전투력 수치는 장비·스킬 등 다른 능력치가 함께 적용되므로 공격력 배율만으로 환산하지 않습니다.</div>
+</section>
+
+<section class="card">
+<h2>목표 단계까지 필요한 재료</h2>
+<div id="materialsResult" class="result"></div>
+<div class="note">현재 진행 단계의 기운별 강화 레벨을 차감하고, 이후 단계는 5종을 모두 Lv.100까지 강화하는 것으로 계산합니다. 현재 보유 재료는 해당 종류에서만 차감합니다.</div>
+</section>
+
+<section class="card">
+<h2>성역 소탕으로 재료 확보</h2>
+<div class="grid2">
+<label>내 성역 최고 클리어 층<input id="sweepFloor" type="number" min="1" max="5000" value="5000"></label>
+<div class="result" id="sweepResult"></div>
+</div>
+<div class="note">성역 소탕 1회에서 각 재료가 동일한 층별 수량으로 지급된다는 계산 기준을 사용합니다. 필요한 소탕 횟수는 5종 부족량 중 가장 큰 수량에 맞춥니다. 상향 보상식 적용, 요청 1번당 최대 1,000회.</div>
+<a class="link" href="sanctuary.html">오행의 성역 계산기 열기 →</a>
+</section>
+
+<details id="fullTable" open>
+<summary>1~100단계 전체 강화·능력치 표 <span class="summarynote">(행을 누르면 목표 단계 변경)</span></summary>
+<div class="tableWrap">
+<table><thead><tr>
+<th>단계</th><th>1레벨 비용</th><th>1종 Lv.100</th><th>5종 Lv.100</th><th>1단계 공격력 보상</th><th>누적 공격력 배율</th><th>단계 관통·명중</th><th>누적 관통·명중</th><th>5종 재료 누적 합계</th>
+</tr></thead><tbody id="stageRows"></tbody></table>
+</div>
+</details>
+<div class="note">공격력 배율은 1~100단계 완료 및 각 기운 레벨 상승을 반영합니다. 재료 수량은 APK의 강화 비용 규칙으로 계산했습니다.</div>
+</main>
+<script>
+'use strict';
+const names=['금강','청림','현수','홍염','태산'];
+const $=id=>document.getElementById(id);
+const fmt=n=>Number(n).toLocaleString('ko-KR');
+function kor(n){
+ if(n===0)return '0';
+ n=Math.trunc(n);
+ const labels=[[1000000000000,'조'],[100000000,'억'],[10000,'만']];
+ let out='';
+ for(const [v,label] of labels){if(n>=v){const q=Math.floor(n/v);out+=fmt(q)+label;n-=q*v;}}
+ if(n||!out)out+=fmt(n);
+ return out;
+}
+function suffix(n){
+ if(n===0)return '';
+ let s='';
+ while(n>0){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26);}
+ return s;
+}
+function powerText(exponentNumerator){
+ if(exponentNumerator<=0n)return '×1';
+ const scale=exponentNumerator/60n;
+ const rem=Number(exponentNumerator%60n)/15;
+ const coeff=Math.pow(10,rem);
+ const nearInt=Math.round(coeff);
+ const display=Math.abs(coeff-nearInt)<1e-7?nearInt:Math.floor(coeff);
+ return '×'+String(display)+suffix(Number(scale));
+}
+function baseCost(s){return 5+5*s*(s-1)/2;}
+function levelCost(s){return baseCost(s)*100;}
+function flatTotal(s){return 50*s+Math.floor(s*(s-1)*100/99);}
+function flatGain(s){return flatTotal(s)-flatTotal(s-1);}
+function bonusTotal(s){return Math.floor(s*(s+10)*10000000/11);}
+function stageAttackGain(s){return bonusTotal(s)-bonusTotal(s-1);}
+const costPrefix=[0];
+for(let s=1;s<=100;s++)costPrefix[s]=costPrefix[s-1]+levelCost(s);
+function powerNumerator(completed,levels){
+ const current=completed<100?levels.reduce((sum,lv)=>sum+lv*baseCost(completed+1),0):0;
+ const spent=5*costPrefix[completed]+current;
+ return BigInt(bonusTotal(completed))*15n+BigInt(spent)*8n;
+}
+function rewardEach(f){
+ const base=15*f-5;
+ if(f<=1000)return base;
+ const q=Math.floor((f+24)/50),k=Math.floor(f/1000);
+ return base+q*(f-25*q)+k;
+}
+function intInput(id,min,max){
+ const raw=String($(id).value).replace(/,/g,'').trim();
+ if(!/^\d+$/.test(raw))return NaN;
+ const n=Number(raw);
+ return Number.isSafeInteger(n)&&n>=min&&n<=max?n:NaN;
+}
+function update(){
+ const completed=intInput('completed',0,100),goal=intInput('goal',1,100),f=intInput('sweepFloor',1,5000);
+ const levels=names.map((_,i)=>intInput('lv'+i,0,100));
+ const stocks=names.map((_,i)=>intInput('stock'+i,0,Number.MAX_SAFE_INTEGER));
+ const current=completed<100?completed+1:100;
+ const missing=!(Number.isFinite(completed)&&Number.isFinite(goal)&&Number.isFinite(f)&&levels.every(Number.isFinite)&&stocks.every(Number.isFinite));
+ $('progressBar').style.width=Number.isFinite(completed)?completed+'%':'0%';
+ $('progressText').textContent=Number.isFinite(completed)?completed+' / 100단계 완료':'단계 입력 확인';
+ $('currentStageLabel').textContent=completed===100?'100단계 완료 · 추가 강화 없음':current+'단계 강화 중 · 기운별 Lv. 0~100';
+ for(let i=0;i<5;i++)$('lv'+i).disabled=completed===100;
+ if(missing||goal<completed){
+  const error=missing?'완료 단계 0~100, 목표 단계 1~100, 기운 레벨 0~100, 보유 재료 0 이상, 성역 층수 1~5000을 확인해 주세요.':'목표 단계는 현재 완료 단계 이상이어야 합니다.';
+  $('materialsResult').className='result error';$('materialsResult').textContent=error;
+  $('sweepResult').textContent='입력값 확인 필요';
+  for(const id of ['oneCost','oneHundred','lastFlat','lastAttack','nowFlat','goalFlat','nowAttack','goalAttack'])$(id).textContent='—';
+  return;
+ }
+ $('materialsResult').className='result';
+ const costs=names.map((name,i)=>{
+  let need=0;
+  if(goal>completed){
+   need=(100-levels[i])*levelCost(completed+1);
+   for(let s=completed+2;s<=goal;s++)need+=100*levelCost(s);
+  }
+  const shortage=Math.max(0,need-stocks[i]);
+  return {name,need,shortage,stock:stocks[i]};
+ });
+ const totalNeed=costs.reduce((a,x)=>a+x.need,0);
+ const maxShortage=Math.max(...costs.map(x=>x.shortage));
+ const per=rewardEach(f);
+ const sweeps=Math.ceil(maxShortage/per);
+ const seals=sweeps*f;
+ $('oneCost').textContent=completed===100?'모두 완료':kor(levelCost(current))+'개';
+ $('oneHundred').textContent=completed===100?'모두 완료':kor(levelCost(current)*100)+'개';
+ $('lastFlat').textContent='+'+fmt(flatGain(goal))+' / +'+fmt(flatGain(goal));
+ $('lastAttack').textContent=powerText(BigInt(stageAttackGain(goal))*15n);
+ $('nowFlat').textContent='+'+fmt(flatTotal(completed))+' / +'+fmt(flatTotal(completed));
+ $('goalFlat').textContent='+'+fmt(flatTotal(goal))+' / +'+fmt(flatTotal(goal));
+ $('nowAttack').textContent=powerText(powerNumerator(completed,levels));
+ $('goalAttack').textContent=powerText(powerNumerator(goal,[0,0,0,0,0]));
+ $('materialsResult').innerHTML=
+  '<strong>목표 '+fmt(goal)+'단계까지 소요 재료 (각 종류 별도)</strong><br>'+
+  costs.map(x=>x.name+' · 필요 '+kor(x.need)+'개 · 보유 '+kor(x.stock)+'개 · 부족 <b>'+kor(x.shortage)+'개</b>').join('<br>')+
+  '<br><strong>5종 비용 합계 '+kor(totalNeed)+'개 · 부족 재료 합계 '+kor(costs.reduce((a,x)=>a+x.shortage,0))+'개</strong>';
+ $('sweepResult').innerHTML='1회 재료 1종 '+kor(per)+'개<br>필요 소탕 <b>'+kor(sweeps)+'회</b><br>수련의 인장 <b>'+kor(seals)+'개</b>'+
+  (sweeps>1000?'<br>게임 내 소탕 요청 '+kor(Math.ceil(sweeps/1000))+'번':'');
+ document.querySelectorAll('#stageRows tr').forEach(tr=>tr.classList.toggle('selected',Number(tr.dataset.stage)===goal));
+}
+function initTable(){
+ const body=$('stageRows');
+ const frag=document.createDocumentFragment();
+ for(let s=1;s<=100;s++){
+  const tr=document.createElement('tr');
+  tr.dataset.stage=String(s);
+  tr.innerHTML='<td>'+s+'</td>'+
+   '<td>'+fmt(levelCost(s))+'</td>'+
+   '<td>'+kor(levelCost(s)*100)+'</td>'+
+   '<td>'+kor(levelCost(s)*500)+'</td>'+
+   '<td>'+powerText(BigInt(stageAttackGain(s))*15n)+'</td>'+
+   '<td>'+powerText(powerNumerator(s,[0,0,0,0,0]))+'</td>'+
+   '<td>+'+fmt(flatGain(s))+'</td>'+
+   '<td>+'+fmt(flatTotal(s))+'</td>'+
+   '<td>'+kor(500*costPrefix[s])+'</td>';
+  tr.addEventListener('click',()=>{$('goal').value=s;update();});
+  frag.appendChild(tr);
+ }
+ body.appendChild(frag);
+}
+for(const id of ['completed','goal','sweepFloor',...names.flatMap((_,i)=>['lv'+i,'stock'+i])])$(id).addEventListener('input',update);
+initTable();update();
+</script>
+</body>
+</html>
