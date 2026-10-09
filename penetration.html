@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>관통 Total | 궁수키우기 RPG</title>
+<style>
+:root{--bg:#f4fff8;--text:#29463b;--muted:#70847b;--line:#cfe9d9;--strong:#187855;--mint:#e8f8ee}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f4fff8,#fff9ea);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+main{width:min(1040px,100%);margin:auto;padding:15px 13px 45px}
+.hero,.card{border:1px solid var(--line);background:#fff;border-radius:17px;box-shadow:0 8px 22px rgba(69,126,98,.085)}
+.hero{position:relative;padding:17px;margin-bottom:12px;background:linear-gradient(105deg,#fff,#effcf3);z-index:2}
+.title-row{display:flex;align-items:center;gap:11px;flex-wrap:wrap;position:relative}
+h1{font-size:24px;color:#18714f;margin:0;line-height:1.22;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:12px;line-height:1.6;margin-top:7px}
+.guide{margin:0;border:0}
+.guide summary{list-style:none;border:1px solid #b8dec8;background:var(--mint);padding:7px 11px;border-radius:10px;font-size:12px;color:#197451;font-weight:850;cursor:pointer}
+.guide summary::-webkit-details-marker{display:none}
+.guide[open] summary{background:#cdefda}
+.guide-body{position:absolute;top:calc(100% + 10px);left:0;z-index:5;width:min(435px,100%);background:white;border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 14px 27px rgba(36,86,58,.18);font-size:13px;line-height:1.65}
+.guide-body p{margin:0 0 9px}.guide-body p:last-child{margin:0}
+.card{padding:16px;margin-bottom:12px}
+.card h2{margin:0 0 13px;font-size:17px;color:#315d4d;border-left:4px solid #58cf98;padding-left:10px}
+.note{font-size:12px;color:var(--muted);line-height:1.65;margin-top:8px}
+.section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.fields.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.field{min-width:0}
+label{display:block;font-size:12px;font-weight:800;color:#567669}
+input,select{width:100%;min-width:0;min-height:42px;margin-top:6px;padding:9px 11px;background:#fbfffc;border:1px solid #c1ddcb;border-radius:11px;color:var(--text);font-size:16px;font-weight:800;outline:none}
+input:focus,select:focus{border-color:#35c98c;box-shadow:0 0 0 3px #35c98c22}
+input[aria-invalid="true"]{border-color:#c95b5b;background:#fff8f6}
+input:disabled{background:#f1f5f2;color:#8a9d91}
+.costume-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.costume{border:1px solid #e0ebdf;border-radius:12px;background:#fbfffc;padding:12px}
+.costume b{display:block;font-size:13px}
+.costume small{display:block;color:#71867c;font-size:11px;margin-top:3px}
+.costume input{margin-top:7px}
+.checkrow{display:flex;align-items:center;gap:9px;margin-top:12px;color:#47725b;font-size:12px;font-weight:800}
+.checkrow input{width:17px;height:17px;min-height:0;margin:0;accent-color:#2ca678}
+.engrave-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.engrave-card{padding:12px;border:1px solid #dfe9e3;border-radius:13px;background:#fbfffc;min-width:0}
+.engrave-card h3{margin:0 0 5px;color:#8c6c20;font-size:14px}
+.engrave-card:nth-child(2) h3{color:#277c9a}
+.engrave-card:nth-child(3) h3{color:#8b628d}
+.engrave-card .small-info{font-size:11px;color:#71867c;margin-bottom:9px}
+.eng-row{display:grid;grid-template-columns:minmax(0,1fr) 75px;gap:7px;align-items:center;margin-bottom:7px}
+.eng-row span{font-size:12px;color:#436956;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eng-row input{min-height:34px;margin:0;padding:6px;text-align:center;font-size:13px}
+.eng-total{font-size:12px;font-weight:900;color:var(--strong);padding-top:5px}
+.free{margin-top:12px;padding:11px 12px;background:#f5fbf7;border:1px dashed #bcdcc8;border-radius:12px}
+.free-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+.free-options select{font-size:13px}
+.summary{border-color:#b7dccc;background:linear-gradient(125deg,#f6fff9,#fffdf0)}
+.summary h2{border-left-color:#dfbd5d}
+.total-layout{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr 1fr;gap:10px}
+.total-box,.mini-box{border-radius:12px;border:1px solid #d9eadf;background:#fff;padding:13px}
+.total-box{background:#f4fff8;border-color:#9acfae}
+.total-box .headline{color:#557b65;font-size:12px;font-weight:850}
+.total-box strong{font-size:32px;display:block;margin-top:6px;color:#116f4a;overflow-wrap:anywhere}
+.mini-box span{font-size:11px;color:#6a8276}
+.mini-box b{display:block;color:#1c7655;font-size:18px;margin-top:7px}
+.detail-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.detail-strip>div{padding:9px;border-radius:10px;border:1px solid #e0ebe3;background:#fbfffc;font-size:11px}
+.detail-strip b{display:block;text-align:right;color:#0d8370;font-size:13px;margin-top:3px}
+.error{display:none;margin-top:10px;padding:11px 12px;border-radius:10px;background:#fff1ef;color:#bb3939;font-size:12px;font-weight:800}
+.error.on{display:block}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+button.action{flex:1;min-height:43px;padding:9px 13px;border:0;border-radius:11px;background:linear-gradient(115deg,#35bf83,#54c6bf);color:#fff;font-size:13px;font-weight:850;cursor:pointer}
+button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d4}
+button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
+@media(max-width:750px){main{padding:10px 8px 35px}.card,.hero{padding:12px}.section-grid{grid-template-columns:1fr}.engrave-grid{grid-template-columns:1fr}.fields.three{grid-template-columns:repeat(2,minmax(0,1fr))}.total-layout{grid-template-columns:repeat(2,minmax(0,1fr))}.total-box{grid-column:1/-1}.detail-strip{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:21px}.eng-row{grid-template-columns:minmax(0,1fr) 105px}.eng-row input{text-align:center}}
+@media(max-width:390px){.fields,.fields.three,.free-options{grid-template-columns:1fr}.total-box strong{font-size:28px}.eng-row{grid-template-columns:minmax(0,1fr) 76px}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+ <div class="title-row">
+  <h1>관통 Total</h1>
+  <details class="guide"><summary>사용방법 ▾</summary>
+   <div class="guide-body">
+    <p><b>① 기본값</b> · 능력치·갑파 패시브·정밀술을 입력합니다.</p>
+    <p><b>② 정령·코스튬</b> · 정령 관통과 보유 코스튬 개수, 장착 효과를 입력합니다.</p>
+    <p><b>③ 각인석</b> · 마석·경화석·생명석의 등급별 장착 수량을 입력합니다. 각 종류는 기본 최대 11칸입니다.</p>
+    <p><b>④ 결과</b> · 최종 관통을 자동 합산하고 ‘초월의 탑’으로 전달할 수 있습니다.</p>
+    <p><b>예시</b> · 마석 전설 2개는 52 × 2 = 관통 <b>104</b>를 더합니다.</p>
+   </div>
+  </details>
+ </div>
+ <div class="sub">궁수키우기 RPG · 능력치, 정령, 코스튬, 각인석 장착 수량을 합산해 최종 관통 계산</div>
+</section>
+<div class="section-grid">
+<section class="card">
+ <h2>01 · 기본 관통</h2>
+ <div class="fields three">
+  <div class="field"><label for="statAbility">능력치 (최대 350)</label><input id="statAbility" type="number" min="0" max="350" step="1" value="0"></div>
+  <div class="field"><label for="statPassive">갑파 패시브 (최대 450)</label><input id="statPassive" type="number" min="0" max="450" step="1" value="0"></div>
+  <div class="field"><label for="statPrecision">정밀술 (최대 273)</label><input id="statPrecision" type="number" min="0" max="273" step="1" value="0"></div>
+ </div>
+</section>
+<section class="card">
+ <h2>02 · 정령</h2>
+ <div class="fields">
+  <div class="field"><label for="spiritStage">정령 단계 (0~100)</label><input id="spiritStage" type="number" min="0" max="100" step="1" value="0"></div>
+  <div class="field"><label for="spiritPen">정령 관통</label><input id="spiritPen" type="number" min="0" step="1" value="0"></div>
+ </div>
+ <div id="spiritNote" class="note">확인된 수치: 1단계 1 · 2단계 11 · 3단계 21 · 100단계 1,022. 다른 단계는 게임에 나온 관통을 직접 입력하세요.</div>
+</section>
+</div>
+<section class="card">
+ <h2>03 · 코스튬 보유 및 장착 효과</h2>
+ <div class="costume-grid">
+  <div class="costume"><b>캐시 코스튬 · 개당 +3</b><small>최대 6개</small><input id="costumeCash" type="number" min="0" max="6" step="1" value="0"></div>
+  <div class="costume"><b>월드보스 코스튬 · 개당 +10</b><small>최대 7개</small><input id="costumeWorld" type="number" min="0" max="7" step="1" value="0"></div>
+  <div class="costume"><b>마일리지 코스튬 · 개당 +3</b><small>최대 12개</small><input id="costumeMileage" type="number" min="0" max="12" step="1" value="0"></div>
+  <div class="costume"><b>다이아 코스튬 · 개당 +3</b><small>최대 3개</small><input id="costumeDiamond" type="number" min="0" max="3" step="1" value="0"></div>
+ </div>
+ <label class="checkrow"><input id="diamondWear" type="checkbox">다이아 코스튬 장착 효과 +5 적용</label>
+</section>
+<section class="card">
+ <h2>04 · 각인석 장착 수량</h2>
+ <div class="note" style="margin:0 0 12px">마석·경화석·생명석은 각각 최대 11개를 장착할 수 있습니다. 같은 등급 여러 개도 입력 가능합니다.</div>
+ <div class="engrave-grid" id="engraveGrid"></div>
+ <div class="free">
+  <label class="checkrow" style="margin:0"><input id="extraEnabled" type="checkbox">자유 각인 +1칸 사용</label>
+  <div class="free-options">
+   <div class="field"><label for="extraType">각인석 종류</label><select id="extraType"><option value="0">마석</option><option value="1">경화석</option><option value="2">생명석</option></select></div>
+   <div class="field"><label for="extraRank">등급</label><select id="extraRank"></select></div>
+  </div>
+  <div class="note">자유 각인 슬롯 1개에 선택한 각인석 1개의 관통을 추가합니다.</div>
+ </div>
+</section>
+<section class="card summary" id="summary">
+ <h2>05 · 관통 Total 계산 결과</h2>
+ <div class="total-layout">
+  <div class="total-box"><div class="headline">최종 관통</div><strong id="penetrationTotal" aria-live="polite">0</strong><div class="note">유효한 입력값일 때 자동 계산</div></div>
+  <div class="mini-box"><span>기본 능력치</span><b id="partBasic">0</b></div>
+  <div class="mini-box"><span>정령</span><b id="partSpirit">0</b></div>
+  <div class="mini-box"><span>코스튬</span><b id="partCostume">0</b></div>
+  <div class="mini-box"><span>각인석</span><b id="partEngrave">0</b></div>
+ </div>
+ <div class="detail-strip">
+  <div>마석 합계<b id="sumRune0">0</b></div><div>경화석 합계<b id="sumRune1">0</b></div><div>생명석 합계<b id="sumRune2">0</b></div><div>자유 각인<b id="sumExtra">0</b></div><div>코스튬 상세<b id="sumCostume">0</b></div>
+ </div>
+ <div id="validationError" class="error" role="alert"></div>
+ <div class="actions">
+  <button id="sendTower" class="action" type="button">초월의 탑에 관통 전달 →</button>
+  <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
+ </div>
+ <div class="note">이 화면은 사진에 나온 관통 합산 항목을 기준으로 합니다. 정령 관통 미확인 구간은 직접 입력하며, 게임에서 확인되지 않은 추가 관통 효과는 합산하지 않습니다. 입력 정보는 이 브라우저에 자동 저장됩니다.</div>
+</section>
+</main>
+<script>
+(function(){
+ "use strict";
+ const ranks=["최하급","하급","일반","상급","최상급","특급","전설","신화","태초","불멸"];
+ const stones=[{"name":"마석","values":[4,6,10,15,22,34,52,62,73,85]},{"name":"경화석","values":[12,18,30,45,66,102,156,186,219,255]},{"name":"생명석","values":[8,12,20,30,44,68,104,124,146,170]}];
+ const spiritKnown={"0":0,"1":1,"2":11,"3":21,"100":1022};
+ const costumes=[
+  {id:"costumeCash",max:6,per:3},
+  {id:"costumeWorld",max:7,per:10},
+  {id:"costumeMileage",max:12,per:3},
+  {id:"costumeDiamond",max:3,per:3}
+ ];
+ const SAVE_KEY="archer:penetration-total:v1";
+ const $=id=>document.getElementById(id);
+ const fmt=n=>n.toLocaleString("ko-KR");
+ const inputIds=["statAbility","statPassive","statPrecision","spiritStage","spiritPen",
+  "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
+  "extraEnabled","extraType","extraRank"];
+ let countInputs=[],lastValidTotal=null;
+ const grid=$("engraveGrid");
+ stones.forEach((stone,t)=>{
+   const card=document.createElement("div");
+   card.className="engrave-card";
+   const header=document.createElement("h3");header.textContent=stone.name+" · 최대 11개";card.appendChild(header);
+   const note=document.createElement("div");note.className="small-info";note.id="count"+t;note.textContent="장착 0 / 11개";card.appendChild(note);
+   ranks.forEach((rank,g)=>{
+     const row=document.createElement("label");
+     row.className="eng-row";
+     const text=document.createElement("span");text.textContent=rank+" (+"+stone.values[g]+")";
+     const field=document.createElement("input");field.id="stone"+t+"_"+g;
+     field.type="number";field.min="0";field.max="11";field.step="1";field.value="0";
+     field.setAttribute("aria-label",stone.name+" "+rank+" 장착 수량");
+     row.append(text,field);card.appendChild(row);countInputs.push(field);
+   });
+   const subtotal=document.createElement("div");subtotal.className="eng-total";subtotal.id="subtotal"+t;
+   subtotal.textContent="합계 +0";card.appendChild(subtotal);grid.appendChild(card);
+ });
+ stones[0].values.forEach((_,g)=>{
+   const option=document.createElement("option");option.value=String(g);
+   option.textContent=ranks[g];$("extraRank").appendChild(option);
+ });
+ function parseIntField(id,max,errors){
+   const el=$(id);const raw=String(el.value).trim();
+   const n=/^\d+$/.test(raw)?Number(raw):NaN;
+   const good=Number.isSafeInteger(n)&&n>=0&&n<=max;
+   el.setAttribute("aria-invalid",good?"false":"true");
+   if(!good)errors.push((el.labels?.[0]?.textContent||id)+"은(는) 0~"+fmt(max)+" 사이 정수를 입력하세요.");
+   return good?n:0;
+ }
+ function allIds(){return inputIds.concat(countInputs.map(e=>e.id));}
+ function restore(){
+   try{
+     const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");
+     if(!saved||typeof saved!=="object")return;
+     for(const id of allIds()){
+       if(!(id in saved))continue;
+       const el=$(id);if(el.type==="checkbox")el.checked=saved[id]===true;
+       else el.value=String(saved[id]);
+     }
+   }catch(_){}
+ }
+ function save(){
+   try{
+     const data={};
+     for(const id of allIds()){
+       const el=$(id);data[id]=el.type==="checkbox"?el.checked:el.value;
+     }
+     localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+   }catch(_){}
+ }
+ function spiritStageChange(){
+   const n=Number($("spiritStage").value);
+   if(Number.isInteger(n)&&Object.prototype.hasOwnProperty.call(spiritKnown,String(n))){
+     $("spiritPen").value=String(spiritKnown[n]);
+   }else{
+     $("spiritPen").value="";
+   }
+   update();
+ }
+ function updateSpiritHelp(stage,hasError){
+   const note=$("spiritNote");
+   if(hasError){note.textContent="정령 단계는 0~100 사이 정수로 입력하세요.";return}
+   if(Object.prototype.hasOwnProperty.call(spiritKnown,String(stage))){
+     note.textContent="확인된 "+stage+"단계 관통: "+fmt(spiritKnown[stage])+" · 필요한 경우 직접 변경할 수 있습니다.";
+   }else{
+     note.textContent="이 단계의 정확한 관통 표가 없어 자동 계산하지 않습니다. 게임에 표시된 정령 관통을 직접 입력하세요. 확인값: 1단계 1, 2단계 11, 3단계 21, 100단계 1,022.";
+   }
+ }
+ function update(){
+   const errors=[];
+   const base=parseIntField("statAbility",350,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",273,errors);
+   const stage=parseIntField("spiritStage",100,errors);
+   const spirit=parseIntField("spiritPen",1000000000,errors);
+   const costume=costumes.reduce((acc,row)=>acc+parseIntField(row.id,row.max,errors)*row.per,0)+($("diamondWear").checked?5:0);
+   const runeSums=[],countTotals=[];
+   stones.forEach((stone,t)=>{
+     let subtotal=0,count=0;
+     stone.values.forEach((value,g)=>{
+       const n=parseIntField("stone"+t+"_"+g,11,errors);
+       subtotal+=n*value;count+=n;
+     });
+     const countEl=$("count"+t);
+     countEl.textContent="장착 "+count+" / 11개";
+     countEl.style.color=count>11?"#ba4840":"#71867c";
+     $("subtotal"+t).textContent="합계 +"+fmt(subtotal);
+     if(count>11)errors.push(stone.name+"은(는) 기본 11칸을 초과했습니다.");
+     countTotals.push(count);
+     runeSums.push(subtotal);
+   });
+   const extraType=parseIntField("extraType",2,errors);
+   const extraRank=parseIntField("extraRank",9,errors);
+   const extra=$("extraEnabled").checked?stones[extraType].values[extraRank]:0;
+   if($("diamondWear").checked&&Number($("costumeDiamond").value)===0){
+     errors.push("다이아 코스튬 장착 효과를 적용하려면 다이아 코스튬 보유량이 1개 이상이어야 합니다.");
+   }
+   updateSpiritHelp(stage,$("spiritStage").getAttribute("aria-invalid")==="true");
+   const engraving=runeSums.reduce((a,b)=>a+b,0)+extra;
+   const total=base+spirit+costume+engraving;
+   $("partBasic").textContent=fmt(base);$("partSpirit").textContent=fmt(spirit);
+   $("partCostume").textContent=fmt(costume);$("partEngrave").textContent=fmt(engraving);
+   runeSums.forEach((v,i)=>$("sumRune"+i).textContent="+"+fmt(v));
+   $("sumExtra").textContent="+"+fmt(extra);
+   $("sumCostume").textContent="+"+fmt(costume);
+   const good=errors.length===0;
+   $("penetrationTotal").textContent=good?fmt(total):"입력 확인";
+   $("validationError").classList.toggle("on",!good);
+   $("validationError").textContent=errors.slice(0,5).join(" ");
+   $("sendTower").disabled=!good;
+   lastValidTotal=good?total:null;
+   save();
+   return good?total:null;
+ }
+ function clear(){
+   for(const id of allIds()){
+     const el=$(id);if(el.type==="checkbox")el.checked=false;else el.value="0";
+   }
+   $("extraType").value="0";$("extraRank").value="0";
+   update();
+ }
+ function sendTower(){
+   const value=update();if(value===null)return;
+   if(window.parent&&window.parent!==window){
+     window.parent.postMessage({type:"archer:penetration-total",penetration:value},window.location.origin);
+   }else{
+     window.location.href="calculator.html#tower";
+     try{localStorage.setItem("archer:tower:handoff",String(value))}catch(_){}
+   }
+ }
+ restore();
+ // 직접 열 때도 기존 값이 없다면 0에서 시작한다.
+ if($("spiritStage").value==="0"&&$("spiritPen").value==="")$("spiritPen").value="0";
+ document.querySelectorAll("input,select").forEach(el=>{
+   if(el.id==="spiritStage")el.addEventListener("change",spiritStageChange);
+   else el.addEventListener("input",update);
+   el.addEventListener("change",update);
+ });
+ $("clearFields").addEventListener("click",clear);
+ $("sendTower").addEventListener("click",sendTower);
+ update();
+})();
+</script>
+</body>
+</html>
