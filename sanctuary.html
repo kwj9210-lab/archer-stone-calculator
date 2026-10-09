@@ -86,7 +86,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="sweepResult" class="result sweepResultFull"></div>
 </div>
-<div class="note">클리어층은 1~5000 직접 입력. 최초 입장과 1회 소탕은 해당 층수만큼 수련의 인장이 필요합니다. 1000층 초과부터 0.1.91 상향 보상식을 적용하며, 필요 소탕횟수는 부족하지 않게 올림합니다. APK 기준 1회 소탕 요청은 최대 1,000회이므로 초과 횟수는 여러 번 나눠 진행해야 합니다.</div>
+<div class="note">클리어층은 1~5000 직접 입력. 최초 입장과 1회 소탕은 해당 층수만큼 수련의 인장이 필요합니다. 계산기에서는 공지된 1,000층 초과 상향 보상식을 기본 적용하며, 필요 소탕횟수는 부족하지 않게 올림합니다. 실제 게임은 서버에서 전달된 보상 곡선 선택값을 사용하므로 획득량이 다를 수 있습니다. APK 기준 1회 소탕 요청은 최대 1,000회이므로 초과 횟수는 여러 번 나눠 진행해야 합니다.</div>
 </section>
 
 <section class="card">
@@ -111,7 +111,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="targetResult" class="result targetResultFull"></div>
 </div>
-<div class="note">재료 1종 기준. 1층부터 최고 클리어 층까지의 누적 클리어 보상을 먼저 적용하고, 부족분만 최고 클리어 층 소탕으로 채웁니다.</div>
+<div class="note">재료 1종 기준. 1층부터 최고 클리어 층까지의 누적 클리어 보상을 계산기 보상식으로 추정하고, 부족분만 최고 클리어 층 소탕으로 채웁니다. 실제 누적 보상은 게임 서버 정산값과 다를 수 있습니다.</div>
 </section>
 
 <details id="list" open>
