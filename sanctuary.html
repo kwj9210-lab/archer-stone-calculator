@@ -262,10 +262,34 @@ function gameText(effect){
 }
 const HP_ANCHOR_EFFECT=effectFromPart(HP_ANCHOR_COEFF,HP_ANCHOR_SUFFIX);
 const HP_ANCHOR_LOG=stageHpLog(HP_ANCHOR_STAGE);
+
+// APK 0.1.91 성역 전용 고구간 HP 성장.
+// ReferenceStage 999,999,999(601층)까지는 기존 경로,
+// 이후는 TrainingExpansion214Rules의 sanctuaryReference=true 밴드 성장 적용.
+const SANCT_HP_C=2.422717821931893;
+const SANCT_THRESHOLD_STAGE=999999999;
+const SANCT_THRESHOLD_FLOOR=601;
+const SANCT_THRESHOLD_EFFECT=
+ HP_ANCHOR_EFFECT+(stageHpLog(SANCT_THRESHOLD_STAGE)-HP_ANCHOR_LOG)/4+0.5;
+const sanctuaryHighLog=[0];
+for(let band=0;band<4399;band++){
+ const stage=1000000000+band*1000000;
+ const tier=Math.floor((stage-1000000000)/1000000000);
+ const q=Math.floor((stage-200000000)/1000000);
+ const base=370500+20000*q;
+ const exponent=(2+2*tier)*SANCT_HP_C;
+ sanctuaryHighLog.push(
+  sanctuaryHighLog[band]+1000000*exponent*Math.log10(base)
+ );
+}
 function sanctuaryBossHp(f){
- const refStage=398999999+f*1000000;
- const stageEffect=HP_ANCHOR_EFFECT+(stageHpLog(refStage)-HP_ANCHOR_LOG)/4;
- return gameText(stageEffect+0.5);
+ if(f<=SANCT_THRESHOLD_FLOOR){
+  const refStage=398999999+f*1000000;
+  const stageEffect=HP_ANCHOR_EFFECT+(stageHpLog(refStage)-HP_ANCHOR_LOG)/4;
+  return gameText(stageEffect+0.5);
+ }
+ const bands=f-SANCT_THRESHOLD_FLOOR;
+ return gameText(SANCT_THRESHOLD_EFFECT+sanctuaryHighLog[bands]/4);
 }
 function cumulativeSeals(n){return n*(n+1)/2}
 function rewardEach(f){
