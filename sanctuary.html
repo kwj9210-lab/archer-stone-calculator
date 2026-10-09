@@ -355,6 +355,10 @@ function renderSweep(){
  const runs=need===0?0:Math.ceil(need/per);
  const seals=runs*f;
  const received=runs*per;
+ if(!Number.isSafeInteger(runs)||!Number.isSafeInteger(seals)||!Number.isSafeInteger(received)){
+  sweepResult.textContent='수량이 너무 커서 정확히 계산할 수 없습니다. 입력값을 줄여 주세요.';
+  return;
+ }
  const extra=received-need;
  const batches=Math.ceil(runs/1000);
  const batchInfo=batches>1?' · 게임 요청 <b>'+fmtKor(batches)+'번</b> (요청당 최대 1,000회)':'';
