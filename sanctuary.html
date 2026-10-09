@@ -11,6 +11,16 @@ body{margin:0;background:linear-gradient(135deg,#f4fff8,#fff9ea);color:var(--tex
 main{width:min(860px,100%);margin:auto;padding:22px 14px 50px}
 .page-hero,.card,details{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 22px rgba(69,126,98,.09)}
 .page-hero{padding:16px;margin-bottom:14px;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(247,255,249,.92))}
+.titleRow{display:flex;align-items:center;gap:12px;position:relative;z-index:2}
+.page-hero .guide{margin:0;flex:none;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+.page-hero .guide summary{list-style:none;padding:7px 11px;border:1px solid #b8dec8;border-radius:10px;background:#e8f8ee;color:#197451;font-size:12px;font-weight:850;white-space:nowrap;line-height:1.35}
+.page-hero .guide summary::-webkit-details-marker{display:none}
+.page-hero .guide summary:after{content:none}
+.page-hero .guide[open] summary{background:#cdefda}
+.page-hero .guideBody{position:absolute;top:calc(100% + 9px);left:0;width:min(440px,100%);z-index:5;padding:14px;border:1px solid #c9e5d4;border-radius:12px;background:#fff;box-shadow:0 12px 30px #2f6f4926;font-size:13px;line-height:1.7;color:#4c6b5e}
+.page-hero .guideBody p{margin:0 0 8px}.page-hero .guideBody p:last-child{margin-bottom:0}
+.page-hero .guideBody b{color:#186c4e}
+.page-hero .guideBody .example{border-top:1px solid #e0eee5;padding-top:8px}
 h1{margin:0;font-size:27px;color:#22694f}.sub{margin-top:6px;font-size:12px;line-height:1.55;color:var(--muted)}
 .card{padding:16px;margin-bottom:14px}
 h2{font-size:17px;margin:0 0 12px}
@@ -71,7 +81,18 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </head>
 <body><main>
 <section class="page-hero">
+<div class="titleRow">
 <h1>오행의 성역</h1>
+<details class="guide">
+<summary>사용방법 <span aria-hidden="true">▾</span></summary>
+<div class="guideBody">
+<p><b>① 소탕 계산</b> · 클리어층과 필요한 재료 수량을 입력하면 소탕 횟수와 수련의 인장을 계산합니다.</p>
+<p><b>② 보유·누적 계산</b> · 목표 재료, 최고층, 보유 재료를 입력하면 부족량을 계산합니다. 이미 받은 누적 보상은 중복 반영하지 마세요.</p>
+<p><b>③ 층수 조회</b> · 층수를 입력하면 필요 관통·명중, 최고 체력, 1회 소탕 보상을 볼 수 있습니다.</p>
+<p class="example"><b>예시</b> · 5,000층에서 재료 1종 <b>5,000만 개</b>가 필요하다면(보유 0개), 소탕 <b>154회</b>·수련의 인장 <b>77만 개</b>입니다.</p>
+</div>
+</details>
+</div>
 <div class="sub">현재 최대 5000층. 0.1.91 개편 기준이며 확인값은 100층 단위로 표시합니다.</div>
 </section>
 
