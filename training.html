@@ -22,7 +22,7 @@ details.table-details .scroll{margin-top:0;border-top:1px solid #e0eee6}
 table{width:100%;border-collapse:collapse;min-width:520px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:12px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
 @media(max-width:760px){main{padding:8px 7px 26px}.page-hero{margin:0 0 8px;padding:12px;border-radius:14px}.site-head h1{font-size:20px}.submark{display:none}.wrap{grid-template-columns:1fr;gap:8px}.panel{padding:11px;border-radius:13px}.input-panel{position:static}h2{font-size:15px;margin-bottom:11px}input,button{min-height:44px;font-size:14px}.scroll{overflow:visible}table{min-width:0;table-layout:fixed}th,td{font-size:10.5px;white-space:normal}.bestline{font-size:16px}}
 </style></head><body><main>
-<section class="page-hero"><header class="site-head"><h1>수련장</h1><div class="submark">최대 5000만-100</div></header><div class="hero-sub">210만-100~1000만-100은 공개 확인값을 기준으로 1만 단위 조회하며, 1000만-100 초과는 현재 APK의 수련장 확장 HP 계산식을 적용합니다.</div></section>
+<section class="page-hero"><header class="site-head"><h1>수련장</h1><div class="submark">최대 5000만-100</div></header><div class="hero-sub">210만-100~1000만-100은 공개 확인값을 기준으로 조회하며, 1100만-100~4000만-100은 현재 게임 화면에서 확인된 100만 단위 실수치를 반영했습니다. 4100만 이후는 APK 계산식 검증 후 반영합니다.</div></section>
 <div class="wrap"><section class="panel input-panel"><h2>구간 조회</h2>
 <div class="field"><label for="stage">확인할 수련장 구간</label><input id="stage" type="number" min="1" max="5000" step="1" value="1000"></div>
 <button id="run" type="button">타겟 체력 확인</button><div id="status" class="status"></div></section>
@@ -41,46 +41,13 @@ const hp={
 610:7543083207,620:7711160065,630:7879477153,640:8048029107,650:8216810799,660:8385817318,670:8555043963,680:8724486220,690:8894139761,700:9064000425,
 710:9234064215,720:9404327282,730:9574785922,740:9745436567,750:9916275774,760:10087300225,770:10258506714,780:10429892144,790:10601453524,800:10773187960,
 810:10945092650,820:11117164885,830:11289402037,840:11461801561,850:11634360991,860:11807077931,870:11979950059,880:12152975119,890:12326150919,900:12499475332,
-910:12672946286,920:12846561769,930:13020319822,940:13194218540,950:13368256066,960:13542430593,970:13716740360,980:13891183651,990:14065758793,1000:14240464153
+910:12672946286,920:12846561769,930:13020319822,940:13194218540,950:13368256066,960:13542430593,970:13716740360,980:13891183651,990:14065758793,1000:14240464153,
+1100:17748230366,1200:21278965859,1300:24830404989,1400:28400691288,1500:31988273754,1600:35591837475,1700:39210253498,1800:42842541958,1900:46487844354,2000:50145402311,
+2100:57483679713,2200:64843909908,2300:72225004146,2400:79625976605,2500:87045930449,2600:94484046299,2700:101939572608,2800:109411817571,2900:116900142272,3000:124403954844,
+3100:135682080755,3200:146981845527,3300:158302531908,3400:169643468673,3500:181004026336,3600:192383613374,3700:203781672889,3800:215197679656,3900:226631137496,4000:238081576930
 };
 function fmt(v){const e=Math.floor(v/100000000),m=Math.floor((v%100000000)/10000),r=v%10000;return (e?e+'억 ':'')+(m?m+'만 ':'')+r}
 
-// 현재 APK TrainingExpansion214Rules 기준.
-// 1000만-100(내부 stageIndex 999,999,999) 이후 100만 stageIndex 블록마다
-// HpGrowth를 누적 적용한다. 공개 실수치 1000만-100을 경계값으로 사용.
-const HP1000=14240464153;
-const EXP214_C=2.422717821931893;
-const highHpLog=[Math.log10(HP1000)];
-for(let k=0;k<4000;k++){
- const tier=Math.floor(k/1000);
- const q=800+k;
- const base=370500+20000*q;
- const growthLog=(2+tier)*EXP214_C*Math.log10(base);
- highHpLog.push(highHpLog[k]+1000000*growthLog);
-}
-function suffixFromIndex(n){
- n=Math.max(0,Math.floor(n));
- if(n===0)return '';
- let out='';
- while(n>0){
-  n--;
-  out=String.fromCharCode(65+(n%26))+out;
-  n=Math.floor(n/26);
- }
- return out;
-}
-function fmtCoeff(v){
- if(v>=1000)return String(Math.round(v));
- if(v>=100)return v.toFixed(1).replace(/\.0$/,'');
- if(v>=10)return v.toFixed(2).replace(/0+$/,'').replace(/\.$/,'');
- return v.toFixed(3).replace(/0+$/,'').replace(/\.$/,'');
-}
-function gameFromLog(L){
- let idx=Math.max(0,Math.floor((L-2)/4));
- let coeff=Math.pow(10,L-4*idx);
- if(coeff>=999999.5){coeff/=10000;idx++;}
- return fmtCoeff(coeff)+suffixFromIndex(idx);
-}
 function verifiedInterpolatedHp(n){
  if(n<210||n>1000)return null;
  if(hp[n]!==undefined)return hp[n];
@@ -103,14 +70,7 @@ function hpInfo(n){
   sub:'공개 확인값 사이 1만 단위 계산 · '+iv.toLocaleString('ko-KR'),
   kind:'verifiedCalc'
  };
- if(n>1000&&n<=5000){
-  const L=highHpLog[n-1000];
-  return{
-   text:gameFromLog(L),
-   sub:'현재 APK 확장식 · log10 HP '+L.toLocaleString('ko-KR',{maximumFractionDigits:3}),
-   kind:'apk'
-  };
- }
+ if(n>1000&&n<=5000)return null;
  return null;
 }
 function render(){
@@ -120,7 +80,7 @@ function render(){
   ?'<div class="bestline">'+n+'만-100 · '+info.text+'</div><div class="small">'+info.sub+'</div>'
   :'<div class="bestline">'+n+'만-100</div><div class="small">해당 구간의 확인된 타겟 체력 수치가 없습니다.</div>';
  document.getElementById('status').innerHTML=info
-  ?'<span class="ok">'+(info.kind==='apk'?'APK 확장식 조회 완료.':info.kind==='verifiedCalc'?'공개 확인값 기준 조회 완료.':'공개 실수치 조회 완료.')+'</span>'
+  ?'<span class="ok">'+(info.kind==='verifiedCalc'?'공개 확인값 기준 조회 완료.':'실게임 확인값 조회 완료.')+'</span>'
   :'<span class="bad">확인값 미확인 · 임의 추정은 표시하지 않습니다.</span>';
  let rows='';
  for(let x=200;x<=5000;x+=100){
