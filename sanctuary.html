@@ -111,7 +111,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="targetResult" class="result targetResultFull"></div>
 </div>
-<div class="note">재료 1종 기준. 1층부터 최고 클리어 층까지의 누적 클리어 보상을 계산기 보상식으로 추정하고, 부족분만 최고 클리어 층 소탕으로 채웁니다. 실제 누적 보상은 게임 서버 정산값과 다를 수 있습니다.</div>
+<div class="note">재료 1종 기준. 최초 클리어 누적 보상은 서버 지급값이 검증되지 않아 기본적으로 계산에 반영하지 않습니다. 실제 누적 보상을 이미 받았거나 추정치를 사용하려는 경우에만 '추정치 반영'을 선택하세요. 표시된 누적값은 실제 서버 정산값과 다를 수 있습니다.</div>
 </section>
 
 <details id="list" open>
@@ -317,7 +317,7 @@ function parseFloor(v){
 const floor=document.getElementById('floor'),result=document.getElementById('result'),rows=document.getElementById('rows');
 const sweepFloor=document.getElementById('sweepFloor'),needQty=document.getElementById('needQty'),sweepResult=document.getElementById('sweepResult');
 const targetMaterial=document.getElementById('targetMaterial'),maxClearFloor=document.getElementById('maxClearFloor'),targetResult=document.getElementById('targetResult');
-let includeCumulative=true;
+let includeCumulative=false;
 
 function render(){
  const f=parseFloor(floor.value);
@@ -380,7 +380,7 @@ function renderTarget(){
  const sweepSeals=runs*f;
  const total=appliedCumulative+sweepGain;
  const extra=Math.max(0,total-need);
- targetResult.innerHTML='누적 클리어(추정) <b>'+fmtKor(cumulative)+'개</b><label class="inline-check"><input id="includeCumulative" type="checkbox" '+(includeCumulative?'checked':'')+'>반영</label> · 부족 '+fmtKor(shortage)+'개<br>'+
+ targetResult.innerHTML='누적 클리어(추정) <b>'+fmtKor(cumulative)+'개</b><label class="inline-check"><input id="includeCumulative" type="checkbox" '+(includeCumulative?'checked':'')+'>추정치 반영</label> · 부족 '+fmtKor(shortage)+'개<br>'+
   '최고층 1회 소탕 '+fmtKor(per)+'개 · 1회 수련의 인장 '+fmtKor(f)+'개 · 필요 소탕 <b>'+fmtKor(runs)+'회</b>'+(runs>1000?' · 게임 요청 <b>'+fmtKor(Math.ceil(runs/1000))+'번</b>':'')+'<br>'+
   '<span class="seal-total">소탕 획득 '+fmtKor(sweepGain)+'개 · 필요 수련의 인장 '+fmtKor(sweepSeals)+'개</span><br>'+ 
   '최종 <b>'+fmtKor(total)+'개</b>'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
