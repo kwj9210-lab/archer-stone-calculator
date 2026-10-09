@@ -76,6 +76,12 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 .readout{margin-top:6px;min-height:42px;padding:10px;border:1px solid #c9e5d4;border-radius:11px;background:#f0fff6;color:#177451;font-size:17px;font-weight:900}
 .compare-note{display:none;margin-top:9px;padding:10px 12px;background:#f5fff9;border:1px solid #c8e6d2;border-radius:11px;color:#246e52;font-size:12px;font-weight:850}
 .compare-note.show{display:block}
+.audit-details{margin-top:11px;border:1px solid #d4e6d9;border-radius:12px;background:#fcfffd;overflow:hidden}
+.audit-details summary{cursor:pointer;padding:10px 12px;font-weight:800;font-size:12px;color:#357758;list-style:none}
+.audit-details summary::-webkit-details-marker{display:none}
+.audit-details .audit-content{border-top:1px solid #dfebdf;padding:12px;font-size:12px;line-height:1.75;color:#59746a}
+.audit-details .audit-content p{margin:0 0 9px}
+.audit-details .audit-content p:last-child{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -190,6 +196,16 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
  </div>
  <div class="note">검증 구분: 기본 능력치 등급별 상한은 APK CSV, 오행 개방은 기존 APK 분석식, 정령 단계식과 정밀술 300레벨/3,570 관통은 APK 네이티브 코드, 코스튬·각인석은 첨부 참고자료 기반입니다. 나머지 패시브·코스튬·각인석의 MAX 및 추가 효과의 적용 조건은 개별 확인이 필요합니다. 입력은 브라우저에 자동 저장됩니다.</div>
+ <details class="audit-details">
+ <summary>APK 데이터 검증 범위 / MAX값 확인</summary>
+ <div class="audit-content">
+  <p><b>APK 0.1.91 확인</b> · 활 등급 0~31 관통 능력치 최대 50~360 (등급당 +10). 정령 0~100단계, 기본 관통 최대 +1,022. 전투 조건 플래그 활성 시 정령 관통 ×5.</p>
+  <p><b>APK 0.1.91 확인</b> · 초월 정밀술 0~300레벨, 관통 최대 +3,570. 100레벨에서는 +273. 오행 개방 0~100단계, 완료 보상 누적 관통 최대 +15,000.</p>
+  <p><b>성역 별도 처리</b> · 오행의 성역은 오행 개방 재료를 얻는 장소이며, 필요 관통은 조회만 합니다. 직접 획득 관통으로 더하지 않습니다.</p>
+  <p><b>첨부 참고값</b> · 갑파 패시브 최대 450, 코스튬 개수 6/7/12/3, 각인석 등급별 수치 및 11칸+자유 1칸. 이 항목들의 모든 MAX와 조건은 APK와의 완전 대조가 끝나지 않았습니다.</p>
+  <p><b>직접 확인 입력</b> · 스킬 PierceFlat 및 기타 효과는 게임 실제 적용값을 입력합니다. 게임 표시 관통과 계산값을 비교해 빠진 효과와 중복 합산을 확인할 수 있습니다.</p>
+ </div>
+</details>
 </section>
 </main>
 <script>
