@@ -22,7 +22,7 @@ details.table-details .scroll{margin-top:0;border-top:1px solid #e0eee6}
 table{width:100%;border-collapse:collapse;min-width:520px}th,td{padding:9px 7px;border-bottom:1px solid #dcece3;text-align:right;font-size:12px;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:#32634f;background:#effbf4}td{color:#62776e;background:#fff}
 @media(max-width:760px){main{padding:8px 7px 26px}.page-hero{margin:0 0 8px;padding:12px;border-radius:14px}.site-head h1{font-size:20px}.submark{display:none}.wrap{grid-template-columns:1fr;gap:8px}.panel{padding:11px;border-radius:13px}.input-panel{position:static}h2{font-size:15px;margin-bottom:11px}input,button{min-height:44px;font-size:14px}.scroll{overflow:visible}table{min-width:0;table-layout:fixed}th,td{font-size:10.5px;white-space:normal}.bestline{font-size:16px}}
 </style></head><body><main>
-<section class="page-hero"><header class="site-head"><h1>수련장</h1><div class="submark">최대 5000만-100</div></header><div class="hero-sub">210만-100~1000만-100은 공개 실수치, 1000만-100 초과는 현재 APK의 수련장 확장 HP 계산식을 적용합니다.</div></section>
+<section class="page-hero"><header class="site-head"><h1>수련장</h1><div class="submark">최대 5000만-100</div></header><div class="hero-sub">210만-100~1000만-100은 공개 확인값을 기준으로 1만 단위 조회하며, 1000만-100 초과는 현재 APK의 수련장 확장 HP 계산식을 적용합니다.</div></section>
 <div class="wrap"><section class="panel input-panel"><h2>구간 조회</h2>
 <div class="field"><label for="stage">확인할 수련장 구간</label><input id="stage" type="number" min="1" max="5000" step="1" value="1000"></div>
 <button id="run" type="button">타겟 체력 확인</button><div id="status" class="status"></div></section>
@@ -81,12 +81,27 @@ function gameFromLog(L){
  if(coeff>=999999.5){coeff/=10000;idx++;}
  return fmtCoeff(coeff)+suffixFromIndex(idx);
 }
+function verifiedInterpolatedHp(n){
+ if(n<210||n>1000)return null;
+ if(hp[n]!==undefined)return hp[n];
+ const lo=Math.floor(n/10)*10;
+ const hi=lo+10;
+ if(hp[lo]===undefined||hp[hi]===undefined)return null;
+ const t=(n-lo)/10;
+ return Math.round(hp[lo]+(hp[hi]-hp[lo])*t);
+}
 function hpInfo(n){
  const v=hp[n];
  if(v!==undefined)return{
   text:fmt(v),
   sub:'공개 확인 타겟 체력 '+v.toLocaleString('ko-KR'),
   kind:'public'
+ };
+ const iv=verifiedInterpolatedHp(n);
+ if(iv!==null)return{
+  text:fmt(iv),
+  sub:'공개 확인값 사이 1만 단위 계산 · '+iv.toLocaleString('ko-KR'),
+  kind:'verifiedCalc'
  };
  if(n>1000&&n<=5000){
   const L=highHpLog[n-1000];
@@ -105,7 +120,7 @@ function render(){
   ?'<div class="bestline">'+n+'만-100 · '+info.text+'</div><div class="small">'+info.sub+'</div>'
   :'<div class="bestline">'+n+'만-100</div><div class="small">해당 구간의 확인된 타겟 체력 수치가 없습니다.</div>';
  document.getElementById('status').innerHTML=info
-  ?'<span class="ok">'+(info.kind==='apk'?'APK 확장식 조회 완료.':'공개 실수치 조회 완료.')+'</span>'
+  ?'<span class="ok">'+(info.kind==='apk'?'APK 확장식 조회 완료.':info.kind==='verifiedCalc'?'공개 확인값 기준 조회 완료.':'공개 실수치 조회 완료.')+'</span>'
   :'<span class="bad">확인값 미확인 · 임의 추정은 표시하지 않습니다.</span>';
  let rows='';
  for(let x=200;x<=5000;x+=100){
