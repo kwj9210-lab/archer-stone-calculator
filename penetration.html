@@ -109,10 +109,12 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 <section class="card">
  <h2>02 · 정령</h2>
  <div class="fields">
-  <div class="field"><label for="spiritStage">정령 단계 (참고 0~100)</label><input id="spiritStage" type="number" min="0" max="100" step="1" value="0"></div>
+  <div class="field"><label for="spiritStage">정령 단계 (APK 0~100)</label><input id="spiritStage" type="number" min="0" max="100" step="1" value="0"></div>
   <div class="field"><label for="spiritPen">정령 관통</label><input id="spiritPen" type="number" min="0" step="1" value="0"></div>
  </div>
- <div id="spiritNote" class="note">확인된 수치: 1단계 1 · 2단계 11 · 3단계 21 · 100단계 1,022. 다른 단계는 게임에 나온 관통을 직접 입력하세요.</div>
+ <div class="field" style="margin-top:10px"><label for="spiritMultiplier">정령 관통 적용 배율</label>
+  <select id="spiritMultiplier"><option value="1">기본 ×1</option><option value="5">조건부 ×5 (게임에서 적용 시)</option></select></div>
+  <div id="spiritNote" class="note">APK 0.1.91 정령 Flat 함수: 1~100단계 자동 계산 · 3단계 +22 · 100단계 +1,022. FlatForCombat의 조건부 ×5 효과는 실제 적용될 때만 선택하세요.</div>
 </section>
 </div>
 <section class="card">
@@ -186,7 +188,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <button id="sendTower" class="action" type="button">초월의 탑에 관통 전달 →</button>
   <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
  </div>
- <div class="note">검증 구분: 기본 능력치 등급별 상한은 APK CSV, 오행 개방은 기존 APK 분석식, 정령 일부 단계·코스튬·각인석은 첨부 참고자료 기반입니다. 나머지 모든 APK 상한과 정령의 전체 단계식은 별도 검증이 필요합니다. 입력은 브라우저에 자동 저장됩니다.</div>
+ <div class="note">검증 구분: 기본 능력치 등급별 상한은 APK CSV, 오행 개방은 기존 APK 분석식, 정령 단계식은 APK 네이티브 코드, 코스튬·각인석은 첨부 참고자료 기반입니다. 나머지 패시브·코스튬·각인석의 MAX 및 추가 효과의 적용 조건은 개별 확인이 필요합니다. 입력은 브라우저에 자동 저장됩니다.</div>
 </section>
 </main>
 <script>
@@ -194,7 +196,8 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  "use strict";
  const ranks=["최하급","하급","일반","상급","최상급","특급","전설","신화","태초","불멸"];
  const stones=[{"name":"마석","values":[4,6,10,15,22,34,52,62,73,85]},{"name":"경화석","values":[12,18,30,45,66,102,156,186,219,255]},{"name":"생명석","values":[8,12,20,30,44,68,104,124,146,170]}];
- const spiritKnown={"0":0,"1":1,"2":11,"3":21,"100":1022};
+ function spiritFlat(level){return level===0?0:Math.round(1+299*(level-1)/29);}
+ const spiritKnown={"0":0};
  const costumes=[
   {id:"costumeCash",max:6,per:3},
   {id:"costumeWorld",max:7,per:10},
@@ -234,7 +237,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 
  const $=id=>document.getElementById(id);
  const fmt=n=>n.toLocaleString("ko-KR");
- const inputIds=["arrowGrade","statAbility","statPassive","statPrecision","spiritStage","spiritPen","openingCompleted","sanctuaryFloor","skillPierce","otherPierce","observedPen",
+ const inputIds=["arrowGrade","statAbility","statPassive","statPrecision","spiritStage","spiritPen","openingCompleted","sanctuaryFloor","skillPierce","otherPierce","observedPen","spiritMultiplier",
   "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
   "extraEnabled","extraType","extraRank"];
  let countInputs=[],lastValidTotal=null;
@@ -296,22 +299,17 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    }catch(_){}
  }
  function spiritStageChange(){
-   const n=Number($("spiritStage").value);
-   if(Number.isInteger(n)&&Object.prototype.hasOwnProperty.call(spiritKnown,String(n))){
-     $("spiritPen").value=String(spiritKnown[n]);
-   }else{
-     $("spiritPen").value="";
-   }
+   const raw=String($("spiritStage").value).trim(),n=Number(raw);
+   if(/^\d+$/.test(raw)&&Number.isInteger(n)&&n>=0&&n<=100){
+     $("spiritPen").value=String(spiritFlat(n));
+   }else $("spiritPen").value="";
    update();
  }
- function updateSpiritHelp(stage,hasError){
-   const note=$("spiritNote");
-   if(hasError){note.textContent="정령 단계는 0~100 사이 정수로 입력하세요.";return}
-   if(Object.prototype.hasOwnProperty.call(spiritKnown,String(stage))){
-     note.textContent="확인된 "+stage+"단계 관통: "+fmt(spiritKnown[stage])+" · 필요한 경우 직접 변경할 수 있습니다.";
-   }else{
-     note.textContent="이 단계의 APK 단계별 관통식을 완전히 복원하지 못해 임의로 계산하지 않습니다. 게임에 표시된 정령 관통을 직접 입력하세요. 확인값: 1단계 1, 2단계 11, 3단계 21, 100단계 1,022.";
-   }
+ function updateSpiritHelp(stage,invalid){
+   const help=$("spiritNote");
+   if(invalid){help.textContent="정령 단계는 APK의 0~100 범위로 입력하세요.";return;}
+   help.textContent="APK 단계별 기본 관통: "+stage+"단계 +"+fmt(spiritFlat(stage))+
+     " · 기본 ×1 / 게임에서 조건부 강화 효과 적용 시 ×5 선택 · 직접 입력도 가능합니다.";
  }
  function update(){
    const errors=[];
@@ -321,7 +319,9 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    $("statAbility").max=String(abilityMax);
    const base=parseIntField("statAbility",abilityMax,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",273,errors);
    const stage=parseIntField("spiritStage",100,errors);
-   const spirit=parseIntField("spiritPen",1000000000,errors);
+   const spiritMultiplier=Number($("spiritMultiplier").value);
+   if(spiritMultiplier!==1&&spiritMultiplier!==5)errors.push("정령 적용 배율을 확인하세요.");
+   const spirit=parseIntField("spiritPen",1000000000,errors)*spiritMultiplier;
    const costume=costumes.reduce((acc,row)=>acc+parseIntField(row.id,row.max,errors)*row.per,0)+($("diamondWear").checked?5:0);
    const runeSums=[],countTotals=[];
    stones.forEach((stone,t)=>{
@@ -392,7 +392,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    for(const id of allIds()){
      const el=$(id);if(el.type==="checkbox")el.checked=false;else el.value="0";
    }
-   $("extraType").value="0";$("extraRank").value="0";$("arrowGrade").value="30";$("observedPen").value="";
+   $("extraType").value="0";$("extraRank").value="0";$("arrowGrade").value="30";$("observedPen").value="";$("spiritMultiplier").value="1";
    update();
  }
  function sendTower(){
