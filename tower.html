@@ -257,5 +257,24 @@ myPen.addEventListener('keydown',e=>{
  if(row)row.scrollIntoView({behavior:'smooth',block:'center'});
 });
 list.addEventListener('toggle',()=>{if(list.open)buildRows()});
+// 관통 Total에서 전달된 최종 관통을 받아 기존 초월의 탑 계산을 실행합니다.
+function applyPenetrationHandoff(value){
+ const n=Number(value);
+ if(!Number.isSafeInteger(n)||n<0)return;
+ myPen.value=String(n);
+ updateLookup();
+}
+window.addEventListener('message',event=>{
+ if(event.origin!==window.location.origin||event.source!==window.parent)return;
+ if(!event.data||event.data.type!=='archer:set-tower-penetration')return;
+ applyPenetrationHandoff(event.data.penetration);
+});
+try{
+ const saved=localStorage.getItem('archer:tower:handoff');
+ if(saved!==null){
+   localStorage.removeItem('archer:tower:handoff');
+   if(/^\d+$/.test(saved))applyPenetrationHandoff(Number(saved));
+ }
+}catch(_){}
 updateLookup();
 </script></body></html>
