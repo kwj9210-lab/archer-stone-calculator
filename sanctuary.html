@@ -118,7 +118,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <summary>100~5000층 · 100층 단위 전체 보기</summary>
 <div class="tableWrap">
 <table>
-<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>최고 체력</th><th>최초 입장 인장</th><th>1회 소탕 획득량</th><th>누적 수련의 인장</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
+<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>최고 체력</th><th>최초 입장 인장</th><th>1회 소탕 획득량</th><th>누적 수련의 인장</th><th>재료 1종 누적(추정)</th><th>5종 누적(추정)</th></tr></thead>
 <tbody id="rows"></tbody>
 </table>
 </div>
@@ -333,7 +333,7 @@ function render(){
   '1회 소탕 획득 <b>'+fmtKor(rewardEach(f))+'개</b><br>'+
   '최고 체력 <b>'+sanctuaryBossHp(f)+'</b><br>'+
   '필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
-  '누적 수련의 인장 '+fmtKor(seals)+'개 · 재료 1종 '+fmtKor(one)+'개 · 5종 '+fmtKor(one*5)+'개';
+  '누적 수련의 인장 '+fmtKor(seals)+'개 · 재료 1종 예상 누적 '+fmtKor(one)+'개 · 5종 예상 누적 '+fmtKor(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
  const tr=document.getElementById('f'+f);if(tr)tr.classList.add('hit');
 }
@@ -380,7 +380,7 @@ function renderTarget(){
  const sweepSeals=runs*f;
  const total=appliedCumulative+sweepGain;
  const extra=Math.max(0,total-need);
- targetResult.innerHTML='누적 클리어 <b>'+fmtKor(cumulative)+'개</b><label class="inline-check"><input id="includeCumulative" type="checkbox" '+(includeCumulative?'checked':'')+'>반영</label> · 부족 '+fmtKor(shortage)+'개<br>'+
+ targetResult.innerHTML='누적 클리어(추정) <b>'+fmtKor(cumulative)+'개</b><label class="inline-check"><input id="includeCumulative" type="checkbox" '+(includeCumulative?'checked':'')+'>반영</label> · 부족 '+fmtKor(shortage)+'개<br>'+
   '최고층 1회 소탕 '+fmtKor(per)+'개 · 1회 수련의 인장 '+fmtKor(f)+'개 · 필요 소탕 <b>'+fmtKor(runs)+'회</b>'+(runs>1000?' · 게임 요청 <b>'+fmtKor(Math.ceil(runs/1000))+'번</b>':'')+'<br>'+
   '<span class="seal-total">소탕 획득 '+fmtKor(sweepGain)+'개 · 필요 수련의 인장 '+fmtKor(sweepSeals)+'개</span><br>'+ 
   '최종 <b>'+fmtKor(total)+'개</b>'+(extra>0?' · 초과 '+fmtKor(extra)+'개':'');
