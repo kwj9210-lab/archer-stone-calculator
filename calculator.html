@@ -6,7 +6,8 @@
 <title>궁수키우기 RPG 계산기</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;background:#f4fff8;color:#29463b}
-header{position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-bottom:1px solid #cfe9d9;padding:9px 12px;box-shadow:0 4px 16px rgba(69,126,98,.10);backdrop-filter:blur(10px)}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh}
+header{flex:none;position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-bottom:1px solid #cfe9d9;padding:9px 12px;box-shadow:0 4px 16px rgba(69,126,98,.10);backdrop-filter:blur(10px)}
 .bar{max-width:1060px;margin:auto;display:flex;align-items:center;gap:12px}
 .title{font-weight:950;font-size:17px;white-space:nowrap;color:#22694f;letter-spacing:-.4px}
 .tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;flex:1}
@@ -48,7 +49,7 @@ header{position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-
 #tabSanctuary{--tab:#38a86f;--tab2:#6bcf9d;--wash:#f0fbf5}
 .tab-label{min-width:0;line-height:1.1}
 .short{display:none}
-main{height:calc(100vh - 63px)}
+main{flex:1;min-height:0}
 iframe{width:100%;height:100%;border:0;display:none;background:white}
 iframe.active{display:block}
 @media(max-width:600px){
@@ -78,8 +79,8 @@ header{padding:6px 7px 7px}
 .tabs button.active{box-shadow:0 3px 8px rgba(58,108,85,.08),inset 0 0 0 1px rgba(255,255,255,.72)}
 .full{display:none}
 .short{display:inline}
-main{height:calc(100vh - 105px)}
 }
+
 @media(max-width:360px){
 .tabs{gap:4px}
 .tabs button{min-height:42px;padding:4px 3px;font-size:11px;gap:0}
