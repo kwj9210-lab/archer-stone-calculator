@@ -111,7 +111,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  <h2>02 · 정령</h2>
  <div class="fields">
   <div class="field"><label for="spiritStage">정령 단계 (APK 0~100)</label><input id="spiritStage" type="number" min="0" max="100" step="1" value="0"></div>
-  <div class="field"><label for="spiritPen">정령 관통</label><input id="spiritPen" type="number" min="0" step="1" value="0"></div>
+  <div class="field"><label for="spiritPen">정령 기본 관통 (MAX 1,022)</label><input id="spiritPen" type="number" min="0" max="1022" step="1" value="0"></div>
  </div>
  <div class="field" style="margin-top:10px"><label for="spiritMultiplier">정령 관통 적용 배율</label>
   <select id="spiritMultiplier"><option value="1">기본 ×1</option><option value="5">조건부 ×5 (게임에서 적용 시)</option></select></div>
@@ -333,10 +333,11 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    $("abilityMaxLabel").textContent="능력치 관통 (현재 등급 MAX "+abilityMax+")";
    $("statAbility").max=String(abilityMax);
    const base=parseIntField("statAbility",abilityMax,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",3570,errors);
+   parseIntField("precisionLevel",300,errors);
    const stage=parseIntField("spiritStage",100,errors);
    const spiritMultiplier=Number($("spiritMultiplier").value);
    if(spiritMultiplier!==1&&spiritMultiplier!==5)errors.push("정령 적용 배율을 확인하세요.");
-   const spirit=parseIntField("spiritPen",1000000000,errors)*spiritMultiplier;
+   const spirit=parseIntField("spiritPen",1022,errors)*spiritMultiplier;
    const costume=costumes.reduce((acc,row)=>acc+parseIntField(row.id,row.max,errors)*row.per,0)+($("diamondWear").checked?5:0);
    const runeSums=[],countTotals=[];
    stones.forEach((stone,t)=>{
@@ -423,10 +424,12 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  // 직접 열 때도 기존 값이 없다면 0에서 시작한다.
  if($("spiritStage").value==="0"&&$("spiritPen").value==="")$("spiritPen").value="0";
  document.querySelectorAll("input,select").forEach(el=>{
+   if(el.id==="spiritStage")el.addEventListener("input",spiritStageChange);
+   else if(el.id==="precisionLevel")el.addEventListener("input",precisionLevelChange);
+   else el.addEventListener("input",update);
    if(el.id==="spiritStage")el.addEventListener("change",spiritStageChange);
    else if(el.id==="precisionLevel")el.addEventListener("change",precisionLevelChange);
-   else el.addEventListener("input",update);
-   el.addEventListener("change",update);
+   else el.addEventListener("change",update);
  });
  $("clearFields").addEventListener("click",clear);
  $("sendTower").addEventListener("click",sendTower);
