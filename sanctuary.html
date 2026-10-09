@@ -72,32 +72,32 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <body><main>
 <section class="page-hero">
 <h1>오행의 성역</h1>
-<div class="sub">현재 최대 3000층. 확인값은 100층 단위로 표시합니다.</div>
+<div class="sub">현재 최대 5000층. 0.1.91 개편 기준이며 확인값은 100층 단위로 표시합니다.</div>
 </section>
 
 <section class="card">
 <h2>소탕 계산</h2>
 <div class="sweepGrid">
 <label>클리어층
-<input id="sweepFloor" type="text" inputmode="numeric" value="3000" placeholder="1~3000">
+<input id="sweepFloor" type="text" inputmode="numeric" value="5000" placeholder="1~5000">
 </label>
 <label>필요수량
 <input id="needQty" type="text" inputmode="numeric" value="50000000" placeholder="예: 50000000">
 </label>
 <div id="sweepResult" class="result sweepResultFull"></div>
 </div>
-<div class="note">클리어층은 1~3000 직접 입력. APK 기준 최초 입장과 1회 소탕 모두 해당 층수만큼 수련의 인장이 필요합니다. 해당 층 1회 보상은 15×층-5이며, 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
+<div class="note">클리어층은 1~5000 직접 입력. 최초 입장과 1회 소탕은 해당 층수만큼 수련의 인장이 필요합니다. 1000층 초과부터 0.1.91 상향 보상식을 적용하며, 필요 소탕횟수는 부족하지 않게 올림합니다.</div>
 </section>
 
 <section class="card">
 <h2>층수 조회</h2>
 <div class="lookup">
 <label>층수
-<input id="floor" type="text" inputmode="numeric" value="3000" placeholder="1~3000">
+<input id="floor" type="text" inputmode="numeric" value="5000" placeholder="1~5000">
 </label>
 <div id="result" class="result"></div>
 </div>
-<div class="note">층수는 1~3000 직접 입력. 입력한 정확한 층에서 가장 높은 체력과 필요 관통·명중을 표시합니다.</div>
+<div class="note">층수는 1~5000 직접 입력. 입력한 정확한 층에서 가장 높은 체력과 필요 관통·명중을 표시합니다.</div>
 </section>
 
 <section class="card">
@@ -107,7 +107,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <input id="targetMaterial" type="text" inputmode="numeric" value="50000000" placeholder="예: 50000000">
 </label>
 <label>내 최고 클리어 층수
-<input id="maxClearFloor" type="text" inputmode="numeric" value="3000" placeholder="1~3000">
+<input id="maxClearFloor" type="text" inputmode="numeric" value="5000" placeholder="1~5000">
 </label>
 <div id="targetResult" class="result targetResultFull"></div>
 </div>
@@ -115,7 +115,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </section>
 
 <details id="list" open>
-<summary>100~3000층 · 100층 단위 전체 보기</summary>
+<summary>100~5000층 · 100층 단위 전체 보기</summary>
 <div class="tableWrap">
 <table>
 <thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>최고 체력</th><th>최초 입장 인장</th><th>1회 소탕 획득량</th><th>누적 수련의 인장</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
@@ -195,7 +195,9 @@ function towerReq(f){
  if(f<=500)return [lowValue(f,LOW_B),lowValue(f,LOW_E)];
  if(f<=1000)return [tower1000Value(f,B1),tower1000Value(f,E1)];
  if(f<=1500)return [tower1500Value(f,B2),tower1500Value(f,E2)];
- return [tower3000Value(f,B3),tower3000Value(f,E3)];
+ if(f<=3000)return [tower3000Value(f,B3),tower3000Value(f,E3)];
+ // APK 0.1.91: 3000층 초과 선형 확장
+ return [33000+16*(f-3000),86000+40*(f-3000)];
 }
 function sanctuaryReq(f){
  const [b,e]=towerReq(f);
@@ -266,8 +268,17 @@ function sanctuaryBossHp(f){
  return gameText(stageEffect+0.5);
 }
 function cumulativeSeals(n){return n*(n+1)/2}
-function cumulativeOneMaterial(n){return n*(15*n+5)/2}
-function rewardEach(f){return 15*f-5}
+function rewardEach(f){
+ const legacy=15*f-5;
+ if(f<=1000)return legacy;
+ // APK 0.1.91 rewardCurve 1/2 상향식
+ const q=Math.floor((f+24)/50);
+ const k=Math.floor(f/1000);
+ return legacy+q*(f-25*q)+k;
+}
+const cumulativeMaterial=[0];
+for(let i=1;i<=5000;i++)cumulativeMaterial[i]=cumulativeMaterial[i-1]+rewardEach(i);
+function cumulativeOneMaterial(n){return cumulativeMaterial[n]}
 function parseQty(v){
  const t=String(v).replace(/,/g,'').trim();
  if(!/^\d+$/.test(t))return NaN;
@@ -276,7 +287,7 @@ function parseQty(v){
 }
 function parseFloor(v){
  const n=parseQty(v);
- return Number.isFinite(n)&&n>=1&&n<=3000?n:NaN;
+ return Number.isFinite(n)&&n>=1&&n<=5000?n:NaN;
 }
 
 const floor=document.getElementById('floor'),result=document.getElementById('result'),rows=document.getElementById('rows');
@@ -287,7 +298,7 @@ let includeCumulative=true;
 function render(){
  const f=parseFloor(floor.value);
  if(!Number.isFinite(f)){
-  result.textContent='층수를 1~3000 사이 정수로 입력해 주세요.';
+  result.textContent='층수를 1~5000 사이 정수로 입력해 주세요.';
   document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
   return;
  }
@@ -306,7 +317,7 @@ function renderSweep(){
  const f=parseFloor(sweepFloor.value);
  const need=parseQty(needQty.value);
  if(!Number.isFinite(f)){
-  sweepResult.textContent='클리어층을 1~3000 사이 정수로 입력해 주세요.';
+  sweepResult.textContent='클리어층을 1~5000 사이 정수로 입력해 주세요.';
   return;
  }
  if(!Number.isFinite(need)){
@@ -331,7 +342,7 @@ function renderTarget(){
   return;
  }
  if(!Number.isFinite(f)){
-  targetResult.textContent='최고 클리어 층수를 1~3000 사이 정수로 입력해 주세요.';
+  targetResult.textContent='최고 클리어 층수를 1~5000 사이 정수로 입력해 주세요.';
   return;
  }
  const cumulative=cumulativeOneMaterial(f);
@@ -351,7 +362,7 @@ function renderTarget(){
  if(check)check.addEventListener('change',function(){includeCumulative=this.checked;renderTarget()});
 }
 const frag=document.createDocumentFragment();
-for(let f=100;f<=3000;f+=100){
+for(let f=100;f<=5000;f+=100){
  const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
  const tr=document.createElement('tr');
  tr.id='f'+f;
