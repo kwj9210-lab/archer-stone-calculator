@@ -93,7 +93,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    </div>
   </details>
  </div>
- <div class="sub">궁수키우기 RPG · 능력치, 정령, 코스튬, 각인석 장착 수량을 합산해 최종 관통 계산</div>
+ <div class="sub">궁수키우기 RPG · 기본 능력치, 정밀술, 정령, 코스튬, 각인석, 오행 개방, 스킬 관통 합산</div>
 </section>
 <div class="section-grid">
 <section class="card">
@@ -295,6 +295,9 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
        const el=$(id);if(el.type==="checkbox")el.checked=saved[id]===true;
        else el.value=String(saved[id]);
      }
+     // 예전 자동값: 정령 3단계 +21 → APK 실측식 +22
+     if(String($("spiritStage").value)==="3"&&String($("spiritPen").value)==="21")
+       $("spiritPen").value="22";
    }catch(_){}
  }
  function save(){
