@@ -10,7 +10,7 @@ body{display:flex;flex-direction:column;height:100vh;height:100dvh}
 header{flex:none;position:sticky;top:0;z-index:10;background:rgba(252,255,253,.94);border-bottom:1px solid #cfe9d9;padding:9px 12px;box-shadow:0 4px 16px rgba(69,126,98,.10);backdrop-filter:blur(10px)}
 .bar{max-width:1060px;margin:auto;display:flex;align-items:center;gap:12px}
 .title{font-weight:950;font-size:17px;white-space:nowrap;color:#22694f;letter-spacing:-.4px}
-.tabs{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;flex:1}
+.tabs{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:7px;flex:1}
 .tabs button{
   --tab:#35c98c;--tab2:#54cbd6;--wash:#f3fcf7;
   position:relative;overflow:hidden;
@@ -48,6 +48,7 @@ header{flex:none;position:sticky;top:0;z-index:10;background:rgba(252,255,253,.9
 #tabTraining{--tab:#e18755;--tab2:#e8b15f;--wash:#fff7ef}
 #tabSanctuary{--tab:#38a86f;--tab2:#6bcf9d;--wash:#f0fbf5}
 #tabOpening{--tab:#bf8a39;--tab2:#e6c27c;--wash:#fff9ec}
+#tabPenetration{--tab:#1b9e83;--tab2:#79d6a6;--wash:#f1fff9}
 .tab-label{min-width:0;line-height:1.1}
 .short{display:none}
 main{flex:1;min-height:0}
@@ -59,7 +60,7 @@ header{padding:6px 7px 7px}
 .title{display:none}
 .tabs{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:6px;
   width:100%;
 }
@@ -97,6 +98,7 @@ header{padding:6px 7px 7px}
 <button id="tabTraining" type="button"><span class="tab-label"><span class="full">수련장</span><span class="short">수련장</span></span></button>
 <button id="tabSanctuary" type="button"><span class="tab-label"><span class="full">오행의 성역</span><span class="short">오행성역</span></span></button>
 <button id="tabOpening" type="button"><span class="tab-label"><span class="full">오행 개방</span><span class="short">오행개방</span></span></button>
+<button id="tabPenetration" type="button"><span class="tab-label"><span class="full">관통 Total</span><span class="short">관통 Total</span></span></button>
 </div></div></header>
 <main>
 <iframe id="engrave" class="active" src="index.html" title="각인석 계산기"></iframe>
@@ -107,19 +109,49 @@ header{padding:6px 7px 7px}
 <iframe id="training" src="training.html" title="수련장"></iframe>
 <iframe id="sanctuary" src="sanctuary.html" title="오행의 성역"></iframe>
 <iframe id="opening" src="opening.html" title="오행 개방"></iframe>
+<iframe id="penetration" src="penetration.html" title="관통 Total"></iframe>
 </main>
 <script>
-const ts=document.getElementById('tabStone'),te=document.getElementById('tabEngrave'),tc=document.getElementById('tabCraft'),tt=document.getElementById('tabTower'),tr=document.getElementById('tabTrial'),tg=document.getElementById('tabTraining'),ta=document.getElementById('tabSanctuary'),to=document.getElementById('tabOpening');
-const s=document.getElementById('stone'),e=document.getElementById('engrave'),c=document.getElementById('craft'),t=document.getElementById('tower'),r=document.getElementById('trial'),g=document.getElementById('training'),a=document.getElementById('sanctuary'),o=document.getElementById('opening');
-function show(which){
- const stone=which==='stone',engrave=which==='engrave',craft=which==='craft',tower=which==='tower',trial=which==='trial',training=which==='training',sanctuary=which==='sanctuary',opening=which==='opening';
- ts.classList.toggle('active',stone); te.classList.toggle('active',engrave); tc.classList.toggle('active',craft); tt.classList.toggle('active',tower); tr.classList.toggle('active',trial); tg.classList.toggle('active',training); ta.classList.toggle('active',sanctuary); to.classList.toggle('active',opening);
- s.classList.toggle('active',stone); e.classList.toggle('active',engrave); c.classList.toggle('active',craft); t.classList.toggle('active',tower); r.classList.toggle('active',trial); g.classList.toggle('active',training); a.classList.toggle('active',sanctuary); o.classList.toggle('active',opening);
- if(history.replaceState) history.replaceState(null,'','#'+which);
+const tabs=[
+ ["engrave","tabEngrave"],["craft","tabCraft"],["stone","tabStone"],
+ ["tower","tabTower"],["trial","tabTrial"],["training","tabTraining"],
+ ["sanctuary","tabSanctuary"],["opening","tabOpening"],
+ ["penetration","tabPenetration"]
+];
+const frames=Object.fromEntries(tabs.map(([id])=>[id,document.getElementById(id)]));
+const buttons=Object.fromEntries(tabs.map(([id,button])=>[id,document.getElementById(button)]));
+let pendingTowerPen=null;
+function handoffToTower(value){
+ if(!Number.isSafeInteger(value)||value<0)return;
+ pendingTowerPen=value;
+ try{localStorage.setItem("archer:tower:handoff",String(value));}catch(_){}
+ if(frames.tower.contentWindow){
+   frames.tower.contentWindow.postMessage({type:"archer:set-tower-penetration",penetration:value},location.origin);
+ }
 }
-ts.onclick=()=>show('stone'); te.onclick=()=>show('engrave'); tc.onclick=()=>show('craft'); tt.onclick=()=>show('tower'); tr.onclick=()=>show('trial'); tg.onclick=()=>show('training'); ta.onclick=()=>show('sanctuary'); to.onclick=()=>show('opening');
-const init=(location.hash||'').replace('#','');
-if(['engrave','craft','stone','tower','trial','training','sanctuary','opening'].includes(init)) show(init);
+function show(which){
+ if(!frames[which])return;
+ for(const [id] of tabs){
+   frames[id].classList.toggle("active",id===which);
+   buttons[id].classList.toggle("active",id===which);
+ }
+ if(history.replaceState)history.replaceState(null,"","#"+which);
+ if(which==="tower"&&pendingTowerPen!==null)handoffToTower(pendingTowerPen);
+}
+for(const [id] of tabs)buttons[id].onclick=()=>show(id);
+frames.tower.addEventListener("load",()=>{
+ if(pendingTowerPen!==null)handoffToTower(pendingTowerPen);
+});
+window.addEventListener("message",event=>{
+ if(event.origin!==location.origin||event.source!==frames.penetration.contentWindow)return;
+ if(!event.data||event.data.type!=="archer:penetration-total")return;
+ const value=event.data.penetration;
+ if(!Number.isSafeInteger(value)||value<0)return;
+ handoffToTower(value);
+ show("tower");
+});
+const init=decodeURIComponent((location.hash||"").replace(/^#/,""));
+if(frames[init])show(init);
 </script>
 <!-- deploy refresh 2026-09-30: sweep decomposition fix 55c70e1 -->
 </body></html>
