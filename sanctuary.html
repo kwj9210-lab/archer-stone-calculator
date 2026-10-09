@@ -90,17 +90,6 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </section>
 
 <section class="card">
-<h2>층수 조회</h2>
-<div class="lookup">
-<label>층수
-<input id="floor" type="text" inputmode="numeric" value="5000" placeholder="1~5000">
-</label>
-<div id="result" class="result"></div>
-</div>
-<div class="note">층수는 1~5000 직접 입력. 입력한 정확한 층에서 가장 높은 체력과 필요 관통·명중을 표시합니다.</div>
-</section>
-
-<section class="card">
 <h2>보유·누적 + 소탕 계산</h2>
 <div class="targetGrid">
 <label>필요 재료 수량
@@ -116,6 +105,19 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </div>
 <div class="note">재료 1종 기준. 게임에서 확인한 현재 보유량을 입력하면 그만큼 소탕 필요량에서 차감합니다. 최초 클리어 누적 보상은 서버 지급값이 검증되지 않아 기본 미반영이며, '추정치 반영'을 직접 선택할 수 있습니다. 보유량에 최초 클리어 보상이 이미 포함됐다면 추정치를 추가하지 마세요.</div>
 </section>
+
+<section class="card">
+<h2>층수 조회</h2>
+<div class="lookup">
+<label>층수
+<input id="floor" type="text" inputmode="numeric" value="5000" placeholder="1~5000">
+</label>
+<div id="result" class="result"></div>
+</div>
+<div class="note">층수는 1~5000 직접 입력. 입력한 정확한 층에서 가장 높은 체력과 필요 관통·명중을 표시합니다.</div>
+</section>
+
+
 
 <details id="list" open>
 <summary>100~5000층 · 100층 단위 전체 보기</summary>
