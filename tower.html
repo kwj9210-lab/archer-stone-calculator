@@ -78,11 +78,39 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
   .page-hero .tab,.page-hero .mode-tab{min-height:42px;border-radius:10px;font-size:13px;padding:8px 6px}
 }
 
+
+/* 공통 사용방법: 제목 옆 접이식 안내 */
+.page-hero{position:relative;z-index:4;overflow:visible}
+.usage-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative;z-index:10;min-width:0}
+.usage-title > h1{margin:0;min-width:0}
+.usage-title .usage-guide{position:static;flex:none;margin:0;padding:0;width:auto;min-height:0;max-width:none;border:0;border-radius:0;box-shadow:none;background:transparent;overflow:visible}
+.usage-title .usage-guide > summary{display:inline-flex;align-items:center;gap:5px;float:none;min-height:0;margin:0;padding:7px 11px;border:1px solid #b8dec8;border-radius:10px;background:#e8f8ee;color:#197451;font-size:12px;font-weight:850;line-height:1.35;white-space:nowrap;cursor:pointer;list-style:none}
+.usage-title .usage-guide > summary::-webkit-details-marker{display:none}
+.usage-title .usage-guide > summary::after{content:none!important;display:none!important}
+.usage-title .usage-guide[open] > summary{background:#cdefda}
+.usage-title .usage-panel{position:absolute;top:calc(100% + 9px);left:0;z-index:30;width:min(430px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:60vh;overflow-y:auto;padding:14px;border:1px solid #c9e5d4;border-radius:12px;background:#fff;box-shadow:0 12px 30px #2f6f4926;color:#4c6b5e;font-size:13px;font-weight:500;line-height:1.7;text-align:left}
+.usage-title .usage-panel p{margin:0 0 8px}
+.usage-title .usage-panel p:last-child{margin-bottom:0}
+.usage-title .usage-panel b{color:#186c4e}
+.usage-title .usage-panel .example{padding-top:8px;border-top:1px solid #e0eee5}
+@media(max-width:620px){.usage-title{gap:7px}.usage-title .usage-guide > summary{padding:6px 9px}}
+
 </style>
 </head>
 <body><main>
 <section class="page-hero">
+<div class="usage-title">
 <h1>초월의 탑</h1>
+<details class="usage-guide">
+<summary>사용방법 <span aria-hidden="true">▾</span></summary>
+<div class="usage-panel">
+<p><b>① 관통 입력</b> · 현재 내 관통을 입력하면 500~3,000층에서 관통 기준 가능 최고층을 계산합니다.</p>
+<p><b>② 결과 확인</b> · 해당 층의 필요 명중과 다음 층의 조건을 확인합니다. 실제 클리어에는 전투력 등 다른 조건도 필요합니다.</p>
+<p><b>③ 보상 확인</b> · ‘초월석 총합 보기’를 열면 누적 보상이 나옵니다. 500층 이후는 1,016층 실측값으로 보정한 계산입니다.</p>
+<p class="example"><b>예시</b> · 내 관통 <b>33,000</b>이면 관통 기준 <b>3,000층</b>, 필요 명중은 <b>86,000</b>입니다.</p>
+</div>
+</details>
+</div>
 <div class="hero-sub sub">내 관통 기준으로 500~3000층에서 가능한 최고층과 필요 관통·명중을 계산합니다.</div>
 </section>
 <section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">내 관통으로 가능한 최고층</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>내 관통<input id="myPen" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="go" value="8508" placeholder="예: 8508"></label><div id="lookupResult" class="lookupResult">관통을 입력하면 가능한 최고층과 필요 명중을 표시합니다.</div></div></section>
