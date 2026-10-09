@@ -101,15 +101,15 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  <div class="fields three">
   <div class="field"><label for="arrowGrade">활 등급 번호 (APK 0~31)</label><select id="arrowGrade"></select></div>
 <div class="field"><label for="statAbility" id="abilityMaxLabel">능력치 관통 (현재 등급 MAX 350)</label><input id="statAbility" type="number" min="0" max="350" step="1" value="0"></div>
-  <div class="field"><label for="statPassive">갑파 패시브 (최대 450)</label><input id="statPassive" type="number" min="0" max="450" step="1" value="0"></div>
-  <div class="field"><label for="statPrecision">정밀술 (최대 273)</label><input id="statPrecision" type="number" min="0" max="273" step="1" value="0"></div>
+  <div class="field"><label for="statPassive">갑파 패시브 (참고 MAX 450)</label><input id="statPassive" type="number" min="0" max="450" step="1" value="0"></div>
+  <div class="field"><label for="statPrecision">정밀술 (참고 MAX 273)</label><input id="statPrecision" type="number" min="0" max="273" step="1" value="0"></div>
  </div>
  <div class="note">APK 0.1.91의 arrow_stat_caps 기준 30등급은 최대 350, 31등급은 최대 360입니다. 패시브 450·정밀술 273은 첨부 참고본 수치로, 전체 APK 검증값과는 구분합니다.</div>
 </section>
 <section class="card">
  <h2>02 · 정령</h2>
  <div class="fields">
-  <div class="field"><label for="spiritStage">정령 단계 (0~100)</label><input id="spiritStage" type="number" min="0" max="100" step="1" value="0"></div>
+  <div class="field"><label for="spiritStage">정령 단계 (참고 0~100)</label><input id="spiritStage" type="number" min="0" max="100" step="1" value="0"></div>
   <div class="field"><label for="spiritPen">정령 관통</label><input id="spiritPen" type="number" min="0" step="1" value="0"></div>
  </div>
  <div id="spiritNote" class="note">확인된 수치: 1단계 1 · 2단계 11 · 3단계 21 · 100단계 1,022. 다른 단계는 게임에 나온 관통을 직접 입력하세요.</div>
@@ -117,6 +117,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 </div>
 <section class="card">
  <h2>03 · 코스튬 보유 및 장착 효과</h2>
+ <div class="note" style="margin:0 0 10px">코스튬 개수·개당 관통은 첨부 시뮬레이터 수치입니다. 이번 APK 조사에서는 전체 구매 상한까지 독립 확인하지 못했습니다.</div>
  <div class="costume-grid">
   <div class="costume"><b>캐시 코스튬 · 개당 +3</b><small>최대 6개</small><input id="costumeCash" type="number" min="0" max="6" step="1" value="0"></div>
   <div class="costume"><b>월드보스 코스튬 · 개당 +10</b><small>최대 7개</small><input id="costumeWorld" type="number" min="0" max="7" step="1" value="0"></div>
@@ -127,7 +128,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 </section>
 <section class="card">
  <h2>04 · 각인석 장착 수량</h2>
- <div class="note" style="margin:0 0 12px">마석·경화석·생명석은 각각 최대 11개를 장착할 수 있습니다. 같은 등급 여러 개도 입력 가능합니다.</div>
+ <div class="note" style="margin:0 0 12px">마석·경화석·생명석은 각각 최대 11개를 장착할 수 있습니다. 같은 등급 여러 개도 입력 가능합니다. 11칸과 등급별 관통은 첨부 참고자료 수치이며 APK 최신 제한 전체 검증값은 아닙니다.</div>
  <div class="engrave-grid" id="engraveGrid"></div>
  <div class="free">
   <label class="checkrow" style="margin:0"><input id="extraEnabled" type="checkbox">자유 각인 +1칸 사용</label>
@@ -309,7 +310,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    if(Object.prototype.hasOwnProperty.call(spiritKnown,String(stage))){
      note.textContent="확인된 "+stage+"단계 관통: "+fmt(spiritKnown[stage])+" · 필요한 경우 직접 변경할 수 있습니다.";
    }else{
-     note.textContent="이 단계의 정확한 관통 표가 없어 자동 계산하지 않습니다. 게임에 표시된 정령 관통을 직접 입력하세요. 확인값: 1단계 1, 2단계 11, 3단계 21, 100단계 1,022.";
+     note.textContent="이 단계의 APK 단계별 관통식을 완전히 복원하지 못해 임의로 계산하지 않습니다. 게임에 표시된 정령 관통을 직접 입력하세요. 확인값: 1단계 1, 2단계 11, 3단계 21, 100단계 1,022.";
    }
  }
  function update(){
