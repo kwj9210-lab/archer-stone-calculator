@@ -70,6 +70,8 @@ th,td{padding:9px 8px;border-bottom:1px solid #e4f1e9;text-align:right;white-spa
 th:first-child,td:first-child{text-align:center}
 thead th{position:sticky;top:0;background:#effbf4;z-index:1}
 tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outline-offset:-2px}
+.power-korean{white-space:nowrap;font-variant-numeric:tabular-nums}
+.power-korean sup{font-size:.78em;line-height:0;vertical-align:super}
 .note{font-size:12px;color:var(--muted);margin:10px 3px 0;line-height:1.55}
 .back{display:inline-block;margin-top:14px;color:#267d68;font-weight:800;text-decoration:none}
 @media(max-width:620px){
@@ -135,7 +137,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 </label>
 <div id="result" class="result"></div>
 </div>
-<div class="note">층수는 1~5000 직접 입력. 입력한 정확한 층에서 가장 높은 체력과 필요 관통·명중을 표시합니다.</div>
+<div class="note">층수는 1~5000 직접 입력합니다. 보스 HP는 일반적인 억·조 단위를 훨씬 넘어가므로, 실제 자릿수를 한글 억·만 단위의 10의 지수로 표시합니다. 영문 게임 단위와 같은 크기입니다.</div>
 </section>
 
 
@@ -144,7 +146,7 @@ tr.hit{background:#e8fff2;font-weight:900;outline:2px solid var(--accent);outlin
 <summary>100~5000층 · 100층 단위 전체 보기</summary>
 <div class="tableWrap">
 <table>
-<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>최고 체력</th><th>최초 입장 인장</th><th>1회 소탕 획득량</th><th>누적 수련의 인장</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
+<thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th><th>최고 체력 (한글)</th><th>최초 입장 인장</th><th>1회 소탕 획득량</th><th>누적 수련의 인장</th><th>재료 1종 누적</th><th>5종 누적</th></tr></thead>
 <tbody id="rows"></tbody>
 </table>
 </div>
@@ -286,6 +288,21 @@ function gameText(effect){
  const coeff=Math.pow(10,4*(frac+.5));
  return fmtCoeff(coeff)+suffixFromIndex(idx);
 }
+// 영문 접미사(A=10^4, B=10^8, ..., AA=10^108)는 한 자리 증가할 때마다 10^4 배씩 증가한다.
+// 보스 HP처럼 통상적인 한글 단위를 넘는 값은 지수를 억·만 단위로 표기한다.
+function koreanBossHp(raw){
+ const found=String(raw).match(/^(\d+(?:\.\d+)?)([A-Z]*)$/);
+ if(!found)return raw;
+ const coeff=Number(found[1]),index=suffixIndex(found[2]);
+ if(!(coeff>0)||!Number.isSafeInteger(index))return raw;
+ const shift=Math.floor(Math.log10(coeff));
+ const exponent=index*4+shift;
+ if(!Number.isSafeInteger(exponent))return raw;
+ const mantissa=Number((coeff/Math.pow(10,shift)).toPrecision(4)).toString();
+ const koreanExponent=fmtKor(exponent).replace(/(경|조|억|만)/g,'$1 ').trim();
+ return '<span class="power-korean" title="게임 원본: '+raw+'">'+
+   mantissa+' × 10<sup>'+koreanExponent+'</sup></span>';
+}
 const HP_ANCHOR_EFFECT=effectFromPart(HP_ANCHOR_COEFF,HP_ANCHOR_SUFFIX);
 const HP_ANCHOR_LOG=stageHpLog(HP_ANCHOR_STAGE);
 
@@ -357,7 +374,7 @@ function render(){
  const one=cumulativeOneMaterial(f);
  result.innerHTML='최초 입장 수련의 인장 <b>'+fmtKor(f)+'개</b> · 1회 소탕 수련의 인장 <b>'+fmtKor(f)+'개</b><br>'+
   '1회 소탕 획득 <b>'+fmtKor(rewardEach(f))+'개</b><br>'+
-  '최고 체력 <b>'+sanctuaryBossHp(f)+'</b><br>'+
+  '최고 체력 <b>'+koreanBossHp(sanctuaryBossHp(f))+'</b><br>'+
   '필요 관통 <b>'+fmt(req[0])+'</b> / 필요 명중 <b>'+fmt(req[1])+'</b><br>'+
   '누적 수련의 인장 '+fmtKor(seals)+'개 · 재료 1종 누적 '+fmtKor(one)+'개 · 5종 누적 '+fmtKor(one*5)+'개';
  document.querySelectorAll('tr.hit').forEach(x=>x.classList.remove('hit'));
@@ -431,7 +448,7 @@ for(let f=100;f<=5000;f+=100){
  const req=sanctuaryReq(f),one=cumulativeOneMaterial(f);
  const tr=document.createElement('tr');
  tr.id='f'+f;
- tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+sanctuaryBossHp(f)+'</td><td>'+fmtKor(f)+'</td><td>'+fmtKor(rewardEach(f))+'</td><td>'+fmtKor(cumulativeSeals(f))+'</td><td>'+fmtKor(one)+'</td><td>'+fmtKor(one*5)+'</td>';
+ tr.innerHTML='<td>'+fmt(f)+'</td><td>'+fmt(req[0])+'</td><td>'+fmt(req[1])+'</td><td>'+koreanBossHp(sanctuaryBossHp(f))+'</td><td>'+fmtKor(f)+'</td><td>'+fmtKor(rewardEach(f))+'</td><td>'+fmtKor(cumulativeSeals(f))+'</td><td>'+fmtKor(one)+'</td><td>'+fmtKor(one*5)+'</td>';
  frag.appendChild(tr);
 }
 rows.appendChild(frag);
