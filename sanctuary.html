@@ -298,7 +298,7 @@ function koreanBossHp(raw){
  const shift=Math.floor(Math.log10(coeff));
  const exponent=index*4+shift;
  if(!Number.isSafeInteger(exponent))return raw;
- const mantissa=Number((coeff/Math.pow(10,shift)).toPrecision(4)).toString();
+ const mantissa=Number((coeff/Math.pow(10,shift)).toPrecision(12)).toString();
  const koreanExponent=fmtKor(exponent).replace(/(경|조|억|만)/g,'$1 ').trim();
  return '<span class="power-korean" title="게임 원본: '+raw+'">'+
    mantissa+' × 10<sup>'+koreanExponent+'</sup></span>';
