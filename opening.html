@@ -82,22 +82,22 @@ summary{padding:15px;cursor:pointer;font-weight:850}
 <section class="card">
 <h2>진행 단계와 목표</h2>
 <div class="grid2">
-<label>현재 완료 단계 (0~100)<input id="completed" type="number" min="0" max="100" step="1" value="19"></label>
-<label>목표 완료 단계 (1~100)<input id="goal" type="number" min="1" max="100" step="1" value="20"></label>
+<label>현재 완료 단계 (0~100)<input id="completed" type="number" min="0" max="100" step="1" value="" autocomplete="off"></label>
+<label>목표 완료 단계 (1~100)<input id="goal" type="number" min="1" max="100" step="1" value="" autocomplete="off"></label>
 </div>
-<div class="progress"><div id="progressBar" style="width:19%"></div></div>
-<div class="note" id="progressText">19 / 100단계 완료</div>
+<div class="progress"><div id="progressBar" style="width:0%"></div></div>
+<div class="note" id="progressText">현재 완료 단계를 입력해 주세요.</div>
 </section>
 
 <section class="card">
 <h2>현재 단계 기운별 레벨 · 보유 재료</h2>
-<div class="note" id="currentStageLabel">20단계 강화 중 · 기운별 Lv. 0~100</div>
+<div class="note" id="currentStageLabel">현재 완료 단계를 입력하면 강화 단계가 표시됩니다.</div>
 <div class="fields5" id="elements">
-<div class="essence gold"><h3>금강</h3><label>현재 레벨<input id="lv0" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock0" type="text" inputmode="numeric" value="0"></label></div>
-<div class="essence wood"><h3>청림</h3><label>현재 레벨<input id="lv1" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock1" type="text" inputmode="numeric" value="0"></label></div>
-<div class="essence water"><h3>현수</h3><label>현재 레벨<input id="lv2" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock2" type="text" inputmode="numeric" value="0"></label></div>
-<div class="essence fire"><h3>홍염</h3><label>현재 레벨<input id="lv3" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock3" type="text" inputmode="numeric" value="0"></label></div>
-<div class="essence earth"><h3>태산</h3><label>현재 레벨<input id="lv4" type="number" min="0" max="100" value="0"></label><label>보유 재료<input id="stock4" type="text" inputmode="numeric" value="0"></label></div>
+<div class="essence gold"><h3>금강</h3><label>현재 레벨<input id="lv0" type="number" min="0" max="100" value="" autocomplete="off"></label><label>보유 재료<input id="stock0" type="text" inputmode="numeric" value="" autocomplete="off"></label></div>
+<div class="essence wood"><h3>청림</h3><label>현재 레벨<input id="lv1" type="number" min="0" max="100" value="" autocomplete="off"></label><label>보유 재료<input id="stock1" type="text" inputmode="numeric" value="" autocomplete="off"></label></div>
+<div class="essence water"><h3>현수</h3><label>현재 레벨<input id="lv2" type="number" min="0" max="100" value="" autocomplete="off"></label><label>보유 재료<input id="stock2" type="text" inputmode="numeric" value="" autocomplete="off"></label></div>
+<div class="essence fire"><h3>홍염</h3><label>현재 레벨<input id="lv3" type="number" min="0" max="100" value="" autocomplete="off"></label><label>보유 재료<input id="stock3" type="text" inputmode="numeric" value="" autocomplete="off"></label></div>
+<div class="essence earth"><h3>태산</h3><label>현재 레벨<input id="lv4" type="number" min="0" max="100" value="" autocomplete="off"></label><label>보유 재료<input id="stock4" type="text" inputmode="numeric" value="" autocomplete="off"></label></div>
 </div>
 <div class="note">5종 재료는 종류가 다르므로 보유량도 각각 입력합니다. 현재 레벨은 현재 진행 중인 단계의 기운별 레벨입니다.</div>
 </section>
@@ -126,7 +126,7 @@ summary{padding:15px;cursor:pointer;font-weight:850}
 <section class="card">
 <h2>성역 소탕으로 재료 확보</h2>
 <div class="grid2">
-<label>내 성역 최고 클리어 층<input id="sweepFloor" type="number" min="1" max="5000" value="5000"></label>
+<label>내 성역 최고 클리어 층<input id="sweepFloor" type="number" min="1" max="5000" value="" autocomplete="off"></label>
 <div class="result" id="sweepResult"></div>
 </div>
 <div class="note">성역 소탕 1회에서 각 재료가 동일한 층별 수량으로 지급된다는 계산 기준을 사용합니다. 필요한 소탕 횟수는 5종 부족량 중 가장 큰 수량에 맞춥니다. 상향 보상식 적용, 요청 1번당 최대 1,000회.</div>
@@ -191,24 +191,41 @@ function rewardEach(f){
  const q=Math.floor((f+24)/50),k=Math.floor(f/1000);
  return base+q*(f-25*q)+k;
 }
-function intInput(id,min,max){
+function intInput(id,min,max,blankValue=NaN){
  const raw=String($(id).value).replace(/,/g,'').trim();
+ if(raw==="")return blankValue;
  if(!/^\d+$/.test(raw))return NaN;
  const n=Number(raw);
  return Number.isSafeInteger(n)&&n>=min&&n<=max?n:NaN;
 }
 function update(){
- const completed=intInput('completed',0,100),goal=intInput('goal',1,100),f=intInput('sweepFloor',1,5000);
- const levels=names.map((_,i)=>intInput('lv'+i,0,100));
- const stocks=names.map((_,i)=>intInput('stock'+i,0,Number.MAX_SAFE_INTEGER));
- const current=completed<100?completed+1:100;
- const missing=!(Number.isFinite(completed)&&Number.isFinite(goal)&&Number.isFinite(f)&&levels.every(Number.isFinite)&&stocks.every(Number.isFinite));
+ const completedRaw=String($('completed').value).trim();
+ const goalRaw=String($('goal').value).trim();
+ const floorRaw=String($('sweepFloor').value).trim();
+ const completed=intInput('completed',0,100),goal=intInput('goal',1,100);
+ const f=intInput('sweepFloor',1,5000,null);
+ // 빈칸은 입력 화면에 그대로 두되, 레벨·보유 재료 계산에서는 0으로 취급한다.
+ const levels=names.map((_,i)=>intInput('lv'+i,0,100,0));
+ const stocks=names.map((_,i)=>intInput('stock'+i,0,Number.MAX_SAFE_INTEGER,0));
+ const current=Number.isFinite(completed)?Math.min(100,completed+1):null;
+ const waiting=completedRaw===""||goalRaw==="";
+ const invalid=!(Number.isFinite(completed)&&Number.isFinite(goal)&&
+   levels.every(Number.isFinite)&&stocks.every(Number.isFinite)) || (floorRaw!==""&& !Number.isFinite(f));
  $('progressBar').style.width=Number.isFinite(completed)?completed+'%':'0%';
- $('progressText').textContent=Number.isFinite(completed)?completed+' / 100단계 완료':'단계 입력 확인';
- $('currentStageLabel').textContent=completed===100?'100단계 완료 · 추가 강화 없음':current+'단계 강화 중 · 기운별 Lv. 0~100';
+ $('progressText').textContent=Number.isFinite(completed)?completed+' / 100단계 완료':'현재 완료 단계를 입력해 주세요.';
+ $('currentStageLabel').textContent=current===null?
+   '현재 완료 단계를 입력하면 강화 단계가 표시됩니다.':
+   completed===100?'100단계 완료 · 추가 강화 없음':current+'단계 강화 중 · 기운별 Lv. 0~100';
  for(let i=0;i<5;i++)$('lv'+i).disabled=completed===100;
- if(missing||goal<completed){
-  const error=missing?'완료 단계 0~100, 목표 단계 1~100, 기운 레벨 0~100, 보유 재료 0 이상, 성역 층수 1~5000을 확인해 주세요.':'목표 단계는 현재 완료 단계 이상이어야 합니다.';
+ if(waiting){
+  $('materialsResult').className='result';
+  $('materialsResult').textContent='현재 완료 단계와 목표 완료 단계를 입력하면 강화 비용을 계산합니다.';
+  $('sweepResult').textContent='성역 최고 클리어 층을 입력하면 필요 소탕 횟수를 계산합니다.';
+  for(const id of ['oneCost','oneHundred','lastFlat','lastAttack','nowFlat','goalFlat','nowAttack','goalAttack'])$(id).textContent='—';
+  return;
+ }
+ if(invalid||goal<completed){
+  const error=invalid?'완료 단계 0~100, 목표 단계 1~100, 기운 레벨 0~100, 보유 재료 0 이상, 성역 층수 1~5000을 확인해 주세요.':'목표 단계는 현재 완료 단계 이상이어야 합니다.';
   $('materialsResult').className='result error';$('materialsResult').textContent=error;
   $('sweepResult').textContent='입력값 확인 필요';
   for(const id of ['oneCost','oneHundred','lastFlat','lastAttack','nowFlat','goalFlat','nowAttack','goalAttack'])$(id).textContent='—';
@@ -226,9 +243,9 @@ function update(){
  });
  const totalNeed=costs.reduce((a,x)=>a+x.need,0);
  const maxShortage=Math.max(...costs.map(x=>x.shortage));
- const per=rewardEach(f);
- const sweeps=Math.ceil(maxShortage/per);
- const seals=sweeps*f;
+ const per=f===null?null:rewardEach(f);
+ const sweeps=per===null?null:Math.ceil(maxShortage/per);
+ const seals=sweeps===null?null:sweeps*f;
  $('oneCost').textContent=completed===100?'모두 완료':kor(levelCost(current))+'개';
  $('oneHundred').textContent=completed===100?'모두 완료':kor(levelCost(current)*100)+'개';
  $('lastFlat').textContent='+'+fmt(flatGain(goal))+' / +'+fmt(flatGain(goal));
@@ -241,7 +258,9 @@ function update(){
   '<strong>목표 '+fmt(goal)+'단계까지 소요 재료 (각 종류 별도)</strong><br>'+
   costs.map(x=>x.name+' · 필요 '+kor(x.need)+'개 · 보유 '+kor(x.stock)+'개 · 부족 <b>'+kor(x.shortage)+'개</b>').join('<br>')+
   '<br><strong>5종 비용 합계 '+kor(totalNeed)+'개 · 부족 재료 합계 '+kor(costs.reduce((a,x)=>a+x.shortage,0))+'개</strong>';
- $('sweepResult').innerHTML='1회 재료 1종 '+kor(per)+'개<br>필요 소탕 <b>'+kor(sweeps)+'회</b><br>수련의 인장 <b>'+kor(seals)+'개</b>'+
+ $('sweepResult').innerHTML=per===null?
+  '성역 최고 클리어 층을 입력하면 필요 소탕 횟수를 계산합니다.':
+  '1회 재료 1종 '+kor(per)+'개<br>필요 소탕 <b>'+kor(sweeps)+'회</b><br>수련의 인장 <b>'+kor(seals)+'개</b>'+
   (sweeps>1000?'<br>게임 내 소탕 요청 '+kor(Math.ceil(sweeps/1000))+'번':'');
  document.querySelectorAll('#stageRows tr').forEach(tr=>tr.classList.toggle('selected',Number(tr.dataset.stage)===goal));
 }
