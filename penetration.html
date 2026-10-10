@@ -107,11 +107,11 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  <h2>01 · 기본 관통</h2>
  <div class="fields three basic-fields">
   <div class="field"><label for="statAbility">능력치 강화 · 관통 (MAX 370)</label><input id="statAbility" type="number" inputmode="numeric" min="0" max="370" step="1" value="0" placeholder="예: 370"></div>
-  <div class="field"><label for="statPassive">갑파 패시브 (참고 MAX 450)</label><input id="statPassive" type="number" min="0" max="450" step="1" value="0"></div>
+  <div class="field"><label for="statPassive">갑파 패시브 (MAX 300)</label><input id="statPassive" type="number" min="0" max="300" step="1" value="0"></div>
   <div class="field"><label for="precisionLevel">정밀술 강화 레벨 (MAX 300)</label><input id="precisionLevel" type="number" min="0" max="300" step="1" value="0"></div>
 <div class="field"><label for="statPrecision">정밀술 관통 (Lv300 MAX 3,570)</label><input id="statPrecision" type="number" min="0" max="3570" step="1" value="0"></div>
  </div>
- <div class="note">사진의 ‘능력치 강화 → 관통’에 표시되는 수치를 그대로 입력하세요. 예: 관통 370 → +370 합산. 능력치 강화 관통은 요청하신 MAX 370을 적용했습니다. 정밀술은 별도 강화 효과로 Lv300 최대 +3,570이며, 패시브 450은 첨부 참고값입니다.</div>
+ <div class="note">사진의 ‘능력치 강화 → 관통’에 표시되는 수치를 그대로 입력하세요. 예: 관통 370 → +370 합산. 능력치 강화 관통은 요청하신 MAX 370을 적용했습니다. 정밀술은 별도 강화 효과로 Lv300 최대 +3,570이며, 갑파 패시브에는 요청하신 MAX 300을 적용했습니다.</div>
 </section>
 <section class="card">
  <h2>02 · 정령</h2>
@@ -181,7 +181,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  <div class="audit-content">
   <p><b>능력치 강화 관통</b> · 게임 ‘능력치 강화 → 관통’에 표시된 값(사진 예시 370)을 직접 입력합니다. 이전의 활 등급별 50~360 상한은 서로 다른 능력치 규칙이므로 여기에 적용하지 않습니다. 이번 계산기 입력 상한은 요청하신 MAX 370입니다.</p><p><b>APK 0.1.91 확인</b> · 정령 0~100단계 기본 관통 최대 +1,022. 전투 조건 플래그 활성 시 정령 관통 ×5.</p>
   <p><b>APK 0.1.91 확인</b> · 초월 정밀술 0~300레벨, 관통 최대 +3,570. 100레벨에서는 +273. 오행 개방 0~100단계, 완료 보상 누적 관통 최대 +15,000.</p>
-  <p><b>첨부 참고값</b> · 갑파 패시브 최대 450, 코스튬 개수 6/7/12/3, 기존 각인석 등급 수치 및 11칸+자유 1칸. 절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
+  <p><b>첨부 참고값</b> · 갑파 패시브 사용자 지정 MAX 300, 코스튬 개수 6/7/12/3, 기존 각인석 등급 수치 및 11칸+자유 1칸. 절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
  </div>
 </details>
 </section>
@@ -292,7 +292,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  }
  function update(){
    const errors=[];
-   const base=parseIntField("statAbility",370,errors)+parseIntField("statPassive",450,errors)+parseIntField("statPrecision",3570,errors);
+   const base=parseIntField("statAbility",370,errors)+parseIntField("statPassive",300,errors)+parseIntField("statPrecision",3570,errors);
    parseIntField("precisionLevel",300,errors);
    const stage=parseIntField("spiritStage",100,errors);
    const spiritMultiplier=Number($("spiritMultiplier").value);
