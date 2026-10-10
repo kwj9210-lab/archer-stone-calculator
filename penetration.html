@@ -27,8 +27,8 @@ h1{font-size:24px;color:#18714f;margin:0;line-height:1.22;letter-spacing:-.5px}
 .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
 .fields.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .basic-fields .field{display:flex;flex-direction:column}
-.basic-fields .field label{min-height:3.5em;display:flex;align-items:flex-end;line-height:1.35;overflow-wrap:anywhere}
-.basic-fields .field input{margin-top:7px;flex-shrink:0}
+.basic-fields .field label{min-height:3.5em;display:flex;align-items:flex-end;line-height:1.35;overflow-wrap:anywhere;margin-bottom:7px}
+.basic-fields .field input{margin-top:auto;flex-shrink:0}
 .field{min-width:0}
 label{display:block;font-size:12px;font-weight:800;color:#567669}
 input,select{width:100%;min-width:0;min-height:42px;margin-top:6px;padding:9px 11px;background:#fbfffc;border:1px solid #c1ddcb;border-radius:11px;color:var(--text);font-size:16px;font-weight:800;outline:none}
@@ -76,7 +76,7 @@ button.action{flex:1;min-height:43px;padding:9px 13px;border:0;border-radius:11p
 button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d4}
 button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 @media(max-width:750px){main{padding:10px 8px 35px}.card,.hero{padding:12px}.section-grid{grid-template-columns:1fr}.engrave-grid{grid-template-columns:1fr}.fields.three{grid-template-columns:repeat(2,minmax(0,1fr))}.total-layout{grid-template-columns:repeat(2,minmax(0,1fr))}.total-box{grid-column:1/-1}.detail-strip{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:21px}.eng-row{grid-template-columns:minmax(0,1fr) 105px}.eng-row input{text-align:center}}
-@media(max-width:390px){.fields,.fields.three,.free-options{grid-template-columns:1fr}.total-box strong{font-size:28px}.eng-row{grid-template-columns:minmax(0,1fr) 76px}}
+@media(max-width:390px){.basic-fields .field label{min-height:0}.fields,.fields.three,.free-options{grid-template-columns:1fr}.total-box strong{font-size:28px}.eng-row{grid-template-columns:minmax(0,1fr) 76px}}
 
 .readout{margin-top:6px;min-height:42px;padding:10px;border:1px solid #c9e5d4;border-radius:11px;background:#f0fff6;color:#177451;font-size:17px;font-weight:900}
 .compare-note{display:none;margin-top:9px;padding:10px 12px;background:#f5fff9;border:1px solid #c8e6d2;border-radius:11px;color:#246e52;font-size:12px;font-weight:850}
