@@ -138,7 +138,7 @@ main{width:min(980px,100%);margin:auto;padding:22px 18px 44px}.site-head{display
 </section>
 <div class="wrap"><section class="panel input-panel"><h2>현재 전투력 비교</h2>
 <div class="field"><label for="myPower">현재 전투력</label><input id="myPower" type="text" inputmode="text" placeholder="예: 1903EIJBIN 또는 89PRLBC 8696PRLBB"></div>
-<div class="field"><label for="checkFloor">층수 조회</label><input id="checkFloor" type="number" min="1" max="8000" step="1" value="4000"></div>
+<div class="field"><label for="checkFloor">층수 조회</label><input id="checkFloor" type="number" min="1" max="8000" step="1" value="" placeholder="예: 4000" autocomplete="off"></div>
 <button id="run" type="button">클리어 기준 확인</button><div id="status" class="status"></div>
 <details class="guide"><summary>계산 기준 안내</summary><div class="note">2700관문 실측 보스 HP <b>1903EIJBIN</b>을 기준점으로 APK 0.1.90의 실제 관문→기준스테이지 분기와 보스 HP 증가식을 적용합니다. 현재 전투력과 보스 HP의 1:1 비교는 실전 검증용 가설입니다. 종합 전투력에는 공격력 외 스탯도 포함되므로 절대 판정식으로 보지는 않습니다.</div></details>
 </section><section class="panel result-panel"><h2>4000~8000 관문 클리어 기준</h2><div id="summary" class="result-main"></div>
@@ -178,8 +178,13 @@ function hpEffect(floor){return anchorEffect+delta(floor,ANCHOR_FLOOR)/4}
 function render(){
  const raw=document.getElementById('myPower').value;
  const my=parsePower(raw);
- const check=Math.max(1,Math.min(8000,Math.floor(Number(document.getElementById('checkFloor').value)||4000)));
- document.getElementById('checkFloor').value=check;
+ const floorInput=document.getElementById('checkFloor');
+ const floorText=String(floorInput.value).trim();
+ const checkValid=/^\d+$/.test(floorText)&&Number.isSafeInteger(Number(floorText))
+   &&Number(floorText)>=1&&Number(floorText)<=8000;
+ const check=checkValid?Number(floorText):null;
+ const invalidFloor=floorText!==""&&!checkValid;
+ floorInput.setAttribute('aria-invalid',invalidFloor?'true':'false');
 
  let h='',best=null;
  for(let floor=4000;floor<=8000;floor+=100){
@@ -189,12 +194,19 @@ function render(){
  }
  document.getElementById('rows').innerHTML=h;
 
- const checkHp=hpEffect(check),checkOk=my!==null?my>=checkHp:null;
- let summary='<div class="bestline">'+check.toLocaleString('ko-KR')+'관문 보스 HP · '+gameText(checkHp)+'</div>';
+ let summary=check===null?
+   '<div class="bestline">'+(invalidFloor?'층수는 1~8,000 사이 정수로 입력해 주세요.':'조회할 관문 층수를 입력해 주세요.')+'</div>':
+   '<div class="bestline">'+check.toLocaleString('ko-KR')+'관문 보스 HP · '+gameText(hpEffect(check))+'</div>';
  summary+='<div class="small">2700 실측: 1903EIJBIN · 기록 29.8초 · 30초 제한</div>';
- if(checkOk!==null)summary+='<div class="small" style="margin-top:6px">현재 전투력 기준: '+(checkOk?'<span class="ok">1:1 기준 통과*</span>':'<span class="bad">1:1 기준 부족*</span>')+(best!==null?' · 4000~8000 표 기준 예상 최고 '+best.toLocaleString('ko-KR')+'관문':'')+'</div>';
+ if(my!==null&&check!==null){
+   const checkOk=my>=hpEffect(check);
+   summary+='<div class="small" style="margin-top:6px">현재 전투력 기준: '+(checkOk?'<span class="ok">1:1 기준 통과*</span>':'<span class="bad">1:1 기준 부족*</span>')+(best!==null?' · 4000~8000 표 기준 예상 최고 '+best.toLocaleString('ko-KR')+'관문':'')+'</div>';
+ }
  document.getElementById('summary').innerHTML=summary;
- document.getElementById('status').innerHTML=my===null?(raw.trim()?'<span class="bad">전투력 표기를 확인해 주세요.</span>':'<span class="ok">HP 목록은 계산 완료. 전투력을 넣으면 가능/부족을 표시합니다.</span>'):'<span class="ok">전투력 비교 완료.</span>';
+ document.getElementById('status').innerHTML=invalidFloor?
+   '<span class="bad">층수는 1~8,000 사이 정수만 입력할 수 있습니다.</span>':
+   my===null?(raw.trim()?'<span class="bad">전투력 표기를 확인해 주세요.</span>':'<span class="ok">HP 목록은 계산 완료. 전투력을 넣으면 가능/부족을 표시합니다.</span>'):
+   '<span class="ok">전투력 비교 완료.</span>';
 }
 document.getElementById('run').onclick=render;
 document.getElementById('myPower').addEventListener('keydown',e=>{if(e.key==='Enter')render()});
