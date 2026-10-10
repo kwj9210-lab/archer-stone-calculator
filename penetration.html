@@ -50,8 +50,6 @@ input:disabled{background:#f1f5f2;color:#8a9d91}
 .engrave-card .small-info{font-size:11px;color:#71867c;margin-bottom:9px}
 .eng-row{display:grid;grid-template-columns:minmax(0,1fr) 75px;gap:7px;align-items:center;margin-bottom:7px}
 .eng-row span{font-size:12px;color:#436956;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.eng-row.top-tier span{color:#a57619;font-weight:850}
-.eng-row.top-tier input{border-color:#e6c77c;background:#fffcf4}
 .eng-row input{min-height:34px;margin:0;padding:6px;text-align:center;font-size:13px}
 .eng-total{font-size:12px;font-weight:900;color:var(--strong);padding-top:5px}
 .free{margin-top:12px;padding:11px 12px;background:#f5fbf7;border:1px dashed #bcdcc8;border-radius:12px}
@@ -79,8 +77,6 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 @media(max-width:390px){.basic-fields .field label{min-height:0}.fields,.fields.three,.free-options{grid-template-columns:1fr}.total-box strong{font-size:28px}.eng-row{grid-template-columns:minmax(0,1fr) 76px}}
 
 .readout{margin-top:6px;min-height:42px;padding:10px;border:1px solid #c9e5d4;border-radius:11px;background:#f0fff6;color:#177451;font-size:17px;font-weight:900}
-.compare-note{display:none;margin-top:9px;padding:10px 12px;background:#f5fff9;border:1px solid #c8e6d2;border-radius:11px;color:#246e52;font-size:12px;font-weight:850}
-.compare-note.show{display:block}
 .audit-details{margin-top:11px;border:1px solid #d4e6d9;border-radius:12px;background:#fcfffd;overflow:hidden}
 .audit-details summary{cursor:pointer;padding:10px 12px;font-weight:800;font-size:12px;color:#357758;list-style:none}
 .audit-details summary::-webkit-details-marker{display:none}
@@ -99,12 +95,12 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
     <p><b>① 기본값</b> · ‘능력치 강화’의 관통 수치를 그대로 입력합니다(예: 370). 패시브를 더하고 정밀술은 레벨로 계산할 수 있습니다.</p>
     <p><b>② 정령·코스튬</b> · 정령 관통과 보유 코스튬 개수, 장착 효과를 입력합니다.</p>
     <p><b>③ 각인석</b> · 마석·경화석·생명석의 등급별 장착 수량을 입력합니다. 각 종류는 기본 최대 11칸입니다.</p>
-    <p><b>④ 오행 개방</b> · 완료 단계의 누적 관통을 합산하고 성역 도전층 필요 관통을 확인합니다.</p><p><b>⑤ 결과</b> · 스킬·추가 관통을 반영해 게임 표시 관통과 비교할 수 있습니다.</p>
+    <p><b>④ 오행 개방</b> · 완료 단계의 누적 관통을 합산합니다.</p><p><b>⑤ 결과</b> · 최종 관통과 각 항목의 관통 합계를 확인하고 초월의 탑으로 전달합니다.</p>
     <p><b>예시</b> · 마석 전설 2개는 52 × 2 = 관통 <b>104</b>를 더합니다.</p>
    </div>
   </details>
  </div>
- <div class="sub">궁수키우기 RPG · 기본 능력치, 정밀술, 정령, 코스튬, 각인석, 오행 개방, 스킬 관통 합산</div>
+ <div class="sub">궁수키우기 RPG · 기본 능력치, 정밀술, 정령, 코스튬, 각인석, 오행 개방 관통 합산</div>
 </section>
 <div class="section-grid">
 <section class="card">
@@ -161,27 +157,8 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 </div>
 <div class="note">오행 개방 완료 보상만 합산합니다. 현재 강화 중인 단계가 완료되기 전에는 단계 완료 관통을 더하지 않습니다. 100단계 완료 시 +15,000입니다.</div>
 </section>
-<div class="section-grid">
-<section class="card">
-<h2>06 · 오행의 성역</h2>
-<div class="fields">
- <div class="field"><label for="sanctuaryFloor">성역 도전 층수 (0~5000)</label><input id="sanctuaryFloor" type="number" min="0" max="5000" step="1" value="0"></div>
- <div class="field"><label>해당 층 필요 관통</label><div class="readout" id="sanctuaryNeed">미선택</div></div>
-</div>
-<div class="note" id="sanctuaryComment">성역은 강화 재료 획득처이며, 층수나 요구 관통을 획득 관통에 더하지 않습니다.</div>
-</section>
-<section class="card">
-<h2>07 · 스킬·추가 관통</h2>
-<div class="fields">
- <div class="field"><label for="skillPierce">스킬 추가 관통 (직접 확인값)</label><input id="skillPierce" type="number" min="0" step="1" value="0"></div>
- <div class="field"><label for="otherPierce">기타 추가 관통 (직접 확인값)</label><input id="otherPierce" type="number" min="0" step="1" value="0"></div>
-</div>
-<div class="note">APK에 스킬의 PierceFlat 효과 항목이 있습니다. 게임에서 적용된 수치만 입력하고 기존 능력치·정밀술과 중복되지 않도록 확인하세요.</div>
-<div class="field" style="margin-top:11px"><label for="observedPen">게임 표시 최종 관통 (비교용 · 선택)</label><input id="observedPen" type="number" min="0" step="1" placeholder="현재 게임 표시 관통 입력"></div>
-</section>
-</div>
 <section class="card summary" id="summary">
- <h2>08 · 관통 Total 계산 결과</h2>
+ <h2>06 · 관통 Total 계산 결과</h2>
  <div class="total-layout">
   <div class="total-box"><div class="headline">최종 관통</div><strong id="penetrationTotal" aria-live="polite">0</strong><div class="note">유효한 입력값일 때 자동 계산</div></div>
   <div class="mini-box"><span>기본 능력치</span><b id="partBasic">0</b></div>
@@ -189,12 +166,11 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <div class="mini-box"><span>코스튬</span><b id="partCostume">0</b></div>
   <div class="mini-box"><span>각인석</span><b id="partEngrave">0</b></div>
 <div class="mini-box"><span>오행 개방</span><b id="partOpening">0</b></div>
-<div class="mini-box"><span>스킬·기타</span><b id="partExtra">0</b></div>
  </div>
  <div class="detail-strip">
   <div>마석 합계<b id="sumRune0">0</b></div><div>경화석 합계<b id="sumRune1">0</b></div><div>생명석 합계<b id="sumRune2">0</b></div><div>자유 각인<b id="sumExtra">0</b></div><div>코스튬 상세<b id="sumCostume">0</b></div>
  </div>
- <div id="validationError" class="error" role="alert"></div><div id="observedDiff" class="compare-note"></div>
+ <div id="validationError" class="error" role="alert"></div>
  <div class="actions">
   <button id="sendTower" class="action" type="button">초월의 탑에 관통 전달 →</button>
   <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
@@ -236,37 +212,9 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  const SAVE_KEY="archer:penetration-total:v1";
  // APK arrow_stat_caps: grade 0 = 50, grade 31 = 360.
  function openingFlat(s){return 50*s+Math.floor(s*(s-1)*100/99);}
- // 기존 APK 0.1.91 성역 계산기와 동일한 요구 관통 계산.
- function sanctuaryRequired(f){
-   if(f===0)return null;
-   if(f<=500){
-     const floors=[1,2,50,100,200,300,400,500];
-     const values=[0,2,100,250,700,1100,1750,2500];
-     for(let i=0;i<floors.length-1;i++){
-       if(f<=floors[i+1])return 2*(values[i]+Math.round((values[i+1]-values[i])*(f-floors[i])/(floors[i+1]-floors[i])));
-     }
-   }
-   if(f<=1000){
-     if(f===1000)return 12000;
-     const v=[2500,3000,3600,4300,5100,6000],i=Math.floor((f-501)/100),t=f-i*100-500;
-     return 2*(v[i]+Math.trunc(((v[i+1]-v[i])*t+50)/100));
-   }
-   if(f<=1500){
-     if(f===1500)return 24000;
-     const v=[6000,7000,8100,9300,10600,12000],i=Math.floor((f-1001)/100),t=f-i*100-1000;
-     return 2*(v[i]+Math.trunc((v[i+1]-v[i])/100)*t);
-   }
-   if(f<=3000){
-     if(f===3000)return 66000;
-     const v=[12000,18000,25000,33000],i=Math.floor((f-1501)/500),t=f-i*500-1500;
-     return 2*(v[i]+Math.trunc((v[i+1]-v[i])/500)*t);
-   }
-   return 2*(33000+16*(f-3000));
- }
-
  const $=id=>document.getElementById(id);
  const fmt=n=>n.toLocaleString("ko-KR");
- const inputIds=["statAbility","statPassive","statPrecision","precisionLevel","spiritStage","spiritPen","openingCompleted","sanctuaryFloor","skillPierce","otherPierce","observedPen","spiritMultiplier",
+ const inputIds=["statAbility","statPassive","statPrecision","precisionLevel","spiritStage","spiritPen","openingCompleted","spiritMultiplier",
   "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
   "extraEnabled","extraType","extraRank"];
  let countInputs=[],lastValidTotal=null;
@@ -278,7 +226,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    const note=document.createElement("div");note.className="small-info";note.id="count"+t;note.textContent="장착 0 / 11개";card.appendChild(note);
    ranks.forEach((rank,g)=>{
      const row=document.createElement("label");
-     row.className="eng-row"+(g>=10?" top-tier":"");
+     row.className="eng-row";
      const text=document.createElement("span");text.textContent=rank+" (+"+stone.values[g]+")";
      const field=document.createElement("input");field.id="stone"+t+"_"+g;
      field.type="number";field.min="0";field.max="11";field.step="1";field.value="0";
@@ -379,38 +327,15 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    const completed=parseIntField("openingCompleted",100,errors);
    const opening=openingFlat(completed);
    $("openingGain").textContent="+"+fmt(opening)+" 관통 · +"+fmt(opening)+" 명중";
-   const floor=parseIntField("sanctuaryFloor",5000,errors);
-   const needed=sanctuaryRequired(floor);
-   $("sanctuaryNeed").textContent=needed===null?"미선택":fmt(needed);
-   const skill=parseIntField("skillPierce",1000000000,errors);
-   const other=parseIntField("otherPierce",1000000000,errors);
-   const extraGain=skill+other;
-   const total=base+spirit+costume+engraving+opening+extraGain;
-   $("sanctuaryComment").textContent=needed===null?
-     "성역은 오행 개방 강화 재료의 획득처입니다. 층수와 요구 관통을 합계에 더하지 않습니다.":
-     "성역 "+fmt(floor)+"층 필요 관통 "+fmt(needed)+" · 현재 계산값 "+fmt(total)+
-     " · "+(total>=needed?"관통 조건 충족":"부족 "+fmt(needed-total))+
-     ". 성역은 관통을 직접 지급하지 않습니다.";
+   const total=base+spirit+costume+engraving+opening;
    $("partBasic").textContent=fmt(base);$("partSpirit").textContent=fmt(spirit);
    $("partCostume").textContent=fmt(costume);$("partEngrave").textContent=fmt(engraving);
-   $("partOpening").textContent=fmt(opening);$("partExtra").textContent=fmt(extraGain);
+   $("partOpening").textContent=fmt(opening);
    runeSums.forEach((v,i)=>$("sumRune"+i).textContent="+"+fmt(v));
    $("sumExtra").textContent="+"+fmt(extra);
    $("sumCostume").textContent="+"+fmt(costume);
-   let observed=null;
-   const observedRaw=String($("observedPen").value).trim();
-   if(observedRaw!==""){
-     const v=/^\d+$/.test(observedRaw)?Number(observedRaw):NaN;
-     if(Number.isSafeInteger(v)&&v>=0&&v<=1000000000)observed=v;
-     else errors.push("게임 표시 관통은 0~1,000,000,000 사이 정수로 입력하세요.");
-   }
-   $("observedPen").setAttribute("aria-invalid",observedRaw!==""&&observed===null?"true":"false");
    const good=errors.length===0;
    $("penetrationTotal").textContent=good?fmt(total):"입력 확인";
-   $("observedDiff").classList.toggle("show",good&&observed!==null);
-   $("observedDiff").textContent=good&&observed!==null?
-     "게임 표시 "+fmt(observed)+" · 계산 "+fmt(total)+" · 차이 "+fmt(observed-total)+
-     (observed===total?" (일치)":" (빠진 요소 또는 중복 입력을 확인하세요.)"):"";
    $("validationError").classList.toggle("on",!good);
    $("validationError").textContent=errors.slice(0,5).join(" ");
    $("sendTower").disabled=!good;
@@ -422,7 +347,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    for(const id of allIds()){
      const el=$(id);if(el.type==="checkbox")el.checked=false;else el.value="0";
    }
-   $("extraType").value="0";$("extraRank").value="0";$("observedPen").value="";$("spiritMultiplier").value="1";
+   $("extraType").value="0";$("extraRank").value="0";$("spiritMultiplier").value="1";
    update();
  }
  function sendTower(){
