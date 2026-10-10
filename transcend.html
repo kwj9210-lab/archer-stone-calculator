@@ -428,6 +428,16 @@ td{color:#62776e;background:#fff}
 .comparison-row span:nth-child(2),.comparison-row span:nth-child(3){text-align:right}
 .comparison-row.headline{font-weight:850;color:#22694f;background:#effbf4;padding:8px}
 .projection-note{margin-top:11px;font-size:11.5px;line-height:1.65;color:#697e72}
+.measured-power-field{margin:11px 0 13px;padding:12px;border:1px solid #d9e9de;border-radius:12px;background:#fcfffd}
+.power-verify{margin-top:10px;padding:13px;border:1px solid #b8dfc8;border-radius:12px;background:#f1fbf5}
+.power-verify h3{font-size:13px;color:#237354;margin:0 0 10px}
+.power-verify-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.power-verify-grid>div{background:#fff;border:1px solid #dbe9df;border-radius:10px;padding:10px;font-size:11px;color:#5a7567;min-width:0}
+.power-verify-grid b{display:block;color:#206d4d;margin-top:6px;font-size:15px;overflow-wrap:anywhere}
+.power-verify-note{margin-top:9px;font-size:11.5px;line-height:1.65;color:#607b6b}
+.power-session-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0 13px;flex-wrap:wrap}
+.session-clear{border:1px solid #d5e8db;background:#fff;color:#658374;border-radius:8px;padding:6px 9px;font-size:11px;cursor:pointer}
+@media(max-width:470px){.power-verify-grid{grid-template-columns:1fr}}
 .power-box .v{font-size:clamp(15px,2vw,22px)}
 @media(max-width:760px){.comparison-row{font-size:11px}.power-box .v{font-size:17px}}
 </style>
@@ -443,8 +453,9 @@ td{color:#62776e;background:#fff}
 <div class="usage-panel">
 <p><b>① 현재 상태</b> · 전투력, 4종 현재 레벨, 미사용 초월석만 입력하세요.</p>
 <p><b>② 자동 합산</b> · 현재 강화에 쓴 초월석과 미사용 초월석을 합쳐 전체 재투자 수량을 계산합니다.</p>
-<p><b>③ 결과 확인</b> · 최적 레벨·잔여량·공격력 효과 차이와 참고 예상 전투력을 비교합니다.</p>
-<p class="example"><b>예시</b> · 10만 개 투자 + 미사용 2만 개라면 12만 개로 재투자합니다. 초기화 후 전투력은 선택 입력입니다.</p>
+<p><b>③ 결과 확인</b> · 재배분 추천과 공격력 효과지수를 비교합니다. 초기화 후 실측 전투력이 있어야 예상 전투력을 계산합니다.</p>
+<p><b>④ 실측 검증</b> · 재투자 후 실제 전투력을 입력하면 상승률과 예상 오차가 나옵니다.</p>
+<p class="example"><b>예시</b> · 10만 개 투자 + 미사용 2만 개라면 12만 개로 재투자합니다. 초기화 후 실측값 없이 79% 효과지수가 증가해도 전투력 79% 상승이라고 표시하지 않습니다.</p>
 </div>
 </details>
   </div>
@@ -506,7 +517,7 @@ td{color:#62776e;background:#fff}
       <div class="input-head"><h2>전투력 기준</h2></div>
       <div class="power-grid">
         <div class="field">
-          <label for="currentPower">현재 전투력</label>
+          <label for="currentPower">초기화 전 전투력</label>
           <input id="currentPower" type="text" inputmode="text" autocomplete="off" placeholder="예: 24억 6852만 7875 / 719AYXLEBX">
           <div id="currentPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
         </div>
@@ -530,17 +541,27 @@ td{color:#62776e;background:#fff}
         <div id="perStoneSpent" class="input-note" style="margin-top:5px"></div>
       </div>
       <details class="reset-calibration">
-        <summary>초기화 후 실측 전투력 보정 (선택)</summary>
+        <summary>초기화 후 실측 전투력 입력 (예상 전투력 계산)</summary>
         <div class="field" style="margin-top:12px">
           <label for="resetPower">초월석 초기화 후 전투력</label>
           <input id="resetPower" type="text" inputmode="text" autocomplete="off" placeholder="알고 있을 때만 입력하세요">
           <div id="resetPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
         </div>
-        <div class="input-note">입력하지 않으면 공격력 효과지수 비율을 전체 전투력에 적용한 가정값입니다. 입력하면 현재와 초기화 후 실측값 차이로 보정합니다.</div>
+        <div class="input-note">초기화 후 전투력을 입력해야 계정별 실측 차이를 반영한 재투자 예상 전투력과 상승률을 계산합니다. 입력하지 않으면 추천 레벨과 효과지수만 표시합니다.</div>
       </details>
+      <div class="field measured-power-field">
+        <label for="actualPower">재투자 후 실제 전투력 (선택 · 검증용)</label>
+        <input id="actualPower" type="text" inputmode="text" autocomplete="off" placeholder="예: 91억 7805만 7370">
+        <div id="actualPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
+        <div class="input-note" style="margin-top:5px">실제 게임에서 확인한 값을 입력하면 전투력 실제 상승률과 예상값 대비 오차를 비교합니다.</div>
+      </div>
       <button id="runPower" type="button">전체 초월석 최적 재분배 계산</button>
+      <div class="power-session-actions">
+        <span id="powerSessionHint" class="input-note">계산 후 입력값이 이 브라우저에 저장됩니다.</span>
+        <button id="clearPowerSession" class="session-clear" type="button">저장된 입력 삭제</button>
+      </div>
       <div id="powerStatus" class="status" aria-live="polite"></div>
-      <p class="input-note">전투력은 <b>24억 6852만 7875</b> 또는 <b>719AYXLEBX 9116AYXLEBW</b>처럼 입력할 수 있습니다. 강화 비용·공격력 효과·최적 배분은 APK 복원식을 유지합니다.<br><b>주의:</b> 초기화 후 실측값이 없는 참고 전투력은 효과 비율에 비례한다는 가정이므로 실제 게임 전투력과 다를 수 있습니다.</p>
+      <p class="input-note">전투력은 <b>24억 6852만 7875</b> 또는 <b>719AYXLEBX 9116AYXLEBW</b>처럼 입력할 수 있습니다. 강화 비용·공격력 효과·최적 배분은 APK 복원식을 유지합니다.<br><b>주의:</b> 초기화 후 실측 전투력 없이는 최종 전투력을 추정하지 않습니다. 실측 보정 예상도 실제 재투자 결과와 차이가 날 수 있으며, 정확도는 실제 전투력을 입력해 확인하세요.</p>
     </section>
 
     <section class="panel result-panel">
@@ -548,6 +569,7 @@ td{color:#62776e;background:#fff}
       <div id="powerResult" class="result-main">
         <div class="result-empty">전투력·초월석·현재 초월 레벨을 입력하면 결과가 표시됩니다.</div>
       </div>
+      <div id="powerVerification"></div>
       <div id="powerFinalLevels"></div>
     </section>
   </div>
@@ -921,7 +943,7 @@ td{color:#62776e;background:#fff}
     if(!v||v.kind!=="number")return null;
     if(v.source!=="game"){
       if(!(v.value>0)||!Number.isFinite(v.value))return null;
-      return {log:Math.log10(v.value),kind:"numeric",label:formatKoreanPower(v.value)};
+      return {log:Math.log10(v.value),kind:"numeric",value:v.value,label:formatKoreanPower(v.value)};
     }
     const parts=[...String(raw).toUpperCase().matchAll(/(\d+(?:\.\d+)?)\s*([A-Z]+)/g)];
     let log=-Infinity;
@@ -949,59 +971,151 @@ td{color:#62776e;background:#fff}
     if(shown>=10000){idx++;shown=1;}
     return shown+suffixFromIndex(idx);
   }
-  // 보정값이 없다면 초월 효과 비율을 전체 전투력에 적용하는 가정만 가능하다.
+  // 전투력의 초월석 이외 성분을 분리할 근거가 없으면 예상 전투력을 산출하지 않는다.
   function projectionScale(current,reset,oldScore,newScore){
     if(!(oldScore>0))return {factor:null,type:"none"};
     const ratio=newScore/oldScore;
     if(!Number.isFinite(ratio)||ratio<=0)return {factor:null,type:"none"};
-    if(!reset)return {factor:ratio,type:"assumption"};
-    const resetFraction=Math.pow(10,reset.log-current.log);
+    if(!reset)return {factor:null,type:"needs-reset"};
+    const resetFraction=current.kind==="numeric"&&reset.kind==="numeric"
+      ?reset.value/current.value:Math.pow(10,reset.log-current.log);
     if(!Number.isFinite(resetFraction)||resetFraction>1+1e-8||resetFraction<0)return {factor:null,type:"invalid"};
     const b=Math.min(1,resetFraction);
     return {factor:b+(1-b)*ratio,type:"calibrated"};
+  }
+  function signedPct(n){
+    return (n>=0?"+":"")+n.toFixed(3)+"%";
+  }
+  function signedPower(n){
+    return (n>=0?"+":"−")+formatKoreanPower(Math.abs(Math.round(n)));
+  }
+  const POWER_RECORD_KEY="archer:transcend:reinvest-v1";
+  const POWER_RECORD_IDS=["currentPower","resetPower","actualPower","powerStones","plv0","plv1","plv2","plv3"];
+  function savePowerRecord(){
+    try{
+      const record={};
+      POWER_RECORD_IDS.forEach(id=>{record[id]=document.getElementById(id).value;});
+      localStorage.setItem(POWER_RECORD_KEY,JSON.stringify(record));
+      document.getElementById("powerSessionHint").textContent="현재 계산의 입력값이 이 브라우저에 저장됐습니다.";
+    }catch(_){
+      document.getElementById("powerSessionHint").textContent="이 브라우저에서 입력 저장을 사용할 수 없습니다.";
+    }
+  }
+  function restorePowerRecord(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(POWER_RECORD_KEY)||"null");
+      if(!saved||typeof saved!=="object")return;
+      POWER_RECORD_IDS.forEach(id=>{
+        if(typeof saved[id]==="string"&&saved[id].length<=180)document.getElementById(id).value=saved[id];
+      });
+      document.getElementById("powerSessionHint").textContent="이전 계산의 입력값을 복원했습니다. 다시 계산하면 결과가 갱신됩니다.";
+    }catch(_){}
+  }
+  function invalidatePowerResult(){
+    document.getElementById("powerResult").innerHTML='<div class="result-empty">입력값이 변경됐습니다. 계산 버튼을 눌러 결과를 갱신하세요.</div>';
+    document.getElementById("powerFinalLevels").innerHTML="";
+    document.getElementById("powerVerification").innerHTML="";
+    document.getElementById("powerStatus").textContent="";
+    document.getElementById("powerSessionHint").textContent="입력값을 변경했습니다. 계산하면 새 입력이 저장됩니다.";
   }
   function runPowerCalc(){
     const status=document.getElementById("powerStatus"),button=document.getElementById("runPower");
     const data=reinvestmentData(),current=powerMagnitude(document.getElementById("currentPower").value);
     const resetRaw=document.getElementById("resetPower").value.trim();
     const reset=resetRaw?powerMagnitude(resetRaw):null;
+    const actualRaw=document.getElementById("actualPower").value.trim();
+    const actual=actualRaw?powerMagnitude(actualRaw):null;
     if(!data){status.innerHTML='<span class="bad">현재 초월 레벨 또는 미사용 초월석을 확인해 주세요.</span>';return;}
-    if(!current){status.innerHTML='<span class="bad">현재 전투력 표기를 확인해 주세요.</span>';return;}
+    if(!current){status.innerHTML='<span class="bad">초기화 전 전투력 표기를 확인해 주세요.</span>';return;}
     if(resetRaw&&!reset){status.innerHTML='<span class="bad">초기화 후 실측 전투력 표기를 확인해 주세요.</span>';return;}
-    if(reset&&reset.log>current.log+1e-9){status.innerHTML='<span class="bad">초기화 후 전투력이 현재보다 큽니다. 입력값을 확인해 주세요.</span>';return;}
-    button.disabled=true;status.textContent="전체 초월석 최적 배분 계산 중...";
+    if(actualRaw&&!actual){status.innerHTML='<span class="bad">실제 재투자 후 전투력 표기를 확인해 주세요.</span>';return;}
+    if(reset&&reset.log>current.log+1e-9){
+      status.innerHTML='<span class="bad">초기화 후 전투력이 초기화 전보다 큽니다. 입력값을 확인해 주세요.</span>';return;
+    }
+    if(reset&&actual&&actual.log+1e-9<reset.log){
+      status.innerHTML='<span class="bad">재투자 후 실제 전투력이 초기화 직후보다 작습니다. 입력 시점을 확인해 주세요.</span>';return;
+    }
+    button.disabled=true;
+    status.textContent="전체 초월석 최적 배분 계산 중...";
     setTimeout(()=>{
       try{
         const exact=optimizeRecommended(Math.min(data.pool,TOTAL_MAX),data.levels),best=exact.best;
-        if(!best)throw new Error("best allocation not found");
+        if(!best)throw new Error("No valid recommended allocation");
         const left=data.pool-best.used,oldScore=currentEffectScore(data.levels);
         const model=projectionScale(current,reset,oldScore,best.score);
         if(model.type==="invalid"){
-          status.innerHTML='<span class="bad">전투력 실측값의 크기를 확인해 주세요.</span>';return;
+          status.innerHTML='<span class="bad">실측 전투력 입력값을 다시 확인해 주세요.</span>';return;
         }
-        const predicted=model.factor===null?null:projectedPower(current,model.factor);
-        const change=model.factor===null?null:(model.factor-1)*100;
-        const ePct=oldScore>0?(best.score/oldScore-1)*100:null;
-        const mode=model.type==="calibrated"?"실측 보정 예상":model.type==="assumption"?"참고 예상":"전투력 추정 불가";
-        const powerText=predicted?"≈ "+predicted:"현재 레벨 효과가 0이어서 추정 불가";
-        const pct=change===null?"계산 불가":(change>=0?"+":"")+change.toFixed(3)+"%";
+        let predicted=null,predictedValue=null,change=null;
+        if(model.type==="calibrated"){
+          if(current.kind==="numeric"&&reset.kind==="numeric"){
+            // Numeric form: directly reproduce the account-calibrated power estimate.
+            const ratio=best.score/oldScore;
+            predictedValue=Math.round(reset.value+(current.value-reset.value)*ratio);
+            if(!Number.isFinite(predictedValue)||predictedValue<=0){
+              predictedValue=null;
+            }else{
+              predicted=formatKoreanPower(predictedValue);
+              change=(predictedValue/current.value-1)*100;
+            }
+          }else{
+            predicted=projectedPower(current,model.factor);
+            change=(model.factor-1)*100;
+          }
+        }
+        const effectPct=oldScore>0?(best.score/oldScore-1)*100:null;
+        const hasEstimate=predicted!==null;
+        const estimateLabel=hasEstimate?"실측 보정 예상 전투력":"실측 보정 전투력 미산출";
+        const estimateText=hasEstimate?"≈ "+predicted:"초기화 후 실측 전투력 필요";
+        const pctText=change===null?"산출 불가":signedPct(change);
+
         document.getElementById("powerResult").innerHTML=
           '<div class="power-result-grid">'+
-          '<div class="power-box"><div class="k">현재 전투력</div><div class="v">'+current.label+'</div></div>'+
+          '<div class="power-box"><div class="k">초기화 전 전투력</div><div class="v">'+current.label+'</div></div>'+
           '<div class="power-arrow">→</div>'+
-          '<div class="power-box after"><div class="k">재투자 후 '+mode+'</div><div class="v">'+powerText+'</div></div></div>'+
+          '<div class="power-box after"><div class="k">'+estimateLabel+'</div><div class="v">'+estimateText+'</div></div></div>'+
           '<div class="power-meta">'+
           '<div>현재 투자량<b>'+fmt(data.invested)+'개</b></div>'+
           '<div>미사용 초월석<b>'+fmt(data.unused)+'개</b></div>'+
           '<div>재투자 전체 수량<b>'+fmt(data.pool)+'개</b></div>'+
           '<div>재투자 후 잔여<b>'+fmt(left)+'개</b></div>'+
-          '<div>전투력 모델 변화율<b>'+pct+'</b></div>'+
-          '<div>공격력 효과지수 변화<b>'+(ePct===null?"비교 불가":(ePct>=0?"+":"")+ePct.toFixed(3)+"%")+'</b></div></div>'+
+          '<div>예상 전투력 변화율<b>'+pctText+'</b></div>'+
+          '<div>공격력 효과지수 변화<b>'+(effectPct===null?"비교 불가":signedPct(effectPct))+'</b></div></div>'+
           '<div class="projection-note">'+
           (model.type==="calibrated"?
-            '초기화 후 실측 전투력과 현재 전투력의 차이로 계정별 보정한 값입니다.':
-            '초월석 공격력 효과지수 비율을 전체 전투력에 적용한 가정값입니다. 초월석 이외 능력치를 분리하지 못하므로 게임 실제 전투력과 다를 수 있습니다.')+
+            '초기화 전·후 실측 전투력 차이에 추천 배분의 효과지수 비율을 적용한 계정별 추정값입니다. 실제 재투자 결과와 다를 수 있습니다.':
+            '초기화 후 실측값이 없어 전투력 예상값과 증가율은 산출하지 않습니다. 공격력 효과지수 증가율은 전체 전투력 증가율과 다릅니다.')+
           '</div>';
+
+        let verifyHtml="";
+        if(actual){
+          const actualPct=(Math.pow(10,actual.log-current.log)-1)*100;
+          let errorText="초기화 후 실측 전투력을 입력하면 예상값과 실제값의 오차를 비교할 수 있습니다.";
+          let overUnder="";
+          if(predictedValue!==null&&actual.kind==="numeric"){
+            const difference=predictedValue-actual.value;
+            const accuracy=Math.abs(difference)/actual.value*100;
+            overUnder='<div><span>예상 − 실제 전투력</span><b>'+signedPower(difference)+'</b></div>'+
+              '<div><span>실제값 기준 절대 오차율</span><b>'+accuracy.toFixed(3)+'%</b></div>';
+            errorText=difference>=0?
+              '예상값이 실제보다 높았습니다. 이 결과는 해당 캐릭터와 배분의 검증 기록이며 다른 계정에 일괄 보정값으로 적용하지 않습니다.':
+              '예상값이 실제보다 낮았습니다. 이 결과는 해당 캐릭터와 배분의 검증 기록이며 다른 계정에 일괄 보정값으로 적용하지 않습니다.';
+          }else if(hasEstimate){
+            const percentError=Math.abs(Math.pow(10,current.log+Math.log10(model.factor)-actual.log)-1)*100;
+            overUnder='<div><span>실제값 기준 추정 오차율</span><b>'+percentError.toFixed(3)+'%</b></div>';
+            errorText='대형 게임 단위의 전투력 표기에서는 자릿수 근사로 비교했습니다.';
+          }
+          const actualChange=current.kind==="numeric"&&actual.kind==="numeric"?
+            (actual.value/current.value-1)*100:actualPct;
+          verifyHtml=
+            '<div class="power-verify"><h3>재투자 후 실제 전투력 검증</h3>'+
+            '<div class="power-verify-grid">'+
+            '<div><span>실제 재투자 전투력</span><b>'+actual.label+'</b></div>'+
+            '<div><span>실제 전투력 증가율</span><b>'+signedPct(actualChange)+'</b></div>'+
+            overUnder+
+            '</div><div class="power-verify-note">'+errorText+'</div></div>';
+        }
+        document.getElementById("powerVerification").innerHTML=verifyHtml;
         document.getElementById("powerFinalLevels").innerHTML=
           '<div class="joint-card" style="margin-top:10px">'+
           '<div class="joint-rank featured">현재 배분 ↔ 최적 재투자 추천</div>'+
@@ -1011,7 +1125,8 @@ td{color:#62776e;background:#fff}
           '<div class="comparison-row"><span>공격력 효과지수</span><span>'+oldScore.toFixed(3)+'</span><span>'+best.score.toFixed(3)+'</span></div></div>'+
           '<div class="joint-foot">공격력 효과지수 차이 '+(best.score-oldScore>=0?"+":"")+(best.score-oldScore).toFixed(3)+
           ' · 추천 배분 사용 '+fmt(best.used)+'개 · 잔여 '+fmt(left)+'개</div></div>';
-        status.innerHTML='<span class="ok">계산 완료 · '+mode+'</span>';
+        savePowerRecord();
+        status.innerHTML='<span class="ok">재분배 추천 완료 · '+(hasEstimate?"실측 보정 예상 표시":"예상 전투력 계산에는 초기화 후 실측값 필요")+'</span>';
       }catch(err){
         console.error(err);status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 입력값을 확인해 주세요.</span>';
       }finally{button.disabled=false;}
@@ -1047,11 +1162,31 @@ td{color:#62776e;background:#fff}
   document.getElementById("run").addEventListener("click",run);
   document.getElementById("stones").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
   document.getElementById("runPower").addEventListener("click",runPowerCalc);
-  document.getElementById("currentPower").addEventListener("input",()=>updatePowerPreview("currentPower","currentPowerPreview"));
-  document.getElementById("resetPower").addEventListener("input",()=>updatePowerPreview("resetPower","resetPowerPreview"));
-  ["plv0","plv1","plv2","plv3","powerStones"].forEach(id=>document.getElementById(id).addEventListener("input",updateCurrentStoneSpent));
+  restorePowerRecord();
+  ["currentPower","resetPower","actualPower"].forEach(id=>{
+    document.getElementById(id).addEventListener("input",()=>{
+      updatePowerPreview(id,id+"Preview");
+      invalidatePowerResult();
+    });
+    updatePowerPreview(id,id+"Preview");
+  });
+  ["plv0","plv1","plv2","plv3","powerStones"].forEach(id=>{
+    document.getElementById(id).addEventListener("input",()=>{
+      updateCurrentStoneSpent();
+      invalidatePowerResult();
+    });
+  });
+  document.getElementById("clearPowerSession").addEventListener("click",()=>{
+    try{localStorage.removeItem(POWER_RECORD_KEY);}catch(_){}
+    document.getElementById("resetPower").value="";
+    document.getElementById("actualPower").value="";
+    updatePowerPreview("resetPower","resetPowerPreview");
+    updatePowerPreview("actualPower","actualPowerPreview");
+    invalidatePowerResult();
+    document.getElementById("powerSessionHint").textContent="저장 기록을 지웠습니다. 초기화 후·재투자 후 실측값 입력도 비웠습니다.";
+  });
   updateCurrentStoneSpent();
-  ["currentPower","resetPower","powerStones","plv0","plv1","plv2","plv3"].forEach(id=>{
+  POWER_RECORD_IDS.forEach(id=>{
     document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")runPowerCalc();});
   });
   document.querySelectorAll(".mode-tab").forEach(btn=>{
