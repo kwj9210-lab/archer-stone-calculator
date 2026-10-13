@@ -126,10 +126,11 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 </div>
 <section class="card">
  <h2>03 · 코스튬 보유 및 장착 효과</h2>
- <div class="note" style="margin:0 0 10px">마일리지 갑주 18종의 보유 효과(각 관통 +35)는 제공된 게임 이미지 기준입니다. 장착 효과는 별도로 계산해야 하며 이 항목에 자동 합산하지 않습니다. 나머지 코스튬 수치는 기존 참고자료 기준입니다.</div>
+ <div class="note" style="margin:0 0 10px">마일리지 갑주 18종은 각각 보유 관통 +35입니다. 월드보스 코스튬 12종 중 10종은 보유 관통 +20, 2종은 막기·회피 +20로 관통이 없습니다. 게임 이미지 기준이며 장착 효과는 별도로 계산합니다. 기타 코스튬 수치는 기존 참고자료 기준입니다.</div>
  <div class="costume-grid">
   <div class="costume"><b>캐시 코스튬 · 개당 +3</b><small>최대 6개</small><input id="costumeCash" type="number" min="0" max="6" step="1" value="" autocomplete="off"></div>
-  <div class="costume"><b>월드보스 코스튬 · 개당 +10</b><small>최대 7개</small><input id="costumeWorld" type="number" min="0" max="7" step="1" value="" autocomplete="off"></div>
+  <div class="costume"><b>월드보스 코스튬 · 관통형 +20</b><small>최대 10종 · 관통 +20, 명중 +20</small><input id="costumeWorld" type="number" min="0" max="10" step="1" value="" autocomplete="off"></div>
+  <div class="costume"><b>월드보스 코스튬 · 방어형 관통 +0</b><small>최대 2종 · 철갑 군주 / 불멸 성채 (막기 +20, 회피 +20)</small><input id="costumeWorldDefense" type="number" min="0" max="2" step="1" value="" autocomplete="off"></div>
   <div class="costume"><b>마일리지 갑주 · 개당 관통 +35</b><small>최대 18종 · 보유 효과</small><input id="costumeMileage" type="number" min="0" max="18" step="1" value="" autocomplete="off"></div>
   <div class="costume"><b>다이아 코스튬 · 개당 +3</b><small>최대 3개</small><input id="costumeDiamond" type="number" min="0" max="3" step="1" value="" autocomplete="off"></div>
  </div>
@@ -181,7 +182,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  <div class="audit-content">
   <p><b>능력치 강화 관통</b> · 게임 ‘능력치 강화 → 관통’에 표시된 값(사진 예시 370)을 직접 입력합니다. 이전의 활 등급별 50~360 상한은 서로 다른 능력치 규칙이므로 여기에 적용하지 않습니다. 이번 계산기 입력 상한은 요청하신 MAX 370입니다.</p><p><b>APK 0.1.91 확인</b> · 정령 0~100단계 기본 관통 최대 +1,022. 전투 조건 플래그 활성 시 정령 관통 ×5.</p>
   <p><b>APK 0.1.91 확인</b> · 초월 정밀술 0~300레벨, 관통 최대 +3,570. 100레벨에서는 +273. 오행 개방 0~100단계, 완료 보상 누적 관통 최대 +15,000.</p>
-  <p><b>첨부 참고값</b> · 갑파 패시브 사용자 지정 MAX 300, 코스튬 개수 6/7/18/3(마일리지 갑주 18종은 새 이미지 확인), 기존 각인석 등급 수치 및 11칸+자유 1칸. 절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
+  <p><b>첨부 참고값</b> · 갑파 패시브 사용자 지정 MAX 300, 코스튬 개수 6/12(관통형 10 + 방어형 2)/18/3(월드보스 12종 및 마일리지 갑주 18종은 제공 이미지 확인), 기존 각인석 등급 수치 및 11칸+자유 1칸. 절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
  </div>
 </details>
 </section>
@@ -203,7 +204,8 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  }
  const costumes=[
   {id:"costumeCash",max:6,per:3},
-  {id:"costumeWorld",max:7,per:10},
+  {id:"costumeWorld",max:10,per:20},
+  {id:"costumeWorldDefense",max:2,per:0},
   {id:"costumeMileage",max:18,per:35},
   {id:"costumeDiamond",max:3,per:3}
  ];
@@ -212,7 +214,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  const $=id=>document.getElementById(id);
  const fmt=n=>n.toLocaleString("ko-KR");
  const inputIds=["statAbility","statPassive","statPrecision","precisionLevel","spiritStage","spiritPen","openingCompleted","spiritMultiplier",
-  "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
+  "costumeCash","costumeWorld","costumeWorldDefense","costumeMileage","costumeDiamond","diamondWear",
   "extraEnabled","extraType","extraRank"];
  let countInputs=[],lastValidTotal=null;
  const grid=$("engraveGrid");
