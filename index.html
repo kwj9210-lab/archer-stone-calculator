@@ -427,6 +427,35 @@ coverage:'혼돈급 생명석까지 반영했습니다. 혼돈급은 절대 생�
 }
 };
 var type='maseok',state={};
+var SAVE_KEY='archer:engrave-inputs:v1';
+var otherFields=['ticketsNow','huntingTicketsNow','ticketPrice','masteryLevel'];
+function saveBrowserState(){
+  var obj={type:type,state:state,extra:{}};
+  otherFields.forEach(function(id){obj.extra[id]=el(id).value;});
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(obj));}catch(_){}
+}
+function restoreBrowserState(){
+  try{
+    var saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+    if(!saved||typeof saved!=='object')return;
+    if(['maseok','hard','life'].includes(saved.type))type=saved.type;
+    ['maseok','hard','life'].forEach(function(t){
+      var v=saved.state&&saved.state[t],cfg=configs[t];
+      if(!v||typeof v!=='object')return;
+      var num=function(x){return Number.isSafeInteger(x)&&x>=0?x:0};
+      state[t]={
+        stones:Array.from({length:G.length},function(_,i){return num(v.stones&&v.stones[i])}),
+        raw:Array.from({length:cfg.resources.length},function(_,i){return num(v.raw&&v.raw[i])}),
+        target:Number.isInteger(v.target)&&v.target>=0&&v.target<G.length?v.target:G.length-1,
+        count:num(v.count)||1
+      };
+    });
+    otherFields.forEach(function(id){
+      var v=saved.extra&&saved.extra[id];
+      if(typeof v==='string'&&v.length<65)el(id).value=v;
+    });
+  }catch(_){}
+}
 function el(id){return document.getElementById(id)}
 function val(id){return Math.max(0,Number(el(id).value)||0)}
 function fmt(v){
@@ -460,6 +489,7 @@ function saveCurrent(){
  s.target=Number(el('targetGrade').value);s.count=val('targetCount');
  s.stones=G.map(function(_,i){return Math.floor(val('stone'+i))});
  s.raw=configs[type].resources.map(function(_,i){return val('raw'+i)});
+  saveBrowserState();
 }
 function render(){
  initState(type);var c=configs[type],s=state[type];
@@ -576,8 +606,11 @@ function syncMastery(){
 }
 el('masteryLevel').addEventListener('input',syncMastery);
 el('ticketsNow').addEventListener('input',calc);el('huntingTicketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
-el('clearStones').addEventListener('click',function(){state[type].stones=Array(G.length).fill(0);render()});
+el('clearStones').addEventListener('click',function(){state[type].stones=Array(G.length).fill(0);render();saveBrowserState()});
 document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){saveCurrent();type=this.dataset.type;document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.type===type)});render()})});
+restoreBrowserState();
+document.querySelectorAll('.tab').forEach(function(btn){btn.classList.toggle('active',btn.dataset.type===type)});
+otherFields.forEach(function(id){el(id).addEventListener('input',saveBrowserState);el(id).addEventListener('change',saveBrowserState)});
 render();
 syncMastery();
 })();
