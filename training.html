@@ -103,7 +103,20 @@ function hpInfo(n){
  return null;
 }
 function render(){
- let n=Math.floor(Number(document.getElementById('stage').value)||1000);n=Math.max(1,Math.min(5000,n));document.getElementById('stage').value=n;
+ const stageInput=document.getElementById('stage');
+ const raw=stageInput.value.trim();
+ // An empty field is a valid editing state; never replace it with the default.
+ if(raw===''){
+  document.getElementById('summary').innerHTML='<div class="small">조회할 수련장 구간을 입력하세요.</div>';
+  document.getElementById('status').innerHTML='';
+  return;
+ }
+ const n=Number(raw);
+ if(!Number.isInteger(n)||n<1||n>5000){
+  document.getElementById('summary').innerHTML='<div class="small">1~5000 사이의 정수 구간을 입력하세요.</div>';
+  document.getElementById('status').innerHTML='<span class="bad">입력 범위를 확인해 주세요.</span>';
+  return;
+ }
  const info=hpInfo(n);
  document.getElementById('summary').innerHTML=info
   ?'<div class="bestline">'+n+'만-100 · '+info.text+'</div><div class="small">'+info.sub+'</div>'
