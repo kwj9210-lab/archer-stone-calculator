@@ -124,16 +124,15 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 </section>
 </div>
 <section class="card">
- <h2>03 · 코스튬 보유 및 장착 효과</h2>
- <div class="note" style="margin:0 0 10px">캐시 코스튬 6종은 각각 보유 관통 +75입니다(6종 합계 +450). 이미지의 장착 효과 막기 +10은 보유 관통 계산에 포함하지 않습니다. 마일리지 갑주 18종은 각각 보유 관통 +35입니다. 월드보스 코스튬 12종 중 10종은 보유 관통 +20, 2종은 막기·회피 +20로 관통이 없습니다. 게임 이미지 기준이며 장착 효과는 별도로 계산합니다. 기타 코스튬 수치는 기존 참고자료 기준입니다.</div>
+ <h2>03 · 코스튬 관통</h2>
+ <div class="note" style="margin:0 0 10px">보유 개수를 입력하면 관통 증가량만 합산합니다. 캐시 최대 +450, 월드보스 최대 +200, 마일리지 갑주 최대 +630입니다. 관통이 없는 코스튬은 제외했습니다.</div>
  <div class="costume-grid">
   <div class="costume"><b>캐시 코스튬 · 개당 관통 +75</b><small>최대 6종 · 보유 효과</small><input id="costumeCash" type="number" min="0" max="6" step="1" value="" autocomplete="off"></div>
-  <div class="costume"><b>월드보스 코스튬 · 관통형 +20</b><small>최대 10종 · 관통 +20, 명중 +20</small><input id="costumeWorld" type="number" min="0" max="10" step="1" value="" autocomplete="off"></div>
-  <div class="costume"><b>월드보스 코스튬 · 방어형 관통 +0</b><small>최대 2종 · 철갑 군주 / 불멸 성채 (막기 +20, 회피 +20)</small><input id="costumeWorldDefense" type="number" min="0" max="2" step="1" value="" autocomplete="off"></div>
+  <div class="costume"><b>월드보스 코스튬 · 관통형 +20</b><small>최대 10종 · 보유 관통</small><input id="costumeWorld" type="number" min="0" max="10" step="1" value="" autocomplete="off"></div>
   <div class="costume"><b>마일리지 갑주 · 개당 관통 +35</b><small>최대 18종 · 보유 효과</small><input id="costumeMileage" type="number" min="0" max="18" step="1" value="" autocomplete="off"></div>
-  <div class="costume"><b>다이아 코스튬 · 개당 +3</b><small>최대 3개</small><input id="costumeDiamond" type="number" min="0" max="3" step="1" value="" autocomplete="off"></div>
+  <div class="costume"><b>다이아 코스튬 · 개당 관통 +3</b><small>최대 3개</small><input id="costumeDiamond" type="number" min="0" max="3" step="1" value="" autocomplete="off"></div>
  </div>
- <label class="checkrow"><input id="diamondWear" type="checkbox">다이아 코스튬 장착 효과 +5 적용</label>
+ <label class="checkrow"><input id="diamondWear" type="checkbox">다이아 코스튬 장착 관통 +5 적용</label>
 </section>
 <section class="card">
  <h2>04 · 각인석 장착 수량</h2>
@@ -205,7 +204,6 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  const costumes=[
   {id:"costumeCash",max:6,per:75},
   {id:"costumeWorld",max:10,per:20},
-  {id:"costumeWorldDefense",max:2,per:0},
   {id:"costumeMileage",max:18,per:35},
   {id:"costumeDiamond",max:3,per:3}
  ];
@@ -214,7 +212,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  const $=id=>document.getElementById(id);
  const fmt=n=>n.toLocaleString("ko-KR");
  const inputIds=["statAbility","statPassive","precisionLevel","spiritStage","spiritPen","openingCompleted","spiritMultiplier",
-  "costumeCash","costumeWorld","costumeWorldDefense","costumeMileage","costumeDiamond","diamondWear",
+  "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
   "extraEnabled","extraType","extraRank"];
  let countInputs=[],lastValidTotal=null;
  const grid=$("engraveGrid");
