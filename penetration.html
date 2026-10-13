@@ -162,20 +162,21 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  <h2>06 · 관통 Total 계산 결과</h2>
  <div class="total-layout">
   <div class="total-box"><div class="headline">최종 관통</div><strong id="penetrationTotal" aria-live="polite">0</strong><div class="note">유효한 입력값일 때 자동 계산</div></div>
-  <div class="mini-box"><span>기본 능력치</span><b id="partBasic">0</b></div>
+  <div class="mini-box"><span>기본 능력치 (갑파 포함)</span><b id="partBasic">0</b></div>
   <div class="mini-box"><span>정령</span><b id="partSpirit">0</b></div>
   <div class="mini-box"><span>코스튬</span><b id="partCostume">0</b></div>
   <div class="mini-box"><span>각인석</span><b id="partEngrave">0</b></div>
 <div class="mini-box"><span>오행 개방</span><b id="partOpening">0</b></div>
  </div>
  <div class="detail-strip">
-  <div>마석 합계<b id="sumRune0">0</b></div><div>경화석 합계<b id="sumRune1">0</b></div><div>생명석 합계<b id="sumRune2">0</b></div><div>자유 각인<b id="sumExtra">0</b></div><div>코스튬 상세<b id="sumCostume">0</b></div>
+  <div>갑파 패시브<b id="sumPassive">+0</b></div><div>마석 합계<b id="sumRune0">0</b></div><div>경화석 합계<b id="sumRune1">0</b></div><div>생명석 합계<b id="sumRune2">0</b></div><div>자유 각인<b id="sumExtra">0</b></div><div>코스튬 상세<b id="sumCostume">0</b></div>
  </div>
  <div id="validationError" class="error" role="alert"></div>
  <div class="actions">
   <button id="sendTower" class="action" type="button">초월의 탑에 관통 전달 →</button>
   <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
  </div>
+ <div class="note">갑파 패시브는 입력한 관통 수치(0~300)를 기본 능력치와 최종 관통에 한 번만 더합니다. 아래 ‘갑파 패시브’ 상세값은 그 합산 항목의 표시이며 별도 추가 합산하지 않습니다.</div>
  <div class="note">검증 구분: 능력치 강화 관통은 게임 화면에 표시된 수치를 직접 입력합니다. 요청하신 입력 상한 MAX 370을 적용했습니다. 오행 개방은 기존 APK 분석식, 정령·정밀술은 APK 네이티브 코드, 코스튬·기존 각인석은 첨부 참고자료, 절대·혼돈급은 게임 아이템 설명 이미지 기반입니다. 패시브·일부 코스튬·각인석 장착 슬롯 MAX와 추가 효과 조건은 별도 확인이 필요합니다. 숫자 입력칸은 방문할 때마다 빈칸으로 시작하며, 이전 입력값은 자동 복원하지 않습니다.</div>
  <details class="audit-details">
  <summary>APK 데이터 검증 범위 / MAX값 확인</summary>
@@ -271,7 +272,8 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  }
  function update(){
    const errors=[];
-   const base=parseIntField("statAbility",370,errors)+parseIntField("statPassive",300,errors)+parseIntField("statPrecision",3570,errors);
+   const passive=parseIntField("statPassive",300,errors);
+   const base=parseIntField("statAbility",370,errors)+passive+parseIntField("statPrecision",3570,errors);
    parseIntField("precisionLevel",300,errors);
    const stage=parseIntField("spiritStage",100,errors);
    const spiritMultiplier=Number($("spiritMultiplier").value);
@@ -305,7 +307,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    const opening=openingFlat(completed);
    $("openingGain").textContent="+"+fmt(opening)+" 관통 · +"+fmt(opening)+" 명중";
    const total=base+spirit+costume+engraving+opening;
-   $("partBasic").textContent=fmt(base);$("partSpirit").textContent=fmt(spirit);
+   $("partBasic").textContent=fmt(base);$("sumPassive").textContent="+"+fmt(passive);$("partSpirit").textContent=fmt(spirit);
    $("partCostume").textContent=fmt(costume);$("partEngrave").textContent=fmt(engraving);
    $("partOpening").textContent=fmt(opening);
    runeSums.forEach((v,i)=>$("sumRune"+i).textContent="+"+fmt(v));
