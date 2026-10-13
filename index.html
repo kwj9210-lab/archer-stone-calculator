@@ -375,7 +375,7 @@ th:first-child,td:first-child{text-align:left}
 </section>
 
 
-<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 던전은 100만회 소탕까지, 사냥터는 10만회 소탕까지 표시합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
+<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 던전은 100만회·10만회·1만회 단위, 사냥터는 10만회·1만회 단위로 실제 계산 횟수를 나눠 표시합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
 </main>
 
 <script>
@@ -478,27 +478,32 @@ function calc(){
   if(g>0)need(g-1,q*c.child[g]);
  }
  need(tg,count);
- var masteryLv=Math.max(1,Math.min(2507,Math.floor(Number(el('masteryLevel').value)||1)));
+ var rawMastery=String(el('masteryLevel').value).trim();
+  var masteryLv=/^\d+$/.test(rawMastery)?Number(rawMastery):NaN;
+  if(!Number.isSafeInteger(masteryLv)||masteryLv<1||masteryLv>2507){
+   el('resourceResults').innerHTML='<div class="box"><h3>숙련도 입력 확인</h3><div class="line">숙련도 단계를 1~2,507 사이로 입력하면 소탕 횟수와 입장권을 계산합니다.</div></div>';
+   el('ticketsTotal').textContent='—';el('totalRuns').textContent='—';el('ticketShort').textContent='—';el('diamondNeed').textContent='—';
+   el('summary').textContent='숙련도를 입력해 주세요.';
+   return;
+  }
  var mult=1.25+.25*masteryLv,totalRuns=0,html='';
  c.resources.forEach(function(r,i){
   var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
   if(r.base){
    var per100k=r.fixed?r.base:r.base*(mult/5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
    totalRuns+=runs;
-   var sweep100k=runs?Math.ceil(runs/100000):0;
-   var sweepText;
-   if(r.fixed){
-     sweepText='10만회 소탕 '+fmt(sweep100k)+'회';
-   }else{
-     var million=Math.floor(runs/1000000);
-     var remain=runs-million*1000000;
-     var hundredK=Math.ceil(remain/100000);
-     var parts=[];
-     if(million)parts.push('100만회 소탕 '+fmt(million)+'회');
-     if(hundredK)parts.push('10만회 소탕 '+fmt(hundredK)+'회');
-     sweepText=parts.length?parts.join(' · '):'소탕 0회';
-   }
-   var approx100k=Math.round(per100k/10000);
+   // Display the exact rounded sweep count used for admission tickets.
+    var remainingRuns=runs,parts=[];
+    if(!r.fixed){
+      var million=Math.floor(remainingRuns/1000000);
+      if(million){parts.push('100만회 소탕 '+fmt(million)+'회');remainingRuns-=million*1000000;}
+    }
+    var hundredK=Math.floor(remainingRuns/100000);
+    if(hundredK){parts.push('10만회 소탕 '+fmt(hundredK)+'회');remainingRuns-=hundredK*100000;}
+    var tenK=Math.round(remainingRuns/10000);
+    if(tenK)parts.push('1만회 소탕 '+fmt(tenK)+'회');
+    var sweepText=parts.length?parts.join(' · '):'소탕 0회';
+    var approx100k=Math.round(per100k/10000);
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong">'+sweepText+'</div></div>';
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div></div>';
@@ -528,12 +533,14 @@ function syncMastery(){
  if(raw===''){
    el('masteryMult').value='';
    el('masteryTrainingStage').value='';
+   calc();
    return;
  }
  var lv=Math.floor(Number(raw));
  if(!Number.isFinite(lv)||lv<1){
    el('masteryMult').value='';
    el('masteryTrainingStage').value='';
+   calc();
    return;
  }
  if(lv>2507){lv=2507;field.value='2507';}
