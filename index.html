@@ -132,7 +132,10 @@ button{cursor:pointer}
 .box h3{margin:0 0 7px;font-size:16px;color:#2c664f}
 .line{font-size:13px;line-height:1.65;color:#526b61}
 .strong{font-size:19px;font-weight:900;margin-top:4px;color:#1b9b6c}
-.results .strong{font-size:17px;white-space:nowrap;letter-spacing:-.35px}
+.results .strong{font-size:16px;white-space:normal;overflow-wrap:anywhere;word-break:keep-all;letter-spacing:-.35px;line-height:1.5}
+.results .box,.stats .box{min-width:0;overflow-wrap:anywhere;word-break:keep-all}
+.stats .strong,.head .big{white-space:normal;overflow-wrap:anywhere;word-break:keep-all}
+.sweep-breakdown,.resource-ticket{display:block;margin-top:4px}
 .warn{color:var(--warn)}
 .results,.stats{margin-top:12px}
 .stats .box{
@@ -362,7 +365,7 @@ th:first-child,td:first-child{text-align:left}
 <section class="card result-card">
 <div class="head">
 <div><div class="k" id="resultKicker">입력한 숙련도 기준</div><div id="resultTitle" class="big">마석 제작 계산</div></div>
-<div style="text-align:right"><div class="k" id="ticketLabel">총 필요 티켓 (던전 + 사냥터)</div><div id="ticketsTotal" class="big">0장</div></div>
+<div style="text-align:right"><div class="k" id="ticketLabel">총 필요 티켓</div><div id="ticketsTotal" class="big">0장</div><div id="ticketsByType" class="line">던전 티켓 0장 / 사냥터 티켓 0장</div></div>
 </div>
 <div id="coverageNote" class="note"></div>
 <div id="resourceResults" class="results"></div>
@@ -373,7 +376,9 @@ th:first-child,td:first-child{text-align:left}
 <div class="box"><div class="k">사냥터 티켓 부족</div><div id="huntingShort" class="strong">0장</div></div>
 <div class="box"><div class="k">총 소탕 횟수</div><div id="totalRuns" class="strong">0회</div></div>
 <div class="box"><div class="k">총 부족 티켓</div><div id="ticketShort" class="strong">0장</div></div>
-<div class="box"><div class="k">부족분 구매 시 총 다이아</div><div id="diamondNeed" class="strong">0 다이아</div></div>
+<div class="box"><div class="k">던전 티켓 구매 다이아</div><div id="dungeonDiamond" class="strong">0 다이아</div></div>
+<div class="box"><div class="k">사냥터 티켓 구매 다이아</div><div id="huntingDiamond" class="strong">0 다이아</div></div>
+<div class="box"><div class="k">부족분 구매 총합</div><div id="diamondNeed" class="strong">0 다이아</div></div>
 </div>
 <div id="summary" class="note"></div>
 <details><summary>제작식 확인</summary><div style="overflow:auto"><table id="recipeTable"></table></div></details>
@@ -487,7 +492,7 @@ function calc(){
   var masteryLv=/^\d+$/.test(rawMastery)?Number(rawMastery):NaN;
   if(!Number.isSafeInteger(masteryLv)||masteryLv<1||masteryLv>2507){
    el('resourceResults').innerHTML='<div class="box"><h3>숙련도 입력 확인</h3><div class="line">숙련도 단계를 1~2,507 사이로 입력하면 소탕 횟수와 입장권을 계산합니다.</div></div>';
-   ['ticketsTotal','totalRuns','ticketShort','diamondNeed','dungeonRuns','huntingRuns','dungeonShort','huntingShort'].forEach(function(id){el(id).textContent='—';});
+   ['ticketsTotal','ticketsByType','totalRuns','ticketShort','diamondNeed','dungeonDiamond','huntingDiamond','dungeonRuns','huntingRuns','dungeonShort','huntingShort'].forEach(function(id){el(id).textContent='—';});
    el('summary').textContent='숙련도를 입력해 주세요.';
    return;
   }
@@ -509,7 +514,7 @@ function calc(){
     if(tenK)parts.push('1만회 소탕 '+fmt(tenK)+'회');
     var sweepText=parts.length?parts.join(' · '):'소탕 0회';
     var approx100k=Math.round(per100k/10000);
-   html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong">'+sweepText+' · 필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(runs*2)+'장</div></div>';
+   html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong">'<span class="sweep-breakdown">'+sweepText+'</span><span class="resource-ticket">필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(runs*2)+'장</span></div></div>';
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div></div>';
   }
@@ -519,16 +524,20 @@ function calc(){
   var dungeonTickets=dungeonRuns*2,huntingTickets=huntingRuns*2;
   var dungeonShort=Math.max(0,dungeonTickets-val('ticketsNow'));
   var huntingShort=Math.max(0,huntingTickets-val('huntingTicketsNow'));
-  var tickets=dungeonTickets+huntingTickets,short=dungeonShort+huntingShort,dia=short*val('ticketPrice');
+  var tickets=dungeonTickets+huntingTickets,short=dungeonShort+huntingShort;
+  var dungeonDia=dungeonShort*val('ticketPrice'),huntingDia=huntingShort*val('ticketPrice'),dia=dungeonDia+huntingDia;
   el('ticketsTotal').textContent=fmt(tickets)+'장';
+  el('ticketsByType').textContent='던전 티켓 '+fmtKoreanUnit(dungeonTickets)+'장 / 사냥터 티켓 '+fmtKoreanUnit(huntingTickets)+'장';
   el('dungeonRuns').textContent=fmtKoreanUnit(dungeonRuns)+'회 / '+fmtKoreanUnit(dungeonTickets)+'장';
   el('huntingRuns').textContent=fmtKoreanUnit(huntingRuns)+'회 / '+fmtKoreanUnit(huntingTickets)+'장';
   el('dungeonShort').textContent=fmtKoreanUnit(dungeonShort)+'장';
   el('huntingShort').textContent=fmtKoreanUnit(huntingShort)+'장';
   el('totalRuns').textContent=fmtKoreanUnit(totalRuns)+'회';
   el('ticketShort').textContent=fmtKoreanUnit(short)+'장';
+  el('dungeonDiamond').textContent=fmtKoreanUnit(dungeonDia)+' 다이아';
+  el('huntingDiamond').textContent=fmtKoreanUnit(huntingDia)+' 다이아';
   el('diamondNeed').textContent=fmtKoreanUnit(dia)+' 다이아';
-  el('ticketLabel').textContent='총 필요 티켓 (던전 + 사냥터)';
+  el('ticketLabel').textContent='총 필요 티켓';
   var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
  var remain=inv.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
  var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
