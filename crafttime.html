@@ -354,4 +354,53 @@ document.getElementById("ticketHourHot").addEventListener("input",()=>{syncTicke
 ["mastery","r0","r1","r2","immortal","transcend"].forEach(id=>document.getElementById(id).addEventListener("input",calculate));
 calculate();
 </script>
-</main></body></html>
+</main>
+<script>
+/* Independent browser storage for this calculator. */
+(function(){
+  "use strict";
+  const KEY="archer:browser-inputs:crafttime:v1";
+  const getFields=()=>Array.from(document.querySelectorAll("input[id],select[id],textarea[id]"))
+    .filter(e=>!e.readOnly&&!e.disabled&&e.id&&e.type!=="button"&&e.type!=="submit");
+  function save(){
+    const values={};
+    for(const e of getFields()){
+      values[e.id]=e.type==="checkbox"||e.type==="radio"?!!e.checked:String(e.value);
+    }
+    try{localStorage.setItem(KEY,JSON.stringify(values));}catch(_){}
+  }
+  function restore(){
+    let values=null;
+    try{values=JSON.parse(localStorage.getItem(KEY)||"null");}catch(_){}
+    if(!values||typeof values!=="object"||Array.isArray(values))return;
+    // A live handoff from Penetration Total takes priority over an older tower value.
+    const handoff=false;
+    const restored=[];
+    for(const e of getFields()){
+      if(handoff&&e.id==="myPen")continue;
+      if(!Object.prototype.hasOwnProperty.call(values,e.id))continue;
+      const v=values[e.id];
+      if(e.type==="checkbox"||e.type==="radio"){
+        if(typeof v!=="boolean")continue;
+        e.checked=v;
+      }else if(typeof v==="string"&&v.length<=256){
+        if(e.tagName==="SELECT"&&!Array.from(e.options).some(x=>x.value===v))continue;
+        e.value=v;
+      }else continue;
+      restored.push(e);
+    }
+    for(const e of restored){
+      e.dispatchEvent(new Event("input",{bubbles:false}));
+      if(e.type==="checkbox"||e.tagName==="SELECT")e.dispatchEvent(new Event("change",{bubbles:false}));
+    }
+  }
+  // Register delegated events to also catch dynamically created input controls.
+  document.addEventListener("input",save);
+  document.addEventListener("change",save);
+  restore();
+  save();
+  
+  
+})();
+</script>
+</body></html>
