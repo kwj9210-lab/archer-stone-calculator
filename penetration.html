@@ -136,7 +136,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 </section>
 <section class="card">
  <h2>04 · 각인석 장착 수량</h2>
- <div class="note" style="margin:0 0 12px">마석·경화석·생명석은 각각 최대 11개를 장착할 수 있습니다. 같은 등급 여러 개도 입력할 수 있습니다. 절대·혼돈급 관통은 게임 아이템 설명 스크린샷으로 확인했습니다. 장착 슬롯 11칸은 기존 참고자료 기준입니다.</div>
+ <div class="note" style="margin:0 0 12px">마석·경화석·생명석은 각각 최대 11개를 장착할 수 있습니다. 같은 등급 여러 개도 입력할 수 있습니다. 초월·절대·혼돈급 관통은 게임 아이템 설명 스크린샷으로 확인했습니다. 장착 슬롯 11칸은 기존 참고자료 기준입니다.</div>
  <div class="engrave-grid" id="engraveGrid"></div>
  <div class="free">
   <label class="checkrow" style="margin:0"><input id="extraEnabled" type="checkbox">자유 각인 +1칸 사용</label>
@@ -144,7 +144,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    <div class="field"><label for="extraType">각인석 종류</label><select id="extraType"><option value="0">마석</option><option value="1">경화석</option><option value="2">생명석</option></select></div>
    <div class="field"><label for="extraRank">등급</label><select id="extraRank"></select></div>
   </div>
-  <div class="note">자유 각인 슬롯 1개에 선택한 각인석 1개의 관통을 추가합니다. 절대·혼돈급도 선택 가능합니다.</div>
+  <div class="note">자유 각인 슬롯 1개에 선택한 각인석 1개의 관통을 추가합니다. 초월·절대·혼돈급도 선택 가능합니다.</div>
  </div>
 </section>
 
@@ -182,7 +182,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  <div class="audit-content">
   <p><b>능력치 강화 관통</b> · 게임 ‘능력치 강화 → 관통’에 표시된 값(사진 예시 370)을 직접 입력합니다. 이전의 활 등급별 50~360 상한은 서로 다른 능력치 규칙이므로 여기에 적용하지 않습니다. 이번 계산기 입력 상한은 요청하신 MAX 370입니다.</p><p><b>APK 0.1.91 확인</b> · 정령 0~100단계 기본 관통 최대 +1,022. 전투 조건 플래그 활성 시 정령 관통 ×5.</p>
   <p><b>APK 0.1.91 확인</b> · 초월 정밀술 0~300레벨, 관통 최대 +3,570. 100레벨에서는 +273. 오행 개방 0~100단계, 완료 보상 누적 관통 최대 +15,000.</p>
-  <p><b>첨부 참고값</b> · 갑파 레벨 입력 상한 300 (Lv.300 관통 +3,570은 게임 화면 확인, 중간 레벨은 정밀술 식 임시 적용), 코스튬 개수 6/12(관통형 10 + 방어형 2)/18/3(캐시 6종, 월드보스 12종 및 마일리지 갑주 18종은 제공 이미지 확인), 기존 각인석 등급 수치 및 11칸+자유 1칸. 절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
+  <p><b>첨부 참고값</b> · 갑파 레벨 입력 상한 300 (Lv.300 관통 +3,570은 게임 화면 확인, 중간 레벨은 정밀술 식 임시 적용), 코스튬 개수 6/12(관통형 10 + 방어형 2)/18/3(캐시 6종, 월드보스 12종 및 마일리지 갑주 18종은 제공 이미지 확인), 기존 각인석 등급 수치 및 11칸+자유 1칸. 초월·절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
  </div>
 </details>
 </section>
@@ -190,9 +190,9 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 <script>
 (function(){
  "use strict";
- const ranks=["최하급","하급","일반","상급","최상급","특급","전설","신화","태초","불멸","절대급","혼돈급"];
- // 절대·혼돈 수치는 사용자 제공 게임 아이템 설명 이미지의 관통 값을 적용.
- const stones=[{"name":"마석","values":[4,6,10,15,22,34,52,62,73,85,140,185]},{"name":"경화석","values":[12,18,30,45,66,102,156,186,219,255,420,555]},{"name":"생명석","values":[8,12,20,30,44,68,104,124,146,170,280,370]}];
+ const ranks=["최하급","하급","일반","상급","최상급","특급","전설","신화","태초","불멸","초월","절대급","혼돈급"];
+ // 초월·절대·혼돈 수치는 사용자 제공 게임 아이템 설명 이미지의 관통 값을 적용.
+ const stones=[{"name":"마석","values":[4,6,10,15,22,34,52,62,73,85,105,140,185]},{"name":"경화석","values":[12,18,30,45,66,102,156,186,219,255,315,420,555]},{"name":"생명석","values":[8,12,20,30,44,68,104,124,146,170,210,280,370]}];
  function spiritFlat(level){return level===0?0:Math.round(1+299*(level-1)/29);}
  const spiritKnown={"0":0};
  // APK TranscendenceBalance.GetPrecisionPierceBonus (slot 4, mode 0)
@@ -216,7 +216,8 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
   "extraEnabled","extraType","extraRank"];
  let countInputs=[],lastValidTotal=null;
- const STORAGE_KEY="archer:penetration-total:v2";
+ const STORAGE_KEY="archer:penetration-total:v3";
+ const LEGACY_STORAGE_KEY="archer:penetration-total:v2";
  const grid=$("engraveGrid");
  stones.forEach((stone,t)=>{
    const card=document.createElement("div");
@@ -341,9 +342,29 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    }
  }
  function restoreInputs(){
-   let saved;
-   try{saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");}catch(_){return;}
+   let saved=null,legacy=false;
+   try{
+     saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+     if(saved===null){
+       saved=JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY)||"null");
+       legacy=saved!==null;
+     }
+   }catch(_){return;}
    if(!saved||typeof saved!=="object"||Array.isArray(saved))return;
+   if(legacy){
+     // Old ranks: 10=절대급, 11=혼돈급. New rank 10 is 초월.
+     // Move existing values to 11 and 12 without changing their item grade.
+     const migrated={...saved};
+     for(let t=0;t<stones.length;t++){
+       migrated["stone"+t+"_12"]=saved["stone"+t+"_11"]??"";
+       migrated["stone"+t+"_11"]=saved["stone"+t+"_10"]??"";
+       migrated["stone"+t+"_10"]="";
+     }
+     const rank=Number(saved.extraRank);
+     if(typeof saved.extraRank==="string"&&Number.isInteger(rank)&&rank>=10&&rank<=11)
+       migrated.extraRank=String(rank+1);
+     saved=migrated;
+   }
    for(const id of allIds()){
      if(!Object.prototype.hasOwnProperty.call(saved,id))continue;
      const field=$(id);
@@ -357,6 +378,13 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
        }else field.value=value;
      }
    }
+   if(legacy){
+     // Only remove legacy data after the migrated copy is successfully written.
+     try{
+       localStorage.setItem(STORAGE_KEY,JSON.stringify(saved));
+       localStorage.removeItem(LEGACY_STORAGE_KEY);
+     }catch(_){}
+   }
    $("saveStatus").textContent="이 브라우저에 저장된 입력값을 복원했습니다.";
  }
  function clear(){
@@ -367,7 +395,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
      else el.value="";
    }
    $("extraType").value="0";$("extraRank").value="0";$("spiritMultiplier").value="1";
-   try{localStorage.removeItem(STORAGE_KEY);}catch(_){}
+   try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LEGACY_STORAGE_KEY);}catch(_){}
    update();
    $("saveStatus").textContent="입력값과 브라우저 저장값을 초기화했습니다.";
  }
