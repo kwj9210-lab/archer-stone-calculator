@@ -343,8 +343,9 @@ th:first-child,td:first-child{text-align:left}
 <h2>3. 현재 보유 재료 / 입장권</h2>
 <div id="rawGrid" class="grid4"></div>
 <div class="grid2" style="margin-top:10px">
-<label>던전 입장권 보유량<input id="ticketsNow" type="number" min="0" value="0"></label>
-<label>입장권 1장 가격(다이아)<input id="ticketPrice" type="number" min="0" value="20"></label>
+<label>던전 티켓 보유량<input id="ticketsNow" type="number" min="0" value="0"></label>
+<label>사냥터 티켓 보유량<input id="huntingTicketsNow" type="number" min="0" value="0"></label>
+<label>티켓 1장 가격(다이아)<input id="ticketPrice" type="number" min="0" value="20"></label>
 </div>
 </section>
 
@@ -361,21 +362,25 @@ th:first-child,td:first-child{text-align:left}
 <section class="card result-card">
 <div class="head">
 <div><div class="k" id="resultKicker">입력한 숙련도 기준</div><div id="resultTitle" class="big">마석 제작 계산</div></div>
-<div style="text-align:right"><div class="k" id="ticketLabel">총 필요 입장권</div><div id="ticketsTotal" class="big">0장</div></div>
+<div style="text-align:right"><div class="k" id="ticketLabel">총 필요 티켓 (던전 + 사냥터)</div><div id="ticketsTotal" class="big">0장</div></div>
 </div>
 <div id="coverageNote" class="note"></div>
 <div id="resourceResults" class="results"></div>
 <div class="stats">
-<div class="box"><div class="k">계산 대상 총 소탕</div><div id="totalRuns" class="strong">0회</div></div>
-<div class="box"><div class="k">보유 입장권 반영 후 부족</div><div id="ticketShort" class="strong">0장</div></div>
-<div class="box"><div class="k">부족분 구매 시</div><div id="diamondNeed" class="strong">0 다이아</div></div>
+<div class="box"><div class="k">던전 소탕 / 필요 티켓</div><div id="dungeonRuns" class="strong">0회 / 0장</div></div>
+<div class="box"><div class="k">사냥터 소탕 / 필요 티켓</div><div id="huntingRuns" class="strong">0회 / 0장</div></div>
+<div class="box"><div class="k">던전 티켓 부족</div><div id="dungeonShort" class="strong">0장</div></div>
+<div class="box"><div class="k">사냥터 티켓 부족</div><div id="huntingShort" class="strong">0장</div></div>
+<div class="box"><div class="k">총 소탕 횟수</div><div id="totalRuns" class="strong">0회</div></div>
+<div class="box"><div class="k">총 부족 티켓</div><div id="ticketShort" class="strong">0장</div></div>
+<div class="box"><div class="k">부족분 구매 시 총 다이아</div><div id="diamondNeed" class="strong">0 다이아</div></div>
 </div>
 <div id="summary" class="note"></div>
 <details><summary>제작식 확인</summary><div style="overflow:auto"><table id="recipeTable"></table></div></details>
 </section>
 
 
-<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 던전은 100만회·10만회·1만회 단위, 사냥터는 10만회·1만회 단위로 실제 계산 횟수를 나눠 표시합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회=던전 입장권 2장, 입장권 1장=20다이아 기본.</div>
+<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 던전은 100만회·10만회·1만회 단위, 사냥터는 10만회·1만회 단위로 실제 계산 횟수를 나눠 표시합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회당 해당 종류의 티켓 2장. 던전·사냥터 티켓은 서로 구분하며 각각 1장당 20다이아입니다.</div>
 </main>
 
 <script>
@@ -482,16 +487,16 @@ function calc(){
   var masteryLv=/^\d+$/.test(rawMastery)?Number(rawMastery):NaN;
   if(!Number.isSafeInteger(masteryLv)||masteryLv<1||masteryLv>2507){
    el('resourceResults').innerHTML='<div class="box"><h3>숙련도 입력 확인</h3><div class="line">숙련도 단계를 1~2,507 사이로 입력하면 소탕 횟수와 입장권을 계산합니다.</div></div>';
-   el('ticketsTotal').textContent='—';el('totalRuns').textContent='—';el('ticketShort').textContent='—';el('diamondNeed').textContent='—';
+   ['ticketsTotal','totalRuns','ticketShort','diamondNeed','dungeonRuns','huntingRuns','dungeonShort','huntingShort'].forEach(function(id){el(id).textContent='—';});
    el('summary').textContent='숙련도를 입력해 주세요.';
    return;
   }
- var mult=1.25+.25*masteryLv,totalRuns=0,html='';
+ var mult=1.25+.25*masteryLv,dungeonRuns=0,huntingRuns=0,html='';
  c.resources.forEach(function(r,i){
   var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
   if(r.base){
    var per100k=r.fixed?r.base:r.base*(mult/5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
-   totalRuns+=runs;
+   if(r.fixed)huntingRuns+=runs;else dungeonRuns+=runs;
    // Display the exact rounded sweep count used for admission tickets.
     var remainingRuns=runs,parts=[];
     if(!r.fixed){
@@ -504,16 +509,27 @@ function calc(){
     if(tenK)parts.push('1만회 소탕 '+fmt(tenK)+'회');
     var sweepText=parts.length?parts.join(' · '):'소탕 0회';
     var approx100k=Math.round(per100k/10000);
-   html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong">'+sweepText+'</div></div>';
+   html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong">'+sweepText+' · 필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(runs*2)+'장</div></div>';
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div></div>';
   }
  });
  el('resourceResults').innerHTML=html;
- var tickets=totalRuns*2,short=Math.max(0,tickets-val('ticketsNow')),dia=short*val('ticketPrice');
- el('ticketsTotal').textContent=fmt(tickets)+'장';el('totalRuns').textContent=fmtKoreanUnit(totalRuns)+'회';el('ticketShort').textContent=fmtKoreanUnit(short)+'장';el('diamondNeed').textContent=fmtKoreanUnit(dia)+' 다이아';
- el('ticketLabel').textContent='총 필요 입장권';
- var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
+ var totalRuns=dungeonRuns+huntingRuns;
+  var dungeonTickets=dungeonRuns*2,huntingTickets=huntingRuns*2;
+  var dungeonShort=Math.max(0,dungeonTickets-val('ticketsNow'));
+  var huntingShort=Math.max(0,huntingTickets-val('huntingTicketsNow'));
+  var tickets=dungeonTickets+huntingTickets,short=dungeonShort+huntingShort,dia=short*val('ticketPrice');
+  el('ticketsTotal').textContent=fmt(tickets)+'장';
+  el('dungeonRuns').textContent=fmtKoreanUnit(dungeonRuns)+'회 / '+fmtKoreanUnit(dungeonTickets)+'장';
+  el('huntingRuns').textContent=fmtKoreanUnit(huntingRuns)+'회 / '+fmtKoreanUnit(huntingTickets)+'장';
+  el('dungeonShort').textContent=fmtKoreanUnit(dungeonShort)+'장';
+  el('huntingShort').textContent=fmtKoreanUnit(huntingShort)+'장';
+  el('totalRuns').textContent=fmtKoreanUnit(totalRuns)+'회';
+  el('ticketShort').textContent=fmtKoreanUnit(short)+'장';
+  el('diamondNeed').textContent=fmtKoreanUnit(dia)+' 다이아';
+  el('ticketLabel').textContent='총 필요 티켓 (던전 + 사냥터)';
+  var craft=crafted.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(' → ');
  var remain=inv.map(function(v,i){return v?G[i]+' '+fmt(v)+'개':null}).filter(Boolean).join(', ');
  var req=c.resources.map(function(r,i){return r.name+' '+fmt(needRes[i])}).join(' / ');
  el('summary').innerHTML='보유 '+c.name+' 반영 후 필요한 재료: <b>'+req+'</b><br>신규 제작 과정: '+(craft||'추가 제작 없음')+(remain?'<br>남는 입력 '+c.name+': '+remain:'');
@@ -550,7 +566,7 @@ function syncMastery(){
  calc();
 }
 el('masteryLevel').addEventListener('input',syncMastery);
-el('ticketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
+el('ticketsNow').addEventListener('input',calc);el('huntingTicketsNow').addEventListener('input',calc);el('ticketPrice').addEventListener('input',calc);
 el('clearStones').addEventListener('click',function(){state[type].stones=Array(G.length).fill(0);render()});
 document.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){saveCurrent();type=this.dataset.type;document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.type===type)});render()})});
 render();
