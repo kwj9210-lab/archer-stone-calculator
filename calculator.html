@@ -102,6 +102,7 @@ header{padding:6px 7px 7px}
 <button id="tabCraft" type="button"><span class="tab-label"><span class="full">제작시간</span><span class="short">제작시간</span></span></button>
 <button id="tabTraining" type="button"><span class="tab-label"><span class="full">수련장</span><span class="short">수련장</span></span></button>
 <button id="tabStone" type="button"><span class="tab-label"><span class="full">초월석 시뮬레이터</span><span class="short">초월석</span></span></button>
+<button id="tabCore" type="button"><span class="tab-label"><span class="full">초월핵</span><span class="short">초월핵</span></span></button>
 <button id="tabTower" type="button"><span class="tab-label"><span class="full">초월의 탑</span><span class="short">초월의 탑</span></span></button>
 <button id="tabPenetration" type="button"><span class="tab-label"><span class="full">관통 Total</span><span class="short">관통 Total</span></span></button>
 <button id="tabSanctuary" type="button"><span class="tab-label"><span class="full">오행의 성역</span><span class="short">오행의성역</span></span></button>
@@ -112,6 +113,7 @@ header{padding:6px 7px 7px}
 <iframe id="engrave" class="active" src="index.html" title="각인석 계산기"></iframe>
 <iframe id="craft" src="crafttime.html" title="마석 제작시간 계산기"></iframe>
 <iframe id="stone" src="transcend.html" title="초월석 시뮬레이터"></iframe>
+<iframe id="core" src="core.html" title="천명의 핵 초월"></iframe>
 <iframe id="tower" src="tower.html" title="초월의 탑"></iframe>
 <iframe id="trial" src="trial.html" title="시련의 관문"></iframe>
 <iframe id="training" src="training.html" title="수련장"></iframe>
@@ -122,7 +124,7 @@ header{padding:6px 7px 7px}
 <script>
 const tabs=[
  ["engrave","tabEngrave"],["craft","tabCraft"],["training","tabTraining"],
- ["stone","tabStone"],["tower","tabTower"],["penetration","tabPenetration"],
+ ["stone","tabStone"],["core","tabCore"],["tower","tabTower"],["penetration","tabPenetration"],
  ["sanctuary","tabSanctuary"],["opening","tabOpening"],["trial","tabTrial"]
 ];
 const frames=Object.fromEntries(tabs.map(([id])=>[id,document.getElementById(id)]));
