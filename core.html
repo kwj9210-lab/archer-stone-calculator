@@ -296,9 +296,9 @@ function scanSource(){
 function applySource(){
  const maps=[["mapHeaven","heaven"],["mapNebula","nebula"],["mapCore","core"],["mapAttack","attack"]];
  const selected=maps.map(([id,k])=>({key:$(id).value,kind:k})).filter(x=>x.key);
- if(!selected.length){$("importStatus").textContent="적용할 배열을 하나 이상 선택하세요.";return;}
- const bad=selected.filter(x=>sourceArrays[x.key].length<20);
- if(bad.length){$("importStatus").textContent="20개 또는 21개 이상인 배열만 적용할 수 있습니다: "+bad.map(x=>x.key+" ("+sourceArrays[x.key].length+"개)").join(", ");return;}
+ if(!selected.length){$("importStatus").className="status warn";$("importStatus").textContent="적용할 배열을 하나 이상 선택하세요.";return;}
+ const bad=selected.filter(x=>sourceArrays[x.key].length<20||sourceArrays[x.key].some(v=>!Number.isSafeInteger(v)||v<0));
+ if(bad.length){$("importStatus").className="status warn";$("importStatus").textContent="배열 길이가 20개 미만이거나 0 이상의 정수가 아닌 값이 포함되어 있습니다: "+bad.map(x=>x.key+" ("+sourceArrays[x.key].length+"개)").join(", ");return;}
  selected.forEach(x=>{const a=sourceArrays[x.key],vals=a.length===20?a.slice(0,20):a.slice(1,21);vals.forEach((v,i)=>stageData[i][x.kind]=String(v));});
  buildRows();update();$("importStatus").className="status";$("importStatus").textContent="적용 완료: "+selected.map(x=>x.key+" → "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[x.kind])).join(" · ")+". 브라우저에 저장했습니다. 실제 단계 순서는 게임 데이터와 대조하세요.";
 }
