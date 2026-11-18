@@ -93,7 +93,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
    <div class="metric"><span>목표까지 필요한 성운석</span><b id="needNebula">-</b></div>
    <div class="metric"><span>목표까지 필요한 초월핵</span><b id="needCore">-</b></div>
    <div class="metric"><span>천명의 핵 공격력 증가</span><b id="attackGain">-</b></div>
-   <div class="metric"><span>재료 부족 합계</span><b id="shortageTotal">-</b></div>
+   <div class="metric"><span>재료별 부족량</span><b id="shortageTotal" style="font-size:13px;line-height:1.7">-</b></div>
    <div class="metric"><span>초월 진행</span><b id="stageProgress">-</b></div>
   </div>
   <div id="gateStatus" class="status warn">초월 조건을 확인해 주세요.</div>
@@ -237,8 +237,8 @@ function render(){
  $("needCore").textContent=complete?fmt(totals.core):"미확인";
  $("attackGain").textContent=missing.some(x=>x.includes("공격력"))?"미확인":"+"+fmt(totals.attack);
  const h=number("haveHeaven"),n=number("haveNebula"),c=number("haveCore");
- const shortage=complete&&[h,n,c].every(Number.isFinite)?Math.max(0,totals.heaven-h)+Math.max(0,totals.nebula-n)+Math.max(0,totals.core-c):null;
- $("shortageTotal").textContent=shortage===null?"-":fmt(shortage);
+ const shortage=complete&&[h,n,c].every(Number.isFinite)?{heaven:Math.max(0,totals.heaven-h),nebula:Math.max(0,totals.nebula-n),core:Math.max(0,totals.core-c)}:null;
+ $("shortageTotal").textContent=shortage===null?"-":"천명석 "+fmt(shortage.heaven)+" / 성운석 "+fmt(shortage.nebula)+" / 초월핵 "+fmt(shortage.core);
  $("stageProgress").textContent=Number.isFinite(current)&&Number.isFinite(target)?current+" → "+target+"단계":"-";
  const gates=[];
  if(!$("opening60").checked)gates.push("천명 성물 개방 60단계 완료");
@@ -285,11 +285,11 @@ function findArrays(obj,path="",out={}){
 function fillMap(id,keys,preferred){
  const el=$(id);el.textContent="";const blank=document.createElement("option");blank.value="";blank.textContent="선택 안 함";el.appendChild(blank);
  keys.forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=k+" ("+sourceArrays[k].length+"개)";el.appendChild(o);});
- const match=keys.find(k=>k.toLowerCase().endsWith(preferred.toLowerCase()))||keys.find(k=>k.toLowerCase().includes(preferred.toLowerCase()));if(match)el.value=match;
+ const match=preferred?keys.find(k=>k.toLowerCase().endsWith(preferred.toLowerCase()))||keys.find(k=>k.toLowerCase().includes(preferred.toLowerCase())):null;if(match)el.value=match;
 }
 function scanSource(){
  try{const obj=JSON.parse($("sourceJson").value);sourceArrays=findArrays(obj);const keys=Object.keys(sourceArrays);if(!keys.length)throw new Error("숫자 배열을 찾지 못했습니다.");
- ["mapHeaven","mapNebula","mapCore","mapAttack"].forEach((id,i)=>fillMap(id,keys,["TranscendHeaven","TranscendNebula","TranscendCores","TranscendStepDigits"][i]));
+ ["mapHeaven","mapNebula","mapCore","mapAttack"].forEach((id,i)=>fillMap(id,keys,["TranscendHeaven","TranscendNebula","TranscendCores",""][i]));
  $("sourceMapping").style.display="block";$("importStatus").className="status";$("importStatus").textContent="숫자 배열 "+keys.length+"개 발견: "+keys.map(k=>k+" ("+sourceArrays[k].length+"개)").join(" · ")+". 배열의 단계 순서를 확인하고 적용하세요.";
  }catch(e){sourceArrays={};$("sourceMapping").style.display="none";$("importStatus").className="status warn";$("importStatus").textContent="JSON 분석 실패: "+e.message;}
 }
@@ -297,7 +297,7 @@ function applySource(){
  const maps=[["mapHeaven","heaven"],["mapNebula","nebula"],["mapCore","core"],["mapAttack","attack"]];
  const selected=maps.map(([id,k])=>({key:$(id).value,kind:k})).filter(x=>x.key);
  if(!selected.length){$("importStatus").textContent="적용할 배열을 하나 이상 선택하세요.";return;}
- const bad=selected.filter(x=>![20,...Array.from({length:30},(_,i)=>21+i)].includes(sourceArrays[x.key].length));
+ const bad=selected.filter(x=>sourceArrays[x.key].length<20);
  if(bad.length){$("importStatus").textContent="20개 또는 21개 이상인 배열만 적용할 수 있습니다: "+bad.map(x=>x.key+" ("+sourceArrays[x.key].length+"개)").join(", ");return;}
  selected.forEach(x=>{const a=sourceArrays[x.key],vals=a.length===20?a.slice(0,20):a.slice(1,21);vals.forEach((v,i)=>stageData[i][x.kind]=String(v));});
  buildRows();update();$("importStatus").className="status";$("importStatus").textContent="적용 완료: "+selected.map(x=>x.key+" → "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[x.kind])).join(" · ")+". 브라우저에 저장했습니다. 실제 단계 순서는 게임 데이터와 대조하세요.";
