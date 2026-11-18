@@ -121,6 +121,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
   <textarea id="sourceJson" style="width:100%;min-height:125px;margin-top:8px;padding:10px;border:1px solid #c1ddcb;border-radius:10px;background:#fbfffc;font:12px/1.5 monospace" placeholder='{"HeavenRelic021":{"TranscendHeaven":[...],"TranscendNebula":[...],"TranscendCores":[...],"TranscendStepDigits":[...],"TranscendDigits":[...]}}'></textarea>
   <div class="actions"><button class="action secondary" type="button" id="scanJson">JSON 필드 분석</button><button class="action secondary" type="button" id="clearJson">입력 지우기</button></div>
   <div id="sourceMapping" style="display:none;margin-top:12px">
+   <div class="field"><label for="arrayOffset">배열에서 1단계가 시작되는 위치</label><select id="arrayOffset"><option value="auto">자동 판별 (20개=첫 값, 21개=두 번째 값)</option><option value="0">첫 번째 값부터 1단계</option><option value="1">두 번째 값부터 1단계</option></select></div>
    <div class="grid">
     <div class="field"><label for="mapHeaven">천명석 배열</label><select id="mapHeaven"></select></div>
     <div class="field"><label for="mapNebula">성운석 배열</label><select id="mapNebula"></select></div>
@@ -271,6 +272,7 @@ function renderCraft(){
 let sourceArrays={};
 function flattenNumeric(v){
  if(Array.isArray(v))return v.flatMap(flattenNumeric);
+ if(typeof v==="string"&&/^\\s*\\[.*\\]\\s*$/.test(v)){try{return flattenNumeric(JSON.parse(v));}catch(_){return [];}}
  if(v&&typeof v==="object"){for(const k of ["values","Values","value","Value","data","Data","items","Items","array","Array","list","List"])if(k in v)return flattenNumeric(v[k]);return [];}
  if(typeof v==="number"&&Number.isFinite(v))return [v];
  if(typeof v==="string"&&/^\\d+(?:\\.\\d+)?$/.test(v.trim()))return [Number(v)];
@@ -289,7 +291,7 @@ function fillMap(id,keys,preferred){
 }
 function scanSource(){
  try{const obj=JSON.parse($("sourceJson").value);sourceArrays=findArrays(obj);const keys=Object.keys(sourceArrays);if(!keys.length)throw new Error("숫자 배열을 찾지 못했습니다.");
- ["mapHeaven","mapNebula","mapCore","mapAttack"].forEach((id,i)=>fillMap(id,keys,["TranscendHeaven","TranscendNebula","TranscendCores",""][i]));
+ ["mapHeaven","mapNebula","mapCore","mapAttack"].forEach((id,i)=>fillMap(id,keys,["TranscendHeaven","TranscendNebula","TranscendCores","TranscendStepDigits"][i]));
  $("sourceMapping").style.display="block";$("importStatus").className="status";$("importStatus").textContent="숫자 배열 "+keys.length+"개 발견: "+keys.map(k=>k+" ("+sourceArrays[k].length+"개)").join(" · ")+". 배열의 단계 순서를 확인하고 적용하세요.";
  }catch(e){sourceArrays={};$("sourceMapping").style.display="none";$("importStatus").className="status warn";$("importStatus").textContent="JSON 분석 실패: "+e.message;}
 }
@@ -297,10 +299,13 @@ function applySource(){
  const maps=[["mapHeaven","heaven"],["mapNebula","nebula"],["mapCore","core"],["mapAttack","attack"]];
  const selected=maps.map(([id,k])=>({key:$(id).value,kind:k})).filter(x=>x.key);
  if(!selected.length){$("importStatus").className="status warn";$("importStatus").textContent="적용할 배열을 하나 이상 선택하세요.";return;}
- const bad=selected.filter(x=>sourceArrays[x.key].length<20||sourceArrays[x.key].some(v=>!Number.isSafeInteger(v)||v<0));
+ const offsetMode=$("arrayOffset").value;
+ const offset=offsetMode==="auto"?(selected.every(x=>sourceArrays[x.key].length===20)?0:selected.every(x=>sourceArrays[x.key].length===21)?1:null):Number(offsetMode);
+ const bad=selected.filter(x=>sourceArrays[x.key].length<offset+20||sourceArrays[x.key].some(v=>!Number.isSafeInteger(v)||v<0));
+ if(offset===null){$("importStatus").className="status warn";$("importStatus").textContent="선택한 배열 길이가 20개 또는 21개로 서로 다르거나, 자동 판별할 수 없습니다. 시작 위치를 직접 선택하세요.";return;}
  if(bad.length){$("importStatus").className="status warn";$("importStatus").textContent="배열 길이가 20개 미만이거나 0 이상의 정수가 아닌 값이 포함되어 있습니다: "+bad.map(x=>x.key+" ("+sourceArrays[x.key].length+"개)").join(", ");return;}
- selected.forEach(x=>{const a=sourceArrays[x.key],vals=a.length===20?a.slice(0,20):a.slice(1,21);vals.forEach((v,i)=>stageData[i][x.kind]=String(v));});
- buildRows();update();$("importStatus").className="status";$("importStatus").textContent="적용 완료: "+selected.map(x=>x.key+" → "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[x.kind])).join(" · ")+". 브라우저에 저장했습니다. 실제 단계 순서는 게임 데이터와 대조하세요.";
+ selected.forEach(x=>{const vals=sourceArrays[x.key].slice(offset,offset+20);vals.forEach((v,i)=>stageData[i][x.kind]=String(v));});
+ buildRows();update();$("importStatus").className="status";$("importStatus").textContent="적용 완료: "+selected.map(x=>x.key+" → "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[x.kind])).join(" · ")+". 배열 시작 위치 "+(offset+1)+"번째 값부터 적용했습니다. 브라우저에 저장했습니다." ;
 }
 
 function update(){render();renderCraft();save();}
