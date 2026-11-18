@@ -110,13 +110,16 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
   </div>
   <div class="actions">
    <button class="action secondary" type="button" id="resetStageData">단계 데이터 초기화</button>
-   <button class="action secondary" type="button" id="exportData">단계 데이터 내보내기</button>
+   <button class="action secondary" type="button" id="exportData">단계 데이터 CSV 내보내기</button>
+   <button class="action secondary" type="button" id="exportJson">단계 데이터 JSON 내보내기</button>
   </div>
   <div id="dataStatus" class="status warn">단계별 소모량·공격력은 APK에 고정된 로컬 수치가 아니라 HeavenRelic021 응답의 TranscendHeaven / TranscendNebula / TranscendCores / TranscendStepDigits / TranscendDigits 필드로 전달되는 서버 데이터임을 확인했습니다. 실제 수치를 임의로 채우지 않았습니다.</div>
  </section>
 <section class="card">
   <h2>게임 데이터 일괄 불러오기</h2>
   <p class="note">게임 서버 응답 JSON을 붙여넣으면 초월 관련 숫자 배열을 찾아 20단계 표에 반영합니다. 필드별 배열을 직접 지정할 수 있습니다. 배열이 21개 이상이면 첫 값은 0단계로 보고 1~20단계를 가져옵니다.</p>
+  <label for="sourceFile">서버 응답 JSON 파일 불러오기</label>
+  <input id="sourceFile" type="file" accept=".json,application/json" style="margin-bottom:10px">
   <label for="sourceJson">서버 응답 JSON</label>
   <textarea id="sourceJson" style="width:100%;min-height:125px;margin-top:8px;padding:10px;border:1px solid #c1ddcb;border-radius:10px;background:#fbfffc;font:12px/1.5 monospace" placeholder='{"HeavenRelic021":{"TranscendHeaven":[...],"TranscendNebula":[...],"TranscendCores":[...],"TranscendStepDigits":[...],"TranscendDigits":[...]}}'></textarea>
   <div class="actions"><button class="action secondary" type="button" id="scanJson">JSON 필드 분석</button><button class="action secondary" type="button" id="clearJson">입력 지우기</button></div>
@@ -316,6 +319,16 @@ $("stageRows").addEventListener("input",e=>{
  const i=Number(input.closest("tr").dataset.stage)-1;stageData[i][input.dataset.kind]=input.value;update();
 });
 $("scanJson").addEventListener("click",scanSource);
+$("sourceFile").addEventListener("change",async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ try{$("sourceJson").value=await file.text();scanSource();$("importStatus").textContent="파일 불러오기 완료: "+file.name+" · "+$("importStatus").textContent;}
+ catch(err){$("importStatus").className="status warn";$("importStatus").textContent="파일을 읽지 못했습니다: "+err.message;}
+});
+$("exportJson").addEventListener("click",()=>{
+ const payload={format:"archer-heaven-core-transcend-v1",exportedAt:new Date().toISOString(),stages:stageData.map((d,i)=>({stage:i+1,heaven:d.heaven===""?null:Number(d.heaven),nebula:d.nebula===""?null:Number(d.nebula),core:d.core===""?null:Number(d.core),attack:d.attack===""?null:Number(d.attack)}))};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cheonmyeong-core-transcend-20.json";a.click();URL.revokeObjectURL(url);
+});
 $("applyJson").addEventListener("click",applySource);
 $("clearJson").addEventListener("click",()=>{$("sourceJson").value="";$("sourceMapping").style.display="none";$("importStatus").textContent="JSON 입력을 지웠습니다. 기존 단계 데이터는 유지됩니다.";});
 $("resetStageData").addEventListener("click",()=>{
