@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>천명의 핵 초월 계산기</title>
+<style>
+:root{--bg:#f4fff8;--card:#fff;--line:#cfe9d9;--text:#29463b;--muted:#71867c;--accent:#35c98c;--strong:#198b64;--gold:#d6a43e}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#f4fff8,#fff9ea);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+main{width:min(1050px,100%);margin:auto;padding:18px 13px 46px}
+.hero,.card{background:#fff;border:1px solid var(--line);border-radius:17px;box-shadow:0 8px 22px rgba(69,126,98,.08)}
+.hero{padding:17px;margin-bottom:12px;background:linear-gradient(115deg,#fff,#f2fff7)}
+h1{margin:0;color:#22694f;font-size:25px;letter-spacing:-.5px}
+.sub,.note{color:var(--muted);font-size:12px;line-height:1.65}
+.sub{margin-top:6px}
+.card{padding:16px;margin-bottom:12px}
+h2{margin:0 0 12px;font-size:17px;color:#315d4d;border-left:4px solid var(--accent);padding-left:10px}
+h3{margin:0 0 8px;font-size:14px}
+.tabs{display:flex;gap:8px;margin-top:14px}
+.tabs button{flex:1;min-height:42px;border:1px solid #bddfcf;border-radius:11px;background:#f8fffa;color:#557268;font-weight:900;cursor:pointer}
+.tabs button.active{background:linear-gradient(115deg,#2fae83,#54c5bf);color:white;border-color:transparent}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.field{min-width:0}
+label{display:block;font-size:12px;font-weight:850;color:#567669}
+input,select{width:100%;min-width:0;min-height:40px;margin-top:6px;padding:8px 10px;border:1px solid #c1ddcb;border-radius:10px;background:#fbfffc;color:var(--text);font-size:15px;font-weight:800}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px #35c98c22}
+input[aria-invalid=true]{border-color:#c95b5b;background:#fff8f6}
+.prereq{display:flex;align-items:center;gap:9px;margin:9px 0;font-size:13px;font-weight:800;color:#47725b}
+.prereq input{width:18px;height:18px;min-height:0;margin:0;accent-color:#2ca678}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.metric{border:1px solid #d9eadf;background:#f8fffa;border-radius:12px;padding:12px}
+.metric span{display:block;color:#688274;font-size:11px;font-weight:800}
+.metric b{display:block;margin-top:5px;color:#16734e;font-size:21px;overflow-wrap:anywhere}
+.metric.warn b{color:#b36b23}
+.table-wrap{overflow:auto;max-height:62vh;border:1px solid #e0eee5;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+th,td{padding:8px 7px;border-bottom:1px solid #e4f1e9;text-align:right;white-space:nowrap}
+th{position:sticky;top:0;background:#effbf4;z-index:1;color:#436956}
+td:first-child,th:first-child{text-align:center}
+td input{width:112px;min-height:33px;margin:0;padding:5px 7px;text-align:right;font-size:13px}
+td input.power{width:130px}
+tr.selected{background:#effbf4}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button.action{flex:1;min-height:42px;border:0;border-radius:10px;background:linear-gradient(115deg,#35bf83,#54c6bf);color:#fff;font-weight:850;cursor:pointer}
+button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d4}
+.status{margin-top:9px;padding:10px 12px;background:#f1fbf5;border:1px solid #d7ebde;border-radius:10px;font-size:12px;line-height:1.6;color:#4d7560}
+.status.warn{background:#fff9ec;border-color:#f0dfb5;color:#866326}
+.small{font-size:11px;color:var(--muted)}
+.recipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+@media(max-width:700px){main{padding:12px 9px 36px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.recipe{grid-template-columns:repeat(2,minmax(0,1fr))}.summary{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:1/-1}.card{padding:12px}h1{font-size:21px}}
+@media(max-width:390px){.grid,.grid.two{grid-template-columns:1fr}.tabs{gap:5px}.tabs button{font-size:12px;padding:5px}.summary{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+ <h1>천명의 핵 초월</h1>
+ <div class="sub">초월핵 제작 및 천명의 핵 1~20단계 성장 계산기</div>
+ <div class="tabs">
+  <button type="button" class="active" data-tab="transcend">천명의 핵 초월</button>
+  <button type="button" data-tab="craft">초월핵 제작</button>
+ </div>
+</section>
+
+<section class="panel active" id="panel-transcend">
+ <section class="card">
+  <h2>초월 조건</h2>
+  <label class="prereq"><input id="opening60" type="checkbox"> 천명 성물 개방 60단계 완료</label>
+  <label class="prereq"><input id="chaos11" type="checkbox"> 혼돈급 마석 11개 장착</label>
+  <div class="grid two">
+   <div class="field"><label for="currentStage">현재 초월 단계</label><select id="currentStage"></select></div>
+   <div class="field"><label for="targetStage">목표 초월 단계</label><select id="targetStage"></select></div>
+  </div>
+  <p class="note">APK 0.2.10의 안내 문구 기준: 개방 60단계 완료 및 혼돈급 마석 11개 장착 상태에서 최대 20단계까지 초월할 수 있습니다.</p>
+ </section>
+
+ <section class="card">
+  <h2>보유 재료</h2>
+  <div class="grid">
+   <div class="field"><label for="haveHeaven">천명석 보유량</label><input id="haveHeaven" type="number" min="0" step="1" value="0"></div>
+   <div class="field"><label for="haveNebula">성운석 보유량</label><input id="haveNebula" type="number" min="0" step="1" value="0"></div>
+   <div class="field"><label for="haveCore">초월핵 보유량</label><input id="haveCore" type="number" min="0" step="1" value="0"></div>
+  </div>
+ </section>
+
+ <section class="card">
+  <h2>초월 계산 결과</h2>
+  <div class="summary">
+   <div class="metric"><span>목표까지 필요한 천명석</span><b id="needHeaven">-</b></div>
+   <div class="metric"><span>목표까지 필요한 성운석</span><b id="needNebula">-</b></div>
+   <div class="metric"><span>목표까지 필요한 초월핵</span><b id="needCore">-</b></div>
+   <div class="metric"><span>천명의 핵 공격력 증가</span><b id="attackGain">-</b></div>
+   <div class="metric"><span>재료 부족 합계</span><b id="shortageTotal">-</b></div>
+   <div class="metric"><span>초월 진행</span><b id="stageProgress">-</b></div>
+  </div>
+  <div id="gateStatus" class="status warn">초월 조건을 확인해 주세요.</div>
+ </section>
+
+ <section class="card">
+  <h2>1~20단계 재료 및 공격력 데이터</h2>
+  <p class="note">각 단계의 실제 소모량과 공격력 증가량을 입력하면 현재 단계부터 목표 단계까지 자동 합산합니다. 빈칸은 미확인 데이터로 처리하며 0으로 간주하지 않습니다.</p>
+  <div class="table-wrap">
+   <table>
+    <thead><tr><th>단계</th><th>천명석 소모</th><th>성운석 소모</th><th>초월핵 소모</th><th>공격력 증가</th><th>누적 공격력</th></tr></thead>
+    <tbody id="stageRows"></tbody>
+   </table>
+  </div>
+  <div class="actions">
+   <button class="action secondary" type="button" id="resetStageData">단계 데이터 초기화</button>
+   <button class="action secondary" type="button" id="exportData">단계 데이터 내보내기</button>
+  </div>
+  <div id="dataStatus" class="status warn">단계별 소모량·공격력은 APK에 고정된 로컬 수치가 아니라 HeavenRelic021 응답의 TranscendHeaven / TranscendNebula / TranscendCores / TranscendStepDigits / TranscendDigits 필드로 전달되는 서버 데이터임을 확인했습니다. 실제 수치를 임의로 채우지 않았습니다.</div>
+ </section>
+</section>
+
+<section class="panel" id="panel-craft">
+ <section class="card">
+  <h2>초월핵 제작 재료</h2>
+  <p class="note">게임 내 안내 기준 제작 재료입니다. 마법 큐브의 일반 조합과 빠른 제작에서 같은 레시피를 사용합니다.</p>
+  <div class="grid">
+   <div class="field"><label for="craftCount">제작할 초월핵 개수</label><input id="craftCount" type="number" min="0" step="1" value="1"></div>
+   <div class="field"><label for="ownCore">현재 초월핵 보유량</label><input id="ownCore" type="number" min="0" step="1" value="0"></div>
+   <div class="field"><label for="craftMode">제작 방식</label><select id="craftMode"><option value="normal">마법 큐브 일반 조합</option><option value="quick">마법 큐브 빠른 제작</option></select></div>
+  </div>
+  <h3 style="margin-top:16px">초월핵 1개당 레시피 수량</h3>
+  <div class="recipe">
+   <div class="field"><label for="platinumEach">백금괴</label><input id="platinumEach" type="number" min="0" step="1" placeholder="게임 수량 입력"></div>
+   <div class="field"><label for="steelEach">성철괴</label><input id="steelEach" type="number" min="0" step="1" placeholder="게임 수량 입력"></div>
+   <div class="field"><label for="moonEach">월광수</label><input id="moonEach" type="number" min="0" step="1" placeholder="게임 수량 입력"></div>
+   <div class="field"><label for="starEach">별의 핵</label><input id="starEach" type="number" min="0" step="1" placeholder="게임 수량 입력"></div>
+  </div>
+ </section>
+ <section class="card">
+  <h2>제작 재료 보유량</h2>
+  <div class="recipe">
+   <div class="field"><label for="platinumHave">백금괴 보유량</label><input id="platinumHave" type="number" min="0" step="1" value="0"></div>
+   <div class="field"><label for="steelHave">성철괴 보유량</label><input id="steelHave" type="number" min="0" step="1" value="0"></div>
+   <div class="field"><label for="moonHave">월광수 보유량</label><input id="moonHave" type="number" min="0" step="1" value="0"></div>
+   <div class="field"><label for="starHave">별의 핵 보유량</label><input id="starHave" type="number" min="0" step="1" value="0"></div>
+  </div>
+  <div class="summary" style="margin-top:13px">
+   <div class="metric"><span>제작에 필요한 초월핵</span><b id="craftCoreNeed">-</b></div>
+   <div class="metric"><span>제작 후 초월핵 보유</span><b id="craftCoreAfter">-</b></div>
+   <div class="metric"><span>레시피 미입력 항목</span><b id="recipeMissing">-</b></div>
+  </div>
+  <div id="craftResults" class="status warn">레시피 수량을 입력하면 제작에 필요한 재료와 부족량을 계산합니다.</div>
+ </section>
+</section>
+
+<div class="note">입력한 단계 데이터와 보유량은 이 브라우저에 자동 저장됩니다. 다른 브라우저·기기와 공유되지는 않습니다.</div>
+</main>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.trunc(n).toLocaleString("ko-KR");
+const ids=["opening60","chaos11","currentStage","targetStage","haveHeaven","haveNebula","haveCore","craftCount","ownCore","craftMode","platinumEach","steelEach","moonEach","starEach","platinumHave","steelHave","moonHave","starHave"];
+const stageData=Array.from({length:20},(_,i)=>({heaven:"",nebula:"",core:"",attack:""}));
+const key="archer:heaven-core-transcend:v1";
+for(let i=0;i<=20;i++){
+ const a=document.createElement("option"),b=document.createElement("option");
+ a.value=b.value=String(i);a.textContent=b.textContent=i+"단계";
+ $("currentStage").appendChild(a);$("targetStage").appendChild(b);
+}
+$("targetStage").value="20";
+function buildRows(){
+ const body=$("stageRows");body.textContent="";
+ stageData.forEach((d,i)=>{
+  const tr=document.createElement("tr");tr.dataset.stage=String(i+1);
+  tr.innerHTML='<td>'+(i+1)+'단계</td>'+
+   '<td><input data-kind="heaven" aria-label="'+(i+1)+'단계 천명석 소모" type="number" min="0" step="1" value="'+d.heaven+'"></td>'+
+   '<td><input data-kind="nebula" aria-label="'+(i+1)+'단계 성운석 소모" type="number" min="0" step="1" value="'+d.nebula+'"></td>'+
+   '<td><input data-kind="core" aria-label="'+(i+1)+'단계 초월핵 소모" type="number" min="0" step="1" value="'+d.core+'"></td>'+
+   '<td><input class="power" data-kind="attack" aria-label="'+(i+1)+'단계 공격력 증가" type="number" min="0" step="1" value="'+d.attack+'"></td>'+
+   '<td id="cumulative-'+(i+1)+'">미확인</td>';
+  body.appendChild(tr);
+ });
+}
+function number(id){const raw=$(id).value.trim();if(raw==="")return 0;const n=Number(raw);return Number.isSafeInteger(n)&&n>=0?n:NaN;}
+function save(){
+ const state={};
+ ids.forEach(id=>{const e=$(id);state[id]=e.type==="checkbox"?e.checked:e.value;});
+ state.stages=stageData;
+ try{localStorage.setItem(key,JSON.stringify(state));}catch(_){}
+}
+function restore(){
+ try{
+  const s=JSON.parse(localStorage.getItem(key)||"null");if(!s||typeof s!=="object")return;
+  ids.forEach(id=>{if(!(id in s))return;const e=$(id);if(e.type==="checkbox"&&typeof s[id]==="boolean")e.checked=s[id];else if(e.type!=="checkbox"&&typeof s[id]==="string")e.value=s[id];});
+  if(Array.isArray(s.stages)&&s.stages.length===20)s.stages.forEach((v,i)=>{["heaven","nebula","core","attack"].forEach(k=>{if(typeof v[k]==="string")stageData[i][k]=v[k];});});
+ }catch(_){}
+}
+function render(){
+ const current=number("currentStage"),target=number("targetStage");
+ const rows=[...$("stageRows").querySelectorAll("tr")];
+ let cum=0,allAttackKnown=true,knownAttack=0;
+ for(let i=0;i<20;i++){
+  const a=stageData[i].attack;
+  if(a==="")allAttackKnown=false;else {const v=Number(a);if(Number.isSafeInteger(v)&&v>=0){cum+=v;knownAttack+=v;}else allAttackKnown=false;}
+  const cell=$("cumulative-"+(i+1));if(cell)cell.textContent=allAttackKnown?fmt(cum):"미확인";
+ }
+ const totals={heaven:0,nebula:0,core:0,attack:0};let missing=[];
+ if(Number.isFinite(current)&&Number.isFinite(target)&&target>=current){
+  for(let i=current;i<target;i++){
+   const d=stageData[i];
+   for(const k of ["heaven","nebula","core","attack"]){
+    if(d[k]===""){missing.push((i+1)+"단계 "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[k]));continue;}
+    const v=Number(d[k]);if(!Number.isSafeInteger(v)||v<0){missing.push((i+1)+"단계 입력값");continue;}
+    totals[k]+=v;
+   }
+  }
+ }
+ const materialMissing=missing.filter(x=>!x.includes("공격력"));
+ const complete=Number.isFinite(current)&&Number.isFinite(target)&&target>=current&&materialMissing.length===0;
+ $("needHeaven").textContent=complete?fmt(totals.heaven):"미확인";
+ $("needNebula").textContent=complete?fmt(totals.nebula):"미확인";
+ $("needCore").textContent=complete?fmt(totals.core):"미확인";
+ $("attackGain").textContent=missing.some(x=>x.includes("공격력"))?"미확인":"+"+fmt(totals.attack);
+ const h=number("haveHeaven"),n=number("haveNebula"),c=number("haveCore");
+ const shortage=complete&&[h,n,c].every(Number.isFinite)?Math.max(0,totals.heaven-h)+Math.max(0,totals.nebula-n)+Math.max(0,totals.core-c):null;
+ $("shortageTotal").textContent=shortage===null?"-":fmt(shortage);
+ $("stageProgress").textContent=Number.isFinite(current)&&Number.isFinite(target)?current+" → "+target+"단계":"-";
+ const gates=[];
+ if(!$("opening60").checked)gates.push("천명 성물 개방 60단계 완료");
+ if(!$("chaos11").checked)gates.push("혼돈급 마석 11개 장착");
+ if(target<current)gates.push("목표 단계가 현재 단계보다 낮음");
+ if(gates.length){$("gateStatus").textContent="초월 조건 미충족: "+gates.join(" · ");$("gateStatus").className="status warn";}
+ else if(!complete){$("gateStatus").textContent="선행 조건은 충족했습니다. 단계별 실제 소모량 데이터가 입력되지 않은 항목이 "+materialMissing.length+"개 있습니다.";$("gateStatus").className="status warn";}
+ else{$("gateStatus").textContent="초월 조건 충족. 목표 단계까지 필요한 재료를 계산했습니다.";$("gateStatus").className="status";}
+ rows.forEach((tr,i)=>tr.classList.toggle("selected",i>=current&&i<target));
+}
+function renderCraft(){
+ const qty=number("craftCount"),own=number("ownCore");
+ const mats=[["백금괴","platinumEach","platinumHave"],["성철괴","steelEach","steelHave"],["월광수","moonEach","moonHave"],["별의 핵","starEach","starHave"]];
+ let missing=[],lines=[];
+ if(!Number.isFinite(qty)||!Number.isFinite(own)){ $("craftResults").textContent="제작 수량과 보유량은 0 이상의 정수로 입력하세요.";return;}
+ $("craftCoreNeed").textContent=fmt(qty);
+ $("craftCoreAfter").textContent=fmt(own+qty);
+ mats.forEach(([name,each,have])=>{
+  const per=$(each).value.trim(),stock=number(have);
+  if(per===""){missing.push(name);return;}
+  const n=number(each);if(!Number.isFinite(n)||!Number.isFinite(stock)){missing.push(name);return;}
+  const total=n*qty,short=Math.max(0,total-stock);
+  lines.push(name+": "+fmt(total)+" 필요 / "+fmt(stock)+" 보유 / "+fmt(short)+" 부족");
+ });
+ $("recipeMissing").textContent=String(missing.length);
+ if(missing.length){$("craftResults").textContent="레시피 수량 미입력: "+missing.join(", ")+". 게임의 제작 화면에 표시된 개당 수량을 입력하면 총 필요량을 계산합니다.";}
+ else{$("craftResults").textContent=lines.join(" · ")+" · 제작 방식: "+$("craftMode").selectedOptions[0].textContent;}
+}
+function update(){render();renderCraft();save();}
+buildRows();restore();buildRows();
+document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",update);e.addEventListener("change",update);});
+$("stageRows").addEventListener("input",e=>{
+ const input=e.target.closest("input[data-kind]");if(!input)return;
+ const i=Number(input.closest("tr").dataset.stage)-1;stageData[i][input.dataset.kind]=input.value;update();
+});
+$("resetStageData").addEventListener("click",()=>{
+ stageData.forEach(d=>Object.keys(d).forEach(k=>d[k]=""));
+ buildRows();update();
+});
+$("exportData").addEventListener("click",()=>{
+ const lines=["stage,heaven,nebula,core,attack"];
+ stageData.forEach((d,i)=>lines.push([i+1,d.heaven,d.nebula,d.core,d.attack].join(",")));
+ const blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cheonmyeong-core-transcend-20.csv";a.click();URL.revokeObjectURL(url);
+});
+document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===btn));
+ document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id==="panel-"+btn.dataset.tab));
+}));
+update();
+})();
+</script>
+</body></html>
