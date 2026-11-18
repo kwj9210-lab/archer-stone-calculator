@@ -139,14 +139,16 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
 
 <section class="panel" id="panel-craft">
  <section class="card">
-  <h2>초월핵 제작 재료</h2>
-  <p class="note">게임 내 안내 기준 제작 재료입니다. 마법 큐브의 일반 조합과 빠른 제작에서 같은 레시피를 사용합니다.</p>
+  <h2>초월핵 제작 구조</h2>
+  <p class="note">APK 0.2.10에서 확인한 안내 문구: 초월핵은 마법 큐브에서 제작하며, 총 20조각으로 구성됩니다. 각 조각을 누르면 해당 조각의 제작 재료를 확인하는 방식입니다. 조각별 실제 수량은 게임 데이터 응답에서 받아야 하므로 임의의 동일 레시피로 처리하지 않습니다.</p>
+  <div class="summary"><div class="metric"><span>초월핵 구성</span><b>20조각</b></div><div class="metric"><span>제작 메뉴</span><b>마법 큐브</b></div><div class="metric"><span>재료 확인 방식</span><b>조각별</b></div></div>
   <div class="grid">
-   <div class="field"><label for="craftCount">제작할 초월핵 개수</label><input id="craftCount" type="number" min="0" step="1" value="1"></div>
+   <div class="field"><label for="craftCount">제작할 초월핵 개수 (20조각 단위)</label><input id="craftCount" type="number" min="0" step="1" value="1"></div>
    <div class="field"><label for="ownCore">현재 초월핵 보유량</label><input id="ownCore" type="number" min="0" step="1" value="0"></div>
    <div class="field"><label for="craftMode">제작 방식</label><select id="craftMode"><option value="normal">마법 큐브 일반 조합</option><option value="quick">마법 큐브 빠른 제작</option></select></div>
   </div>
-  <h3 style="margin-top:16px">초월핵 1개당 레시피 수량</h3>
+  <h3 style="margin-top:16px">조각별 재료 데이터 입력</h3>
+  <p class="note">아래 재료 수량은 조각별 상세 레시피를 확인한 뒤 입력하는 임시 입력란입니다. 네 재료가 모든 조각에 동일하게 적용된다는 뜻은 아닙니다.</p>
   <div class="recipe">
    <div class="field"><label for="platinumEach">백금괴</label><input id="platinumEach" type="number" min="0" step="1" placeholder="게임 수량 입력"></div>
    <div class="field"><label for="steelEach">성철괴</label><input id="steelEach" type="number" min="0" step="1" placeholder="게임 수량 입력"></div>
@@ -167,7 +169,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
    <div class="metric"><span>제작 후 초월핵 보유</span><b id="craftCoreAfter">-</b></div>
    <div class="metric"><span>레시피 미입력 항목</span><b id="recipeMissing">-</b></div>
   </div>
-  <div id="craftResults" class="status warn">레시피 수량을 입력하면 제작에 필요한 재료와 부족량을 계산합니다.</div>
+  <div id="craftResults" class="status warn">초월핵 1개는 20조각입니다. 조각별 상세 레시피의 실제 수량을 확인한 뒤 입력하세요.</div>
  </section>
 </section>
 
@@ -258,17 +260,17 @@ function renderCraft(){
  const mats=[["백금괴","platinumEach","platinumHave"],["성철괴","steelEach","steelHave"],["월광수","moonEach","moonHave"],["별의 핵","starEach","starHave"]];
  let missing=[],lines=[];
  if(!Number.isFinite(qty)||!Number.isFinite(own)){ $("craftResults").textContent="제작 수량과 보유량은 0 이상의 정수로 입력하세요.";return;}
- $("craftCoreNeed").textContent=fmt(qty);
+ $("craftCoreNeed").textContent=fmt(qty)+"개 ("+fmt(qty*20)+"조각)";
  $("craftCoreAfter").textContent=fmt(own+qty);
  mats.forEach(([name,each,have])=>{
   const per=$(each).value.trim(),stock=number(have);
   if(per===""){missing.push(name);return;}
   const n=number(each);if(!Number.isFinite(n)||!Number.isFinite(stock)){missing.push(name);return;}
-  const total=n*qty,short=Math.max(0,total-stock);
+  const total=n*qty*20,short=Math.max(0,total-stock);
   lines.push(name+": "+fmt(total)+" 필요 / "+fmt(stock)+" 보유 / "+fmt(short)+" 부족");
  });
  $("recipeMissing").textContent=String(missing.length);
- if(missing.length){$("craftResults").textContent="레시피 수량 미입력: "+missing.join(", ")+". 게임의 제작 화면에 표시된 개당 수량을 입력하면 총 필요량을 계산합니다.";}
+ if(missing.length){$("craftResults").textContent="재료별 실제 수량이 확인되지 않았습니다: "+missing.join(", ")+". 현재 계산은 입력값을 조각당 수량으로 보고 초월핵 1개당 20배로 환산합니다.";}
  else{$("craftResults").textContent=lines.join(" · ")+" · 제작 방식: "+$("craftMode").selectedOptions[0].textContent;}
 }
 
