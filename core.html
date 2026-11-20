@@ -97,6 +97,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
    <div class="metric"><span>초월 진행</span><b id="stageProgress">-</b></div>
   </div>
   <div id="gateStatus" class="status warn">초월 조건을 확인해 주세요.</div>
+  <div class="actions"><button id="handoffCraft" class="action" type="button">부족한 초월핵 제작량 계산하기</button></div>
  </section>
 
  <section class="card">
@@ -109,7 +110,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
    </table>
   </div>
   <div class="actions">
-   <button class="action secondary" type="button" id="resetStageData">단계 데이터 초기화</button>
+   <button class="action secondary" type="button" id="resetStageData">APK 기본값 복원</button>
    <button class="action secondary" type="button" id="exportData">단계 데이터 CSV 내보내기</button>
    <button class="action secondary" type="button" id="exportJson">단계 데이터 JSON 내보내기</button>
   </div>
@@ -205,6 +206,7 @@ const stageData=[
  {heaven:"1600000000",nebula:"800000000",core:"38",attack:"6399999934464"},
  {heaven:"1600000000",nebula:"800000000",core:"40",attack:"6399999934464"}
 ];
+const defaultStageData=stageData.map(d=>({...d}));
 const key="archer:heaven-core-transcend:v1";
 for(let i=0;i<=20;i++){
  const a=document.createElement("option"),b=document.createElement("option");
@@ -226,6 +228,7 @@ function buildRows(){
  });
 }
 function number(id){const raw=$(id).value.trim();if(raw==="")return 0;const n=Number(raw);return Number.isSafeInteger(n)&&n>=0?n:NaN;}
+function safeAdd(a,b){const v=a+b;return Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&Number.isSafeInteger(v)?v:NaN;}
 function save(){
  const state={};
  ids.forEach(id=>{const e=$(id);state[id]=e.type==="checkbox"?e.checked:e.value;});
@@ -245,7 +248,7 @@ function render(){
  let cum=0,attackChainKnown=true;
  for(let i=0;i<20;i++){
   const a=stageData[i].attack;
-  if(a==="")attackChainKnown=false;else {const v=Number(a);if(Number.isSafeInteger(v)&&v>=0&&attackChainKnown)cum+=v;else attackChainKnown=false;}
+  if(a==="")attackChainKnown=false;else {const v=Number(a);if(Number.isSafeInteger(v)&&v>=0&&attackChainKnown){cum=safeAdd(cum,v);if(!Number.isSafeInteger(cum))attackChainKnown=false;}else attackChainKnown=false;}
   const cell=$("cumulative-"+(i+1));if(cell)cell.textContent=attackChainKnown?fmt(cum):"미확인";
  }
  const totals={heaven:0,nebula:0,core:0,attack:0};let missing=[];
@@ -255,16 +258,16 @@ function render(){
    for(const k of ["heaven","nebula","core","attack"]){
     if(d[k]===""){missing.push((i+1)+"단계 "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[k]));continue;}
     const v=Number(d[k]);if(!Number.isSafeInteger(v)||v<0){missing.push((i+1)+"단계 입력값");continue;}
-    totals[k]+=v;
+    totals[k]=safeAdd(totals[k],v);if(!Number.isSafeInteger(totals[k]))missing.push((i+1)+"단계 합계 범위 초과");
    }
   }
  }
  const materialMissing=missing.filter(x=>!x.includes("공격력"));
- const complete=Number.isFinite(current)&&Number.isFinite(target)&&target>=current&&materialMissing.length===0;
+ const complete=Number.isSafeInteger(current)&&Number.isSafeInteger(target)&&current>=0&&target<=20&&target>=current&&materialMissing.length===0&&["heaven","nebula","core"].every(k=>Number.isSafeInteger(totals[k]));
  $("needHeaven").textContent=complete?fmt(totals.heaven):"미확인";
  $("needNebula").textContent=complete?fmt(totals.nebula):"미확인";
  $("needCore").textContent=complete?fmt(totals.core):"미확인";
- $("attackGain").textContent=missing.some(x=>x.includes("공격력"))?"미확인":"+"+fmt(totals.attack);
+ $("attackGain").textContent=!Number.isSafeInteger(current)||!Number.isSafeInteger(target)||target<current||target>20||missing.some(x=>x.includes("공격력")||x.includes("범위 초과"))||!Number.isSafeInteger(totals.attack)?"미확인":"+"+fmt(totals.attack);
  const h=number("haveHeaven"),n=number("haveNebula"),c=number("haveCore");
  const shortage=complete&&[h,n,c].every(Number.isFinite)?{heaven:Math.max(0,totals.heaven-h),nebula:Math.max(0,totals.nebula-n),core:Math.max(0,totals.core-c)}:null;
  $("shortageTotal").textContent=shortage===null?"-":"천명석 "+fmt(shortage.heaven)+" / 성운석 "+fmt(shortage.nebula)+" / 초월핵 "+fmt(shortage.core);
@@ -273,6 +276,7 @@ function render(){
  if(!$("opening60").checked)gates.push("천명 성물 개방 60단계 완료");
  if(!$("chaos11").checked)gates.push("혼돈급 마석 11개 장착");
  if(target<current)gates.push("목표 단계가 현재 단계보다 낮음");
+ if(!Number.isSafeInteger(current)||current<0||current>20||!Number.isSafeInteger(target)||target<0||target>20)gates.push("단계 입력 오류");
  if(gates.length){$("gateStatus").textContent="초월 조건 미충족: "+gates.join(" · ");$("gateStatus").className="status warn";}
  else if(!complete){$("gateStatus").textContent="선행 조건은 충족했습니다. 단계별 실제 소모량 데이터가 입력되지 않은 항목이 "+materialMissing.length+"개 있습니다.";$("gateStatus").className="status warn";}
  else{$("gateStatus").textContent="초월 조건 충족. 목표 단계까지 필요한 재료를 계산했습니다.";$("gateStatus").className="status";}
@@ -435,6 +439,25 @@ $("resetPieceData").addEventListener("click",()=>{
 $("exportPieceJson").addEventListener("click",exportPieces);
 $("importPieceJson").addEventListener("click",()=>$("pieceJsonFile").click());
 $("pieceJsonFile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)importPieces(f);e.target.value="";});
+$("handoffCraft").addEventListener("click",()=>{
+ const current=number("currentStage"),target=number("targetStage"),have=number("haveCore");
+ if(!Number.isSafeInteger(current)||!Number.isSafeInteger(target)||target<current||target>20||!Number.isSafeInteger(have)){
+  $("gateStatus").textContent="초월 단계 또는 초월핵 보유량을 확인해 주세요.";$("gateStatus").className="status warn";return;
+ }
+ let required=0;
+ for(let i=current;i<target;i++){
+  const v=Number(stageData[i].core);
+  if(stageData[i].core===""||!Number.isSafeInteger(v)||v<0){$("gateStatus").textContent="초월핵 단계 데이터가 미확인입니다.";$("gateStatus").className="status warn";return;}
+  required=safeAdd(required,v);
+  if(!Number.isSafeInteger(required))return;
+ }
+ const short=Math.max(0,required-have);
+ $("craftCount").value=String(short);$("ownCore").value="0";
+ document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab==="craft"));
+ document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id==="panel-craft"));
+ $("pieceStatus").textContent="초월 목표에서 부족한 초월핵 "+fmt(short)+"개를 제작 목표로 가져왔습니다. 이미 보유한 조각은 별도로 차감됩니다.";
+ $("pieceStatus").className="status";update();
+});
 $("scanJson").addEventListener("click",scanSource);
 $("sourceFile").addEventListener("change",async e=>{
  const file=e.target.files&&e.target.files[0];if(!file)return;
@@ -449,7 +472,8 @@ $("exportJson").addEventListener("click",()=>{
 $("applyJson").addEventListener("click",applySource);
 $("clearJson").addEventListener("click",()=>{$("sourceJson").value="";$("sourceMapping").style.display="none";$("importStatus").textContent="JSON 입력을 지웠습니다. 기존 단계 데이터는 유지됩니다.";});
 $("resetStageData").addEventListener("click",()=>{
- stageData.forEach(d=>Object.keys(d).forEach(k=>d[k]=""));
+ if(!confirm("수정한 20단계 데이터를 APK 기본값으로 되돌릴까요?"))return;
+ stageData.forEach((d,i)=>Object.assign(d,defaultStageData[i]));
  buildRows();update();
 });
 $("exportData").addEventListener("click",()=>{
