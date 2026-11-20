@@ -101,7 +101,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
 
  <section class="card">
   <h2>1~20단계 재료 및 공격력 데이터</h2>
-  <p class="note">각 단계의 실제 소모량과 공격력 증가량을 입력하면 현재 단계부터 목표 단계까지 자동 합산합니다. 빈칸은 미확인 데이터로 처리하며 0으로 간주하지 않습니다.</p>
+  <p class="note">APK v0.2.10의 ARM64 네이티브 코드에서 복원한 1~20단계 데이터를 미리 입력했습니다. 현재 단계부터 목표 단계까지 필요한 재료와 공격력 증가량을 합산합니다. 숫자는 원본 정수이며 반올림하지 않았습니다.</p>
   <div class="table-wrap">
    <table>
     <thead><tr><th>단계</th><th>천명석 소모</th><th>성운석 소모</th><th>초월핵 소모</th><th>공격력 증가</th><th>누적 공격력</th></tr></thead>
@@ -113,7 +113,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
    <button class="action secondary" type="button" id="exportData">단계 데이터 CSV 내보내기</button>
    <button class="action secondary" type="button" id="exportJson">단계 데이터 JSON 내보내기</button>
   </div>
-  <div id="dataStatus" class="status warn">단계별 소모량·공격력은 APK에 고정된 로컬 수치가 아니라 HeavenRelic021 응답의 TranscendHeaven / TranscendNebula / TranscendCores / TranscendStepDigits / TranscendDigits 필드로 전달되는 서버 데이터임을 확인했습니다. 실제 수치를 임의로 채우지 않았습니다.</div>
+  <div id="dataStatus" class="status">단계별 수량은 APK v0.2.10의 libil2cpp.so에서 TranscendGroup, TranscendHeaven, TranscendNebula, TranscendCores, TranscendStepDigits, TranscendDigits 메서드를 역어셈블해 복원했습니다. 서버 응답과의 별도 교차검증은 아직 하지 않았습니다. 표의 값을 수정하면 해당 브라우저에 저장됩니다.</div>
  </section>
 <section class="card">
   <h2>게임 데이터 일괄 불러오기</h2>
@@ -181,7 +181,28 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
 const $=id=>document.getElementById(id);
 const fmt=n=>Math.trunc(n).toLocaleString("ko-KR");
 const ids=["opening60","chaos11","currentStage","targetStage","haveHeaven","haveNebula","haveCore","craftCount","ownCore","craftMode","platinumEach","steelEach","moonEach","starEach","platinumHave","steelHave","moonHave","starHave"];
-const stageData=Array.from({length:20},(_,i)=>({heaven:"",nebula:"",core:"",attack:""}));
+const stageData=[
+ {heaven:"1000000000",nebula:"500000000",core:"12",attack:"3999999983616"},
+ {heaven:"1000000000",nebula:"500000000",core:"13",attack:"3999999983616"},
+ {heaven:"1000000000",nebula:"500000000",core:"14",attack:"3999999983616"},
+ {heaven:"1000000000",nebula:"500000000",core:"15",attack:"3999999983616"},
+ {heaven:"1000000000",nebula:"500000000",core:"16",attack:"3999999983616"},
+ {heaven:"1200000000",nebula:"600000000",core:"17",attack:"4799999967232"},
+ {heaven:"1200000000",nebula:"600000000",core:"18",attack:"4799999967232"},
+ {heaven:"1200000000",nebula:"600000000",core:"19",attack:"4799999967232"},
+ {heaven:"1200000000",nebula:"600000000",core:"20",attack:"4799999967232"},
+ {heaven:"1200000000",nebula:"600000000",core:"21",attack:"4799999967232"},
+ {heaven:"1400000000",nebula:"700000000",core:"22",attack:"5599999950848"},
+ {heaven:"1400000000",nebula:"700000000",core:"24",attack:"5599999950848"},
+ {heaven:"1400000000",nebula:"700000000",core:"26",attack:"5599999950848"},
+ {heaven:"1400000000",nebula:"700000000",core:"28",attack:"5599999950848"},
+ {heaven:"1400000000",nebula:"700000000",core:"30",attack:"5599999950848"},
+ {heaven:"1600000000",nebula:"800000000",core:"32",attack:"6399999934464"},
+ {heaven:"1600000000",nebula:"800000000",core:"34",attack:"6399999934464"},
+ {heaven:"1600000000",nebula:"800000000",core:"36",attack:"6399999934464"},
+ {heaven:"1600000000",nebula:"800000000",core:"38",attack:"6399999934464"},
+ {heaven:"1600000000",nebula:"800000000",core:"40",attack:"6399999934464"}
+];
 const key="archer:heaven-core-transcend:v1";
 for(let i=0;i<=20;i++){
  const a=document.createElement("option"),b=document.createElement("option");
