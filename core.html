@@ -383,10 +383,10 @@ async function importPieces(file){
 let sourceArrays={};
 function flattenNumeric(v){
  if(Array.isArray(v))return v.flatMap(flattenNumeric);
- if(typeof v==="string"&&/^\\s*\\[.*\\]\\s*$/.test(v)){try{return flattenNumeric(JSON.parse(v));}catch(_){return [];}}
+ if(typeof v==="string"&&/^\s*\[.*\]\s*$/.test(v)){try{return flattenNumeric(JSON.parse(v));}catch(_){return [];}}
  if(v&&typeof v==="object"){for(const k of ["values","Values","value","Value","data","Data","items","Items","array","Array","list","List"])if(k in v)return flattenNumeric(v[k]);return [];}
  if(typeof v==="number"&&Number.isFinite(v))return [v];
- if(typeof v==="string"&&/^\\d+(?:\\.\\d+)?$/.test(v.trim()))return [Number(v)];
+ if(typeof v==="string"&&/^\d+(?:\.\d+)?$/.test(v.trim()))return [Number(v)];
  return [];
 }
 function findArrays(obj,path="",out={}){
@@ -395,13 +395,28 @@ function findArrays(obj,path="",out={}){
  else Object.keys(obj).forEach(k=>{const p=path?path+"."+k:k,v=obj[k];if(Array.isArray(v)){const a=flattenNumeric(v);if(a.length>=10)out[p]=a;}else if(v&&typeof v==="object")findArrays(v,p,out);});
  return out;
 }
+function findStageRecords(obj,out){
+ const paths=[obj&&obj.stages,obj&&obj.data,obj&&obj.data&&obj.data.stages,
+  obj&&obj.HeavenRelic021&&obj.HeavenRelic021.stages];
+ const kinds=[["TranscendHeaven","heaven"],["TranscendNebula","nebula"],
+  ["TranscendCores","core"],["TranscendStepDigits","attack"]];
+ paths.forEach(rows=>{
+  if(!Array.isArray(rows)||rows.length!==20||rows.some(r=>!r||typeof r!=="object"||Array.isArray(r)))return;
+  kinds.forEach(([native,plain])=>{
+   const vals=rows.map(r=>r[native]!==undefined?r[native]:r[plain]);
+   const numbers=vals.map(v=>typeof v==="string"&&v.trim()!==""?Number(v):v);
+   if(numbers.every(n=>Number.isSafeInteger(n)&&n>=0))out["stages."+native]=numbers;
+  });
+ });
+ return out;
+}
 function fillMap(id,keys,preferred){
  const el=$(id);el.textContent="";const blank=document.createElement("option");blank.value="";blank.textContent="선택 안 함";el.appendChild(blank);
  keys.forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=k+" ("+sourceArrays[k].length+"개)";el.appendChild(o);});
  const match=preferred?keys.find(k=>k.toLowerCase().endsWith(preferred.toLowerCase()))||keys.find(k=>k.toLowerCase().includes(preferred.toLowerCase())):null;if(match)el.value=match;
 }
 function scanSource(){
- try{const obj=JSON.parse($("sourceJson").value);sourceArrays=findArrays(obj);const keys=Object.keys(sourceArrays);if(!keys.length)throw new Error("숫자 배열을 찾지 못했습니다.");
+ try{const obj=JSON.parse($("sourceJson").value);sourceArrays=findStageRecords(obj,findArrays(obj));const keys=Object.keys(sourceArrays);if(!keys.length)throw new Error("숫자 배열을 찾지 못했습니다.");
  ["mapHeaven","mapNebula","mapCore","mapAttack"].forEach((id,i)=>fillMap(id,keys,["TranscendHeaven","TranscendNebula","TranscendCores","TranscendStepDigits"][i]));
  $("sourceMapping").style.display="block";$("importStatus").className="status";$("importStatus").textContent="숫자 배열 "+keys.length+"개 발견: "+keys.map(k=>k+" ("+sourceArrays[k].length+"개)").join(" · ")+". 배열의 단계 순서를 확인하고 적용하세요.";
  }catch(e){sourceArrays={};$("sourceMapping").style.display="none";$("importStatus").className="status warn";$("importStatus").textContent="JSON 분석 실패: "+e.message;}
