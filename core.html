@@ -175,6 +175,18 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
   <div id="craftResults" class="status warn" style="white-space:pre-line;margin-top:12px"></div>
   <div id="pieceStatus" class="status warn">검증된 조각 레시피만 입력하세요.</div>
  </section>
+ <section class="card">
+  <h2>원본 제작식 데이터 적용</h2>
+  <p class="note">20조각별 실제 게임 재료 이름과 수량이 담긴 JSON을 적용하면 재료 종류가 4개를 넘더라도 자동 계산합니다. 현재는 서버 제작식이 확보되지 않아 이 영역에 기본 수치를 넣지 않았습니다. 게임에서 확인되지 않은 JSON을 실제 레시피라고 표기하지 않습니다.</p>
+  <label for="realRecipeFile">20조각 제작식 JSON 파일</label>
+  <input id="realRecipeFile" type="file" accept=".json,application/json">
+  <div class="actions">
+   <button id="clearRealRecipe" class="action secondary" type="button">적용한 제작식 해제</button>
+  </div>
+  <div id="realRecipeStatus" class="status warn">실제 레시피 미확인: 적용된 제작식 데이터가 없습니다.</div>
+  <div id="realRecipeStock" class="recipe" style="margin-top:12px"></div>
+  <div id="realRecipeResult" class="status warn" style="white-space:pre-line;margin-top:12px"></div>
+ </section>
 </section>
 <div class="note">입력한 단계 데이터와 보유량은 이 브라우저에 자동 저장됩니다. 다른 브라우저·기기와 공유되지는 않습니다.</div>
 </main>
@@ -380,6 +392,91 @@ async function importPieces(file){
   $("pieceStatus").textContent="20조각 데이터를 불러왔습니다.";$("pieceStatus").className="status";
  }catch(e){$("pieceStatus").textContent="불러오기 실패: "+e.message;$("pieceStatus").className="status warn";}
 }
+const realRecipeKey="archer:core-real-recipes:v1";
+let realRecipe=null;
+let realStock={};
+function checkRealRecipe(raw){
+ if(!raw||typeof raw!=="object"||!Array.isArray(raw.parts)||raw.parts.length!==20)
+  throw Error("parts 배열이 정확히 20개여야 합니다.");
+ const used=new Set(),parts=[];
+ raw.parts.forEach(entry=>{
+  if(!entry||!Number.isInteger(entry.part)||entry.part<1||entry.part>20||used.has(entry.part)||!Array.isArray(entry.materials))
+   throw Error("각 part는 1~20의 서로 다른 번호와 materials 배열을 가져야 합니다.");
+  used.add(entry.part);
+  const seen=new Set(),materials=[];
+  entry.materials.forEach(item=>{
+   if(!item||typeof item.name!=="string"||!item.name.trim()||item.name.length>80||seen.has(item.name.trim())||
+     !Number.isSafeInteger(item.quantity)||item.quantity<0)
+    throw Error(entry.part+"번 조각의 재료명 또는 quantity 오류");
+   seen.add(item.name.trim());materials.push({name:item.name.trim(),quantity:item.quantity});
+  });
+  parts.push({part:entry.part,materials});
+ });
+ parts.sort((a,b)=>a.part-b.part);
+ return {parts};
+}
+function applyRealRecipe(raw){
+ realRecipe=checkRealRecipe(raw);
+ const names=[...new Set(realRecipe.parts.flatMap(p=>p.materials.map(m=>m.name)))];
+ const next={};names.forEach(name=>{next[name]=Number.isSafeInteger(realStock[name])&&realStock[name]>=0?realStock[name]:0;});
+ realStock=next;
+ try{localStorage.setItem(realRecipeKey,JSON.stringify({recipe:realRecipe,stock:realStock}));}catch(_){}
+ buildRealStock();renderRealRecipe();
+}
+function loadRealRecipe(){
+ try{
+  const value=JSON.parse(localStorage.getItem(realRecipeKey)||"null");
+  if(!value||!value.recipe)return;
+  if(value.stock&&typeof value.stock==="object")realStock=value.stock;
+  applyRealRecipe(value.recipe);
+ }catch(_){realRecipe=null;realStock={};}
+}
+function buildRealStock(){
+ const box=$("realRecipeStock");box.textContent="";
+ Object.keys(realStock).forEach(name=>{
+  const wrap=document.createElement("div");wrap.className="field";
+  const label=document.createElement("label");label.textContent=name+" 보유량";
+  const input=document.createElement("input");input.type="number";input.min="0";input.step="1";
+  input.value=String(realStock[name]);input.dataset.realName=name;
+  label.appendChild(input);wrap.appendChild(label);box.appendChild(wrap);
+ });
+}
+function renderRealRecipe(){
+ if(!realRecipe){
+  $("realRecipeStatus").textContent="실제 레시피 미확인: 적용된 제작식 데이터가 없습니다.";
+  $("realRecipeStatus").className="status warn";$("realRecipeResult").textContent="";return;
+ }
+ const goal=number("craftCount"),own=number("ownCore");
+ if(!Number.isSafeInteger(goal)||!Number.isSafeInteger(own)){
+  $("realRecipeResult").textContent="초월핵 목표와 완성품 보유량을 먼저 확인하세요.";return;
+ }
+ const make=Math.max(0,goal-own),totals=new Map();let piecesNeeded=0;
+ for(let i=0;i<20;i++){
+  const owned=parsePiece(pieces[i].owned);
+  if(!Number.isSafeInteger(owned)||owned<0){
+   $("realRecipeResult").textContent=(i+1)+"번 조각 보유량이 올바르지 않습니다.";return;
+  }
+  const qty=Math.max(0,make-owned);
+  piecesNeeded+=qty;
+  for(const item of realRecipe.parts[i].materials){
+   const next=(totals.get(item.name)||0)+qty*item.quantity;
+   if(!Number.isSafeInteger(next)){
+    $("realRecipeResult").textContent="재료 계산 범위 초과: "+item.name;return;
+   }
+   totals.set(item.name,next);
+  }
+ }
+ const lines=[...totals].map(([name,need])=>{
+  const stock=realStock[name];
+  if(!Number.isSafeInteger(stock)||stock<0)return name+": 보유량 오류";
+  return name+": 필요 "+fmt(need)+" / 보유 "+fmt(stock)+" / 부족 "+fmt(Math.max(0,need-stock));
+ });
+ $("realRecipeStatus").className="status";
+ $("realRecipeStatus").textContent="20조각 구조 검증 완료 · 제작식 "+realRecipe.parts.length+"개 적용. 게임 데이터의 진위는 별도 확인이 필요합니다.";
+ $("realRecipeResult").className="status";
+ $("realRecipeResult").textContent="추가 제작 초월핵 "+fmt(make)+"개 / 조각 "+fmt(piecesNeeded)+"개\n"+lines.join("\n");
+}
+
 let sourceArrays={};
 function flattenNumeric(v){
  if(Array.isArray(v))return v.flatMap(flattenNumeric);
@@ -434,8 +531,8 @@ function applySource(){
  buildRows();update();$("importStatus").className="status";$("importStatus").textContent="적용 완료: "+selected.map(x=>x.key+" → "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[x.kind])).join(" · ")+". 배열 시작 위치 "+(offset+1)+"번째 값부터 적용했습니다. 브라우저에 저장했습니다." ;
 }
 
-function update(){render();renderCraft();save();}
-restorePieces();buildRows();restore();buildRows();buildPieceRows();
+function update(){render();renderCraft();renderRealRecipe();save();}
+restorePieces();buildRows();restore();buildRows();buildPieceRows();loadRealRecipe();
 document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",update);e.addEventListener("change",update);});
 $("stageRows").addEventListener("input",e=>{
  const input=e.target.closest("input[data-kind]");if(!input)return;
@@ -444,7 +541,7 @@ $("stageRows").addEventListener("input",e=>{
 $("pieceRows").addEventListener("input",e=>{
  const el=e.target.closest("input[data-piece-field]");if(!el)return;
  const i=Number(el.closest("tr").dataset.index);pieces[i][el.dataset.pieceField]=el.value;
- savePieces();renderCraft();
+ savePieces();renderCraft();renderRealRecipe();
 });
 $("resetPieceData").addEventListener("click",()=>{
  if(!confirm("조각별 데이터와 보유량을 모두 초기화할까요?"))return;
@@ -472,6 +569,23 @@ $("handoffCraft").addEventListener("click",()=>{
  document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id==="panel-craft"));
  $("pieceStatus").textContent="초월 목표에서 부족한 초월핵 "+fmt(short)+"개를 제작 목표로 가져왔습니다. 이미 보유한 조각은 별도로 차감됩니다.";
  $("pieceStatus").className="status";update();
+});
+$("realRecipeFile").addEventListener("change",async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ try{applyRealRecipe(JSON.parse(await file.text()));}
+ catch(err){$("realRecipeStatus").className="status warn";$("realRecipeStatus").textContent="적용 실패: "+err.message;}
+ e.target.value="";
+});
+$("clearRealRecipe").addEventListener("click",()=>{
+ realRecipe=null;realStock={};try{localStorage.removeItem(realRecipeKey)}catch(_){}
+ buildRealStock();renderRealRecipe();
+});
+$("realRecipeStock").addEventListener("input",e=>{
+ const el=e.target.closest("input[data-real-name]");if(!el)return;
+ const v=Number(el.value);
+ realStock[el.dataset.realName]=Number.isSafeInteger(v)&&v>=0?v:NaN;
+ try{localStorage.setItem(realRecipeKey,JSON.stringify({recipe:realRecipe,stock:realStock}));}catch(_){}
+ renderRealRecipe();
 });
 $("scanJson").addEventListener("click",scanSource);
 $("sourceFile").addEventListener("change",async e=>{
