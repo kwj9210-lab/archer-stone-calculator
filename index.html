@@ -302,6 +302,18 @@ th:first-child,td:first-child{text-align:left}
 @media(max-width:620px){.usage-title{gap:7px}.usage-title .usage-guide > summary{padding:6px 9px}}
 
 </style>
+<script>
+(function(){
+ 'use strict';
+ // Verified by v0.2.6 IL2CPP DungeonMastery.Multiplier() and 6억-100 in-game screen.
+ window.archerMasteryMultiplier=function(level){
+  var n=Number(level);
+  if(!Number.isFinite(n) || n<=0)return 1;
+  n=Math.min(13507,Math.floor(n));
+  return n<=5507?1.25+n/4:1378+(n-5507)/8;
+ };
+})();
+</script><link rel="stylesheet" href="./clarity-ui.css?v=2">
 </head>
 <body>
 <main class="wrap">
@@ -355,11 +367,11 @@ th:first-child,td:first-child{text-align:left}
 <section class="card">
 <h2>4. 내 던전 숙련도</h2>
 <div class="grid3">
-<label>숙련도 단계<input id="masteryLevel" type="text" inputmode="numeric" value="2507" placeholder="1~2507"></label>
-<label>숙련도 배율<input id="masteryMult" type="text" value="628" readonly aria-readonly="true"></label>
-<label>수련장 단계<input id="masteryTrainingStage" type="text" value="5000만-1" readonly aria-readonly="true"></label>
+<label>숙련도 단계<input id="masteryLevel" type="text" inputmode="numeric" value="13507" placeholder="1~13507"></label>
+<label>숙련도 배율<input id="masteryMult" type="text" value="2378" readonly aria-readonly="true"></label>
+<label>수련장 단계<input id="masteryTrainingStage" type="text" value="6억-100" readonly aria-readonly="true"></label>
 </div>
-<div class="note">숙련도 단계를 입력하면 숙련도 배율과 필요한 수련장 단계가 자동으로 표시됩니다. 최대 2,507단계 · ×628 · 수련장 5000만-1.</div>
+<div class="note">숙련도 단계를 입력하면 숙련도 배율과 필요한 수련장 단계가 자동으로 표시됩니다. 최대 13,507단계 · 수련장 6억-100 · 최대 배율 ×2,378. 0.2.6 APK와 게임 화면에 따라 2억 이후에는 5만 증가당 +0.125배를 적용합니다.</div>
 </section>
 
 <section class="card result-card">
@@ -480,6 +492,13 @@ function fmt(v){
 }
 function fmtKoreanUnit(v){return fmt(v)}
 function fmtPlain(v){return Math.round(v).toLocaleString('ko-KR')}
+function fmtSweepRuns(value){
+ var n=Math.max(0,Math.round(Number(value)||0)),parts=[];
+ var units=[{v:1e16,s:'경'},{v:1e12,s:'조'},{v:1e8,s:'억'},{v:1e4,s:'만'}];
+ units.forEach(function(u){if(n>=u.v){var q=Math.floor(n/u.v);parts.push(q.toLocaleString('ko-KR')+u.s);n-=q*u.v;}});
+ if(n||!parts.length)parts.push(n.toLocaleString('ko-KR'));
+ return parts.join(' ')+' 회';
+}
 function initState(t){
  if(state[t])return;
  state[t]={stones:Array(G.length).fill(0),raw:Array(configs[t].resources.length).fill(0),target:G.length-1,count:1};
@@ -520,18 +539,21 @@ function calc(){
  need(tg,count);
  var rawMastery=String(el('masteryLevel').value).trim();
   var masteryLv=/^\d+$/.test(rawMastery)?Number(rawMastery):NaN;
-  if(!Number.isSafeInteger(masteryLv)||masteryLv<1||masteryLv>2507){
-   el('resourceResults').innerHTML='<div class="box"><h3>숙련도 입력 확인</h3><div class="line">숙련도 단계를 1~2,507 사이로 입력하면 소탕 횟수와 입장권을 계산합니다.</div></div>';
+  if(!Number.isSafeInteger(masteryLv)||masteryLv<1||masteryLv>13507){
+   el('resourceResults').innerHTML='<div class="box"><h3>숙련도 입력 확인</h3><div class="line">숙련도 단계를 1~13,507 사이로 입력하면 소탕 횟수와 입장권을 계산합니다.</div></div>';
    ['ticketsTotal','ticketsByType','totalRuns','ticketShort','diamondNeed','dungeonDiamond','huntingDiamond','dungeonRuns','huntingRuns','dungeonShort','huntingShort'].forEach(function(id){el(id).textContent='—';});
    el('summary').textContent='숙련도를 입력해 주세요.';
    return;
   }
- var mult=1.25+.25*masteryLv,dungeonRuns=0,huntingRuns=0,html='';
+ var mult=window.archerMasteryMultiplier(masteryLv),dungeonRuns=0,huntingRuns=0,html='',sharedBearRuns=0;
  c.resources.forEach(function(r,i){
   var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
   if(r.base){
    var per100k=r.fixed?r.base:r.base*(mult/5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
-   if(r.fixed)huntingRuns+=runs;else dungeonRuns+=runs;
+   if(r.fixed){
+     if(type==='hard'&&(r.name==='곰뼈'||r.name==='곰가죽'))sharedBearRuns=Math.max(sharedBearRuns,runs);
+     else huntingRuns+=runs;
+   }else dungeonRuns+=runs;
    // Display the exact rounded sweep count used for admission tickets.
     var remainingRuns=runs,parts=[];
     if(!r.fixed){
@@ -544,11 +566,15 @@ function calc(){
     if(tenK)parts.push('1만회 소탕 '+fmt(tenK)+'회');
     var sweepText=parts.length?parts.join(' · '):'소탕 0회';
     var approx100k=Math.round(per100k/10000);
-   html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong"><span class="sweep-breakdown">'+sweepText+'</span><span class="resource-ticket">필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(runs*2)+'장</span></div></div>';
+   html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong"><span class="sweep-breakdown">'+sweepText+'</span><span class="resource-ticket">'+(type==='hard'&&(r.name==='곰뼈'||r.name==='곰가죽')?'곰굴 공동 소탕 · 아래 공동 소탕 티켓에 합산':'필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(runs*2)+'장')+'</span></div></div>';
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div></div>';
   }
  });
+ if(type==='hard'){
+   huntingRuns+=sharedBearRuns;
+   html+='<div class="box"><h3>곰굴 공동 소탕 · 곰뼈 + 곰가죽</h3><div class="line">두 재료는 같은 소탕에서 함께 나오므로 각각 필요한 소탕 횟수 중 큰 값만 한 번 계산합니다.</div><div class="strong">'+fmtSweepRuns(sharedBearRuns)+'</div><div class="line">공동 사냥터 티켓 '+fmtKoreanUnit(sharedBearRuns*2)+'장</div></div>';
+ }
  el('resourceResults').innerHTML=html;
  var totalRuns=dungeonRuns+huntingRuns;
   var dungeonTickets=dungeonRuns*2,huntingTickets=huntingRuns*2;
@@ -558,11 +584,11 @@ function calc(){
   var dungeonDia=dungeonShort*val('ticketPrice'),huntingDia=huntingShort*val('ticketPrice'),dia=dungeonDia+huntingDia;
   el('ticketsTotal').textContent=fmt(tickets)+'장';
   el('ticketsByType').textContent='던전 티켓 '+fmtKoreanUnit(dungeonTickets)+'장 / 사냥터 티켓 '+fmtKoreanUnit(huntingTickets)+'장';
-  el('dungeonRuns').textContent=fmtKoreanUnit(dungeonRuns)+'회 / '+fmtKoreanUnit(dungeonTickets)+'장';
-  el('huntingRuns').textContent=fmtKoreanUnit(huntingRuns)+'회 / '+fmtKoreanUnit(huntingTickets)+'장';
+  el('dungeonRuns').textContent=fmtSweepRuns(dungeonRuns)+' / '+fmtKoreanUnit(dungeonTickets)+'장';
+  el('huntingRuns').textContent=fmtSweepRuns(huntingRuns)+' / '+fmtKoreanUnit(huntingTickets)+'장';
   el('dungeonShort').textContent=fmtKoreanUnit(dungeonShort)+'장';
   el('huntingShort').textContent=fmtKoreanUnit(huntingShort)+'장';
-  el('totalRuns').textContent=fmtKoreanUnit(totalRuns)+'회';
+  el('totalRuns').textContent=fmtSweepRuns(totalRuns);
   el('ticketShort').textContent=fmtKoreanUnit(short)+'장';
   el('dungeonDiamond').textContent=fmtKoreanUnit(dungeonDia)+' 다이아';
   el('huntingDiamond').textContent=fmtKoreanUnit(huntingDia)+' 다이아';
@@ -575,9 +601,12 @@ function calc(){
 }
 function masteryRequiredStage(lv){
  if(lv<=15)return (lv+1)*10000;
+ if(lv>2507)return 50000000+(lv-2507)*50000;
  return 160000+(lv-15)*20000;
 }
 function stageText(stage){
+ if(stage===null)return "신규 구간 미확인";
+ if(stage>=100000000&&stage%100000000===0)return fmtPlain(stage/100000000)+'억-100';
  if(stage%10000===0)return fmtPlain(stage/10000)+'만-1';
  return fmtPlain(stage)+'-1';
 }
@@ -598,9 +627,9 @@ function syncMastery(){
    calc();
    return;
  }
- if(lv>2507){lv=2507;field.value='2507';}
- var mult=1.25+.25*lv;
- el('masteryMult').value=mult.toFixed(2).replace(/\.00$/,'');
+ if(lv>13507){lv=13507;field.value='13507';}
+ var mult=window.archerMasteryMultiplier(lv);
+ el('masteryMult').value=mult.toFixed(3).replace(/\.?0+$/,'');
  el('masteryTrainingStage').value=stageText(masteryRequiredStage(lv));
  calc();
 }

@@ -1,0 +1,362 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap");
+/* Clarity UI for Archer 0.2.6. Visual changes only. */
+:root{color-scheme:light;--bg:#f3f6f8;--bg2:#edf3f5;--panel:#fff;--card:#fff;--surface:#fff;--surface-2:#f8fafb;--surface-3:#eef7f4;--line:#d5e0e5;--line2:#c7d8dd;--line-soft:#e2e9ec;--text:#192f3a;--muted:#516977;--accent:#008d81;--accent2:#07a99c;--accent-dark:#00746a;--accent-strong:#00776c;--strong:#00776c;--mint:#e8f6f2;--sky:#eaf3fa;--lemon:#fff4dc;--shadow:0 5px 18px rgba(17,49,63,.07)}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif!important;background:linear-gradient(180deg,#f7f9fa,#eff3f5)!important;color:var(--text)!important;font-size:14px;line-height:1.65}
+button,input,select,textarea,summary{font-family:inherit!important}
+button,summary{cursor:pointer}
+button:focus-visible,summary:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(0,155,142,.45)!important;outline-offset:2px}
+::selection{background:#c6eee7;color:#123e41}
+b,strong{font-weight:800}h1,h2,h3{letter-spacing:-.04em;overflow-wrap:break-word}h1{font-size:clamp(23px,2.6vw,30px)!important;font-weight:900!important;line-height:1.28!important}h2{font-size:clamp(16px,1.6vw,19px)!important;color:#23434f!important;font-weight:800!important}h3{color:#28505b!important}
+a{color:#007b73}
+body:not(:has(#calculatorHeader)) main,body:not(:has(#calculatorHeader)) main.wrap{width:min(1140px,100%);max-width:100%;margin:auto;padding:23px 20px 52px}
+body:not(:has(#calculatorHeader)) main>.page-hero,
+body:not(:has(#calculatorHeader)) main>.hero,
+body:not(:has(#calculatorHeader)) main>.site-head,
+body:not(:has(#calculatorHeader)) main>header{
+ background:radial-gradient(ellipse 360px 210px at 98% -20%,rgba(41,211,184,.20),transparent 75%),linear-gradient(110deg,#132e3c,#244a56)!important;
+ border:1px solid #1e424f!important;border-radius:20px!important;
+ box-shadow:0 9px 25px rgba(20,49,63,.12)!important;
+ color:#f4faf9!important;padding:23px 26px!important;
+ margin-bottom:17px!important;position:relative
+}
+body:not(:has(#calculatorHeader)) main>.page-hero h1,
+body:not(:has(#calculatorHeader)) main>.hero h1,
+body:not(:has(#calculatorHeader)) main>.site-head h1,
+body:not(:has(#calculatorHeader)) main>header h1{color:#fff!important}
+body:not(:has(#calculatorHeader)) main>.page-hero .site-head{background:transparent!important;border:0!important;box-shadow:none!important;padding:0 0 7px!important;margin:0!important}
+body:not(:has(#calculatorHeader)) main>.page-hero :is(.hero-sub,.sub,.intro),
+body:not(:has(#calculatorHeader)) main>.hero .sub,
+body:not(:has(#calculatorHeader)) main>header .sub{color:#d6e5e6!important;font-size:13.5px!important;line-height:1.75!important}
+body:not(:has(#calculatorHeader)) main>.page-hero .submark,
+body:not(:has(#calculatorHeader)) main>.site-head .submark{background:rgba(24,179,160,.2)!important;border:1px solid rgba(159,240,225,.35)!important;color:#d9fff6!important;border-radius:999px;white-space:normal;padding:5px 10px}
+body:not(:has(#calculatorHeader)) .page-hero .usage-guide>summary,
+body:not(:has(#calculatorHeader)) .page-hero .guide>summary,
+body:not(:has(#calculatorHeader)) .hero .guide>summary,
+body:not(:has(#calculatorHeader)) main>header .guide>summary{
+ color:#fff!important;background:rgba(255,255,255,.13)!important;border:1px solid rgba(239,255,255,.35)!important;
+ border-radius:10px!important;padding:7px 11px!important;font-size:12.5px!important
+}
+body:not(:has(#calculatorHeader)) :is(.usage-panel,.guideBody,.guide-body){
+ background:#fff!important;color:#283f4a!important;border:1px solid #cfdee3!important;
+ box-shadow:0 15px 30px rgba(24,47,64,.16)!important;z-index:99!important;font-size:13.5px!important
+}
+body:not(:has(#calculatorHeader)) :is(.usage-panel,.guideBody,.guide-body) b{color:#00766b!important}
+body:not(:has(#calculatorHeader)) :is(.card,.panel,.cost-panel,.table-details){
+ background:#fff!important;border:1px solid #d8e2e6!important;border-radius:17px!important;
+ box-shadow:0 4px 17px rgba(17,47,65,.06)!important
+}
+body:not(:has(#calculatorHeader)) :is(.card,.panel){padding:20px!important;margin-bottom:16px}
+body:not(:has(#calculatorHeader)) :is(.card,.panel) h2{border-left:4px solid #00a99a!important;padding-left:11px!important;margin-bottom:15px!important}
+body:not(:has(#calculatorHeader)) :is(.sub,.intro,.hero-sub,.muted,.hint,.note,.input-note,.mastery-note){
+ color:#526b79;font-size:13px;line-height:1.75
+}
+body:not(:has(#calculatorHeader)) :is(label,.field label){color:#2a4754!important;font-size:13.5px!important;font-weight:750!important;line-height:1.5}
+body:not(:has(#calculatorHeader)) input:not([type=checkbox]):not([type=radio]):not([type=hidden]),
+body:not(:has(#calculatorHeader)) select,
+body:not(:has(#calculatorHeader)) textarea{
+ min-height:46px;border:1.5px solid #c7d7dd!important;border-radius:11px!important;background:#fcfefe!important;
+ color:#142f3a!important;font-size:16px!important;font-weight:700!important;
+ padding:10px 12px;box-shadow:inset 0 1px 2px rgba(15,45,62,.03)!important;
+ font-variant-numeric:tabular-nums
+}
+body:not(:has(#calculatorHeader)) :is(input:not([type=checkbox]):not([type=radio]),select):focus{border-color:#009688!important;background:#fff!important;box-shadow:0 0 0 3px rgba(0,152,138,.12)!important}
+body:not(:has(#calculatorHeader)) input[aria-invalid=true]{border-color:#ce5369!important;background:#fff8f8!important}
+body:not(:has(#calculatorHeader)) input::placeholder{color:#8a9ba4!important}
+body:not(:has(#calculatorHeader)) input[type=checkbox],body:not(:has(#calculatorHeader)) input[type=radio]{accent-color:#008c7f}
+body:not(:has(#calculatorHeader)) #run,
+body:not(:has(#calculatorHeader)) button.primary,
+body:not(:has(#calculatorHeader)) .glove-add{
+ color:#fff!important;background:linear-gradient(125deg,#007c72,#00a595)!important;
+ border:1px solid #00796e!important;border-radius:11px!important;
+ font-weight:850!important;box-shadow:0 4px 12px rgba(0,120,110,.16)!important;min-height:45px
+}
+body:not(:has(#calculatorHeader)) #run:hover,body:not(:has(#calculatorHeader)) button.primary:hover{filter:brightness(1.06)}
+body:not(:has(#calculatorHeader)) :is(.tab,.tabs .tab){
+ background:#f2f7f8!important;color:#385968!important;border:1px solid #ccdadf!important;
+ border-radius:11px!important;font-weight:800!important
+}
+body:not(:has(#calculatorHeader)) :is(.tab.active,.tabs .tab.active){
+ background:#007f75!important;color:#fff!important;border-color:#007f75!important;
+ box-shadow:0 3px 11px rgba(0,125,116,.15)!important
+}
+body:not(:has(#calculatorHeader)) :is(.stat,.ticket-box,.readout,.mini-box){
+ background:#f1f8f6!important;border-color:#d9eae5!important;border-radius:13px!important
+}
+body:not(:has(#calculatorHeader)) :is(.metric,.big,.ticket-v,.total-box strong,.mastery-result strong){
+ color:#006e64!important;font-variant-numeric:tabular-nums;letter-spacing:-.035em
+}
+body:not(:has(#calculatorHeader)) .ok{color:#007f70!important}
+body:not(:has(#calculatorHeader)) :is(.bad,.warn){color:#b64559!important}
+body:not(:has(#calculatorHeader)) table{
+ width:100%;color:#2b4653;font-size:13px;font-variant-numeric:tabular-nums;
+ border-collapse:separate;border-spacing:0
+}
+body:not(:has(#calculatorHeader)) th,body:not(:has(#calculatorHeader)) td{padding:10px 9px;border-bottom:1px solid #e4eaee!important}
+body:not(:has(#calculatorHeader)) th{background:#eaf1f4!important;color:#33525e!important;font-weight:850!important;white-space:nowrap}
+body:not(:has(#calculatorHeader)) tbody tr:nth-child(even) td{background:#f8fafb}
+body:not(:has(#calculatorHeader)) tbody tr:hover td{background:#eaf6f3}
+body:not(:has(#calculatorHeader)) :is(.scroll,.tableWrap,.table-wrap){overflow-x:auto;-webkit-overflow-scrolling:touch}
+body:not(:has(#calculatorHeader)) details:not(.guide):not(.usage-guide)>summary{color:#23655f;font-weight:800}
+body:not(:has(#calculatorHeader)) :is(.workspace,.wrap,.grid,.grid2,.grid3,.grid4,.grid5,.row,.fields,.field,.card,.panel){min-width:0}
+body:not(:has(#calculatorHeader)) .input-panel{top:14px}
+/* Unified navigation in the integration shell */
+body:has(#calculatorHeader){background:#eef3f5!important}
+#calculatorHeader{background:#112e3c!important;color:#fff!important;border-bottom:1px solid #284d59!important;box-shadow:0 4px 19px rgba(17,43,59,.14)!important;padding:12px 17px!important;backdrop-filter:none!important}
+#calculatorHeader .bar{max-width:1580px;gap:17px}
+#calculatorHeader .title{display:flex;align-items:center;gap:11px;flex:none;font-size:16px!important;font-weight:900!important;letter-spacing:-.04em;color:#fff!important}
+#calculatorHeader .brand-copy{display:flex;flex-direction:column;line-height:1.35}
+#calculatorHeader .brand-copy small{font-size:10.5px;color:#afcdd0;font-weight:600;letter-spacing:0}
+#calculatorHeader .tabs{gap:7px;min-width:0}
+#calculatorHeader .tabs button{
+ background:#204453!important;color:#e0eff0!important;border:1px solid #335966!important;
+ border-radius:11px!important;min-height:49px;font-size:12.5px!important;font-weight:770!important;
+ box-shadow:none!important;padding:8px 6px!important;line-height:1.3
+}
+#calculatorHeader .tabs button::after{display:none}
+#calculatorHeader .tabs button:hover{background:#2c5b69!important;color:#fff!important}
+#calculatorHeader .tabs button.active{background:#e3faef!important;color:#075c53!important;border:1px solid #91e3cf!important;box-shadow:0 2px 7px rgba(0,0,0,.07)!important}
+#calculatorHeader #mobileMenuToggle{background:#204655!important;color:#fff!important;border:1px solid #396774!important;border-radius:12px!important}
+#calculatorHeader .mobile-menu-hint{color:#b5ced0!important}
+body:has(#calculatorHeader) main{background:#f0f4f6}
+@media(max-width:1180px){#calculatorHeader{padding:10px 12px!important}#calculatorHeader .bar{gap:10px}#calculatorHeader .title{font-size:14px!important}#calculatorHeader .tabs button{font-size:12px!important}}
+@media(max-width:640px){
+ body:not(:has(#calculatorHeader)) main,body:not(:has(#calculatorHeader)) main.wrap{padding:12px 11px 35px!important}
+ body:not(:has(#calculatorHeader)) main>.page-hero,body:not(:has(#calculatorHeader)) main>.hero,body:not(:has(#calculatorHeader)) main>.site-head,body:not(:has(#calculatorHeader)) main>header{padding:19px 16px!important;border-radius:15px!important;margin-bottom:13px!important}
+ body:not(:has(#calculatorHeader)) main>.page-hero .site-head{flex-wrap:wrap;gap:9px!important}
+ body:not(:has(#calculatorHeader)) h1{font-size:22px!important}
+ body:not(:has(#calculatorHeader)) :is(.card,.panel){padding:15px!important;border-radius:13px!important}
+ body:not(:has(#calculatorHeader)) .input-panel{position:static!important}
+ body:not(:has(#calculatorHeader)) th,body:not(:has(#calculatorHeader)) td{padding:8px 6px;font-size:12px}
+ #calculatorHeader{padding:9px 10px!important}
+ #calculatorHeader .mobile-menu-toggle{min-height:50px}
+ #calculatorHeader .tabs button{font-size:12px!important;min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+
+/* Small-screen mastery table scroll; preserves the real data table. */
+.mastery-table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;margin-top:12px}
+.mastery-table-scroll:focus-visible{outline:3px solid #45b9a8;outline-offset:2px}
+@media(max-width:640px){.mastery-table-scroll .mastery-cap-list{min-width:375px}}
+
+
+
+
+/* Alternative light design: 웜 아이보리 샌드; no app logic touched. */
+
+:root{--bg:#faf8f3;--bg2:#faf8f3;--panel:#fffefa;--card:#fffefa;--surface:#fffefa;--surface-2:#fff1de;--surface-3:#fdf3e6;--line:#e7dfd3;--line2:#e2d6c5;--line-soft:#e7dfd3;--text:#43392f;--muted:#71665b;--accent:#a95a2d;--accent2:#a95a2d;--accent-dark:#854119;--accent-strong:#854119;--strong:#854119;--mint:#fff1de;--sky:#fff1de;--shadow:0 6px 19px rgba(98,67,37,.07)}
+html{color-scheme:light}
+body,body:has(#calculatorHeader),body:has(#calculatorHeader) main{
+ background:#faf8f3!important;color:#43392f!important
+}
+body:not(:has(#calculatorHeader)) main>.page-hero,
+body:not(:has(#calculatorHeader)) main>.hero,
+body:not(:has(#calculatorHeader)) main>.site-head,
+body:not(:has(#calculatorHeader)) main>header{
+ background:linear-gradient(112deg,#fffefa 0%,#fff0de 100%)!important;
+ color:#43392f!important;border:1px solid #e7dfd3!important;
+ box-shadow:0 7px 24px rgba(98,67,37,.07)!important
+}
+body:not(:has(#calculatorHeader)) main>.page-hero h1,
+body:not(:has(#calculatorHeader)) main>.hero h1,
+body:not(:has(#calculatorHeader)) main>.site-head h1,
+body:not(:has(#calculatorHeader)) main>header h1{
+ color:#7b4524!important
+}
+body:not(:has(#calculatorHeader)) main>.page-hero :is(.hero-sub,.sub,.intro),
+body:not(:has(#calculatorHeader)) main>.hero .sub,
+body:not(:has(#calculatorHeader)) main>header .sub,
+body:not(:has(#calculatorHeader)) :is(.muted,.note,.hint,.hero-sub,.intro,.sub,.mastery-note,.input-note){
+ color:#71665b!important
+}
+body:not(:has(#calculatorHeader)) main>.page-hero :is(.submark,.pill),
+body:not(:has(#calculatorHeader)) main>.site-head .submark{
+ color:#854119!important;background:#fff1de!important;
+ border:1px solid #e2d6c5!important
+}
+body:not(:has(#calculatorHeader)) .page-hero .usage-guide>summary,
+body:not(:has(#calculatorHeader)) .page-hero .guide>summary,
+body:not(:has(#calculatorHeader)) .hero .guide>summary,
+body:not(:has(#calculatorHeader)) main>header .guide>summary{
+ background:#fffefa!important;color:#854119!important;border:1px solid #e2d6c5!important
+}
+body:not(:has(#calculatorHeader)) :is(.card,.panel,.cost-panel,.table-details){
+ background:#fffefa!important;border:1px solid #e7dfd3!important;box-shadow:0 5px 18px rgba(98,67,37,.07)!important
+}
+body:not(:has(#calculatorHeader)) h2,
+body:not(:has(#calculatorHeader)) h3,
+body:not(:has(#calculatorHeader)) label,
+body:not(:has(#calculatorHeader)) .field label{
+ color:#43392f!important
+}
+body:not(:has(#calculatorHeader)) :is(.card,.panel) h2{
+ border-left-color:#a95a2d!important
+}
+body:not(:has(#calculatorHeader)) input:not([type=checkbox]):not([type=radio]):not([type=hidden]),
+body:not(:has(#calculatorHeader)) select,
+body:not(:has(#calculatorHeader)) textarea{
+ background:#fff!important;color:#43392f!important;border-color:#e2d6c5!important
+}
+body:not(:has(#calculatorHeader)) :is(input,select,textarea):focus{
+ border-color:#a95a2d!important;box-shadow:0 0 0 3px rgba(167,88,40,.19)!important
+}
+body:not(:has(#calculatorHeader)) input[type=checkbox],
+body:not(:has(#calculatorHeader)) input[type=radio]{accent-color:#a95a2d}
+body:not(:has(#calculatorHeader)) #run,
+body:not(:has(#calculatorHeader)) button.primary,
+body:not(:has(#calculatorHeader)) .glove-add,
+body:not(:has(#calculatorHeader)) button.action:not(.secondary){
+ color:#fff!important;background:#a95a2d!important;border-color:#854119!important;
+ box-shadow:0 4px 12px rgba(98,67,37,.07)!important
+}
+body:not(:has(#calculatorHeader)) button#run:hover,
+body:not(:has(#calculatorHeader)) button.primary:hover{
+ background:#854119!important
+}
+body:not(:has(#calculatorHeader)) :is(.tab,.tabs .tab){
+ background:#fffefa!important;color:#71665b!important;border:1px solid #e2d6c5!important
+}
+body:not(:has(#calculatorHeader)) :is(.tab.active,.tabs .tab.active){
+ background:#fce6c9!important;color:#75421f!important;border-color:#a95a2d!important
+}
+body:not(:has(#calculatorHeader)) :is(.metric,.big,.ticket-v,.total-box strong,.mastery-result strong,.stat strong){
+ color:#854119!important
+}
+body:not(:has(#calculatorHeader)) :is(.stat,.ticket-box,.readout,.mini-box){
+ background:#fdf3e6!important;border-color:#e7dfd3!important
+}
+body:not(:has(#calculatorHeader)) th{
+ background:#fff1de!important;color:#43392f!important
+}
+body:not(:has(#calculatorHeader)) td{border-bottom:1px solid #e7dfd3!important}
+body:not(:has(#calculatorHeader)) tbody tr:nth-child(even) td{background:#faf8f3!important}
+body:not(:has(#calculatorHeader)) tbody tr:hover td{background:#fff1de!important}
+body:not(:has(#calculatorHeader)) .ok{color:#854119!important}
+body:not(:has(#calculatorHeader)) :is(.usage-panel,.guideBody,.guide-body){
+ background:#fffefa!important;color:#43392f!important;border-color:#e2d6c5!important
+}
+body:not(:has(#calculatorHeader)) :is(.usage-panel,.guideBody,.guide-body) b{color:#854119!important}
+body:not(:has(#calculatorHeader)) .page-hero .tab,
+body:not(:has(#calculatorHeader)) .page-hero .tabs .tab{
+ background:#fffefa!important;color:#43392f!important;border:1px solid #e2d6c5!important
+}
+body:not(:has(#calculatorHeader)) .page-hero .tab.active,
+body:not(:has(#calculatorHeader)) .page-hero .tabs .tab.active{
+ background:#fce6c9!important;color:#75421f!important;border:1px solid #a95a2d!important
+}
+#calculatorHeader{
+ background:#fffdf9!important;color:#43392f!important;
+ border-bottom:1px solid #e7dfd3!important;box-shadow:0 4px 16px rgba(98,67,37,.07)!important
+}
+#calculatorHeader .title{color:#43392f!important}
+#calculatorHeader .brand-copy small{color:#71665b!important}
+#calculatorHeader .tabs button{
+ color:#43392f!important;background:#fffefa!important;border:1px solid #e2d6c5!important;
+ box-shadow:0 2px 4px rgba(98,67,37,.07)!important
+}
+#calculatorHeader .tabs button:hover{
+ color:#854119!important;background:#fff1df!important;border-color:#a95a2d!important
+}
+#calculatorHeader .tabs button.active{
+ color:#75421f!important;background:#fce6c9!important;border:1px solid #a95a2d!important;
+ box-shadow:inset 0 0 0 1px #ffffffa0,0 3px 8px rgba(98,67,37,.07)!important
+}
+#calculatorHeader #mobileMenuToggle{
+ background:#fffefa!important;color:#43392f!important;border-color:#e2d6c5!important
+}
+#calculatorHeader .mobile-menu-hint{color:#71665b!important}
+:focus-visible{outline-color:#a95a2d!important}
+
+/* Preserve compact-table accessibility on narrow screens */
+.mastery-table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;margin-top:12px}
+.mastery-table-scroll:focus-visible{outline:3px solid currentColor;outline-offset:2px}
+@media(max-width:640px){.mastery-table-scroll .mastery-cap-list{min-width:375px}}
+
+/* Header typography refinement: slightly larger, same warm-sand theme */
+#calculatorHeader .title{font-size:18px!important}
+#calculatorHeader .brand-copy small{font-size:11.5px!important}
+#calculatorHeader .tabs button{font-size:14px!important;font-weight:800!important}
+#calculatorHeader .mobile-menu-current{font-size:14px!important;font-weight:800!important}
+@media(max-width:1180px){
+ #calculatorHeader .title{font-size:16.5px!important}
+ #calculatorHeader .tabs button{font-size:13.5px!important}
+}
+@media(max-width:640px){
+ #calculatorHeader .title{font-size:16px!important}
+ #calculatorHeader .brand-copy small{font-size:10.5px!important}
+ #calculatorHeader .tabs button{font-size:13px!important}
+ #calculatorHeader .mobile-menu-current{font-size:14px!important}
+}
+
+
+/* Larger single-row navigation on web — 6 tabs, fluid width. Mobile drawer unchanged. */
+@media (min-width:601px){
+  #calculatorHeader{
+    padding:clamp(10px,1vw,18px) clamp(12px,1.6vw,32px)!important;
+  }
+  #calculatorHeader .bar{
+    max-width:none!important;
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:clamp(10px,1.45vw,28px)!important;
+  }
+  #calculatorHeader .title{
+    display:flex!important;
+    flex:0 0 auto;
+    font-size:clamp(17px,1.25vw,24px)!important;
+  }
+  #calculatorHeader .brand-copy small{
+    font-size:clamp(11px,.8vw,14px)!important;
+  }
+  #calculatorHeader .tabs{
+    display:grid!important;
+    grid-template-columns:repeat(8,minmax(0,1fr))!important;
+    gap:clamp(6px,.72vw,14px)!important;
+    flex:1 1 auto;
+    min-width:0;
+  }
+  #calculatorHeader .tabs button{
+    min-width:0;
+    min-height:clamp(56px,4.2vw,76px)!important;
+    padding:10px 6px!important;
+    font-size:clamp(14px,1.05vw,19px)!important;
+    line-height:1.35;
+    white-space:nowrap;
+  }
+  #calculatorHeader .tabs .tab-label,
+  #calculatorHeader .tabs .full{
+    white-space:nowrap!important;
+    overflow-wrap:normal!important;
+    word-break:keep-all!important;
+  }
+}
+@media (min-width:601px) and (max-width:899px){
+  #calculatorHeader .title{display:none!important}
+  #calculatorHeader .tabs button{
+    min-height:54px!important;
+    font-size:clamp(12px,1.65vw,14px)!important;
+  }
+}
+@media (min-width:900px) and (max-width:1199px){
+  #calculatorHeader .title{font-size:17px!important}
+  #calculatorHeader .brand-copy small{font-size:11px!important}
+  #calculatorHeader .tabs button{
+    min-height:56px!important;
+    font-size:clamp(13px,1.4vw,15px)!important;
+  }
+}
+@media (min-width:1200px){
+  #calculatorHeader .title{font-size:clamp(20px,1.25vw,24px)!important}
+  #calculatorHeader .tabs button{
+    min-height:clamp(62px,4.3vw,76px)!important;
+    font-size:clamp(16px,1.05vw,19px)!important;
+    font-weight:850!important;
+  }
+}
+
+/* Weekday dungeon tab: warm sand accent */
+#tabWeekday{--tab:#b77843;--tab2:#d8a56f;--wash:#fff4e8}
+@media (min-width:601px) and (max-width:899px){
+ #calculatorHeader .tabs button{font-size:clamp(10.5px,1.45vw,13px)!important;padding-left:3px!important;padding-right:3px!important}
+}

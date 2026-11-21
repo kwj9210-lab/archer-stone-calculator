@@ -150,6 +150,18 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 @media(max-width:620px){.usage-title{gap:7px}.usage-title .usage-guide > summary{padding:6px 9px}}
 
 </style>
+<script>
+(function(){
+ 'use strict';
+ // Verified by v0.2.6 IL2CPP DungeonMastery.Multiplier() and 6억-100 in-game screen.
+ window.archerMasteryMultiplier=function(level){
+  var n=Number(level);
+  if(!Number.isFinite(n) || n<=0)return 1;
+  n=Math.min(13507,Math.floor(n));
+  return n<=5507?1.25+n/4:1378+(n-5507)/8;
+ };
+})();
+</script><link rel="stylesheet" href="./clarity-ui.css?v=2">
 </head>
 <body><main>
 <section class="page-hero">
@@ -176,7 +188,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,201,140,.13)
 <label>1시간 입장권 획득 수 · 핫타임 적용
 <input id="ticketHourHot" type="text" inputmode="text" placeholder="미적용 입력 시 ×4 자동 계산"></label>
 <label>던전 숙련도 단계
-<input id="mastery" type="text" inputmode="numeric" value="160" placeholder="1~507"></label>
+<input id="mastery" type="text" inputmode="numeric" value="160" placeholder="1~13507"></label>
 </div>
 <div id="mult" class="hint">160단계 · ×41.25</div>
 <div class="hint">핫타임은 4배 기준입니다. 두 입장권 칸 중 하나만 입력하면 다른 칸이 자동 계산됩니다.</div>
@@ -260,6 +272,13 @@ function parseAmount(raw){
   return used&&s===""?total:NaN;
 }
 const fmt=n=>Math.round(n).toLocaleString("ko-KR");
+function fmtSweepRuns(value){
+ var n=Math.max(0,Math.round(Number(value)||0)),parts=[];
+ var units=[{v:1e16,s:'경'},{v:1e12,s:'조'},{v:1e8,s:'억'},{v:1e4,s:'만'}];
+ units.forEach(function(u){if(n>=u.v){var q=Math.floor(n/u.v);parts.push(q.toLocaleString('ko-KR')+u.s);n-=q*u.v;}});
+ if(n||!parts.length)parts.push(n.toLocaleString('ko-KR'));
+ return parts.join(' ')+' 회';
+}
 function duration(hours){
   if(!Number.isFinite(hours))return "입장권 획득량 입력 필요";
   if(hours<=0)return "즉시 제작 가능";
@@ -298,12 +317,12 @@ function calculate(){
   }
   let level=Math.floor(Number(masteryRaw));
   if(!Number.isFinite(level)||level<1){
-    document.getElementById("mult").textContent="1~507단계를 입력해 주세요.";
+    document.getElementById("mult").textContent="1~13507단계를 입력해 주세요.";
     return;
   }
-  if(level>507){level=507;masteryEl.value="507";}
-  const mult=1.25+.25*level;
-  document.getElementById("mult").textContent=level+"단계 · ×"+mult.toFixed(2);
+  if(level>13507){level=13507;masteryEl.value="13507";}
+  const mult=window.archerMasteryMultiplier(level);
+  document.getElementById("mult").textContent=level+"단계 · ×"+mult.toFixed(3).replace(/\.?0+$/,'');
   const ticketHourNormal=parseAmount(document.getElementById("ticketHourNormal").value);
   const ticketHourHot=parseAmount(document.getElementById("ticketHourHot").value);
   const weekday24=(Number.isFinite(ticketHourNormal)?ticketHourNormal:0)*20+(Number.isFinite(ticketHourHot)?ticketHourHot:0)*4;
@@ -344,7 +363,7 @@ function calculate(){
            '<br>보유 불멸 사용 <b>'+info.usedImmortal+'개</b> · 추가 제작 불멸 <b>'+info.needImmortal+'개</b>'
           :'')+
       '</div>'+
-      '<div class="break">'+names.map((n,i)=>n+' 부족 '+fmt(shortage[i])+' · 소탕 약 '+fmt(Math.ceil(runs[i]))+'회').join('<br>')+'</div>'+
+      '<div class="break">'+names.map((n,i)=>n+' 부족 '+fmt(shortage[i])+' · 소탕 약 '+fmtSweepRuns(Math.ceil(runs[i]))).join('<br>')+'</div>'+
     '</div>';
   }
   document.getElementById("results").innerHTML=html;

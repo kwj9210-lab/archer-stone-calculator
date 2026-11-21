@@ -55,6 +55,9 @@ input:disabled{background:#f1f5f2;color:#8a9d91}
 .free{margin-top:12px;padding:11px 12px;background:#f5fbf7;border:1px dashed #bcdcc8;border-radius:12px}
 .free-options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
 .free-options select{font-size:13px}
+.free>.free-slot{margin-top:12px;padding-top:12px;border-top:1px dashed #c4dfce}
+.free-slot-status{margin:6px 0 2px;font-size:12px;font-weight:750;color:#9b6924;line-height:1.45}
+.free-slot-status.active{color:#178254}
 .summary{border-color:#b7dccc;background:linear-gradient(125deg,#f6fff9,#fffdf0)}
 .summary h2{border-left-color:#dfbd5d}
 .total-layout{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr 1fr;gap:10px}
@@ -83,7 +86,140 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 .audit-details .audit-content{border-top:1px solid #dfebdf;padding:12px;font-size:12px;line-height:1.75;color:#59746a}
 .audit-details .audit-content p{margin:0 0 9px}
 .audit-details .audit-content p:last-child{margin-bottom:0}
+
+.glove-pick{display:grid;grid-template-columns:1fr 2fr 1fr;gap:10px;margin:12px 0}
+.glove-pick .field{min-width:0}.glove-pick select{width:100%}
+.glove-add{padding:10px 16px;border:1px solid #a5d1b7;border-radius:9px;background:#e9f8ed;color:#176f51;font:inherit;font-weight:750;cursor:pointer}
+.glove-add:disabled{opacity:.55;cursor:default}
+.glove-stat{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:15px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13px;font-weight:750}
+.glove-stat b{color:var(--strong);font-size:17px}
+.glove-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.glove-row{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid #d6ebde;background:#f8fcf9;border-radius:10px;padding:9px}
+.glove-row span{display:block;font-size:12px;overflow-wrap:anywhere}
+.glove-row small{display:block;font-size:11px;color:#3d8060}
+.glove-row button{padding:6px 9px;background:white;border:1px solid #d0e1d5;border-radius:7px;color:#547265;cursor:pointer}
+.glove-empty{grid-column:1/-1;color:var(--muted);padding:10px 0;font-size:12px}
+@media(max-width:660px){.glove-pick{grid-template-columns:1fr 1fr}.glove-name-field{grid-column:1/-1;grid-row:2}.glove-list{grid-template-columns:1fr}}
+
+/* APK 0.2.0 GloveCodex229Rules: 45 sets, 5 sets per grade, level 0–15 */
+/* Register progress and confirmed rewards are deliberately separate. */
+.codex-groups{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.codex-group{padding:0;overflow:hidden}
+.codex-group>summary{padding:10px 11px;list-style:none;cursor:pointer;font-weight:850;color:#246b50;font-size:12px;background:#f5fbf7}
+.codex-group>summary::-webkit-details-marker{display:none}
+.codex-group>summary:after{content:" ＋";float:right}
+.codex-group[open]>summary:after{content:" －"}
+.codex-sets{display:grid;grid-template-columns:1fr;gap:7px;padding:9px}
+.codex-set-row{border:1px solid #d9e9df;padding:8px;border-radius:9px;background:#fff}
+.codex-set-head{display:flex;gap:7px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.codex-set-head strong{font-size:12px;color:#356e55}
+.codex-registration-check{display:inline-flex!important;align-items:center;gap:4px;font-size:11px!important;color:#24704d!important}
+.codex-registration-check input{width:16px;min-height:16px;height:16px;margin:0;padding:0;accent-color:#299e70}
+.codex-set-controllers{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.codex-set-controllers button{font-size:15px;font-weight:900;min-width:30px;min-height:29px;border:1px solid #cbe4d5;background:#effaf3;color:#267553;border-radius:7px;cursor:pointer}
+.codex-set-controllers button:disabled{opacity:.4;cursor:default}
+.codex-level-view{font-size:11px;font-weight:850;color:#246b50;flex:1;min-width:95px}
+.codex-progress-select{width:auto!important;min-height:29px!important;padding:4px 5px!important;margin:0!important;font-size:11px!important}
+.codex-progress-label{font-size:10px;color:#718476;line-height:1.4}
+.codex-set-row[data-registered="true"]{border-color:#a6d7bb;background:#f7fff9}
+@media(max-width:640px){.codex-groups{grid-template-columns:1fr}}
+
+.glove-codex-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;padding:10px 12px;border:1px solid #cce4d4;border-radius:11px;background:#f4fcf6}
+.glove-codex-line label{margin:0;flex:1;min-width:175px}
+.glove-codex-line b{color:#197951;font-size:16px}
+.glove-codex-detail{margin-top:9px;border:1px solid #dcece3;border-radius:12px;overflow:hidden}
+.glove-codex-detail>summary{padding:11px 13px;cursor:pointer;font-size:12px;font-weight:800;background:#f8fcf9;color:#39785b}
+.codex-groups{padding:10px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.codex-group{border:1px solid #dbeee2;background:white;border-radius:10px;padding:9px;min-width:0}
+.codex-group-title{font-size:12px;font-weight:850;color:#257553;margin-bottom:7px}
+.codex-sets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.codex-sets label{display:block;min-width:0;text-align:center;font-size:10px;color:#698678}
+.codex-sets input{padding:7px 2px;text-align:center;font-size:13px;width:100%;margin-top:4px;border-radius:7px}
+.codex-guide{padding:0 12px 11px;font-size:11px;color:#668576;line-height:1.6}
+.codex-tools{padding:0 12px 10px;display:flex;gap:7px;flex-wrap:wrap}
+.codex-tools button{border:1px solid #b9dec8;border-radius:8px;background:#effbf4;color:#217955;font-weight:750;padding:7px 10px;cursor:pointer}
+@media(max-width:680px){.codex-groups{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.codex-groups{grid-template-columns:1fr}}
+
+/* Codex progress is informative, never a source of piercing. */
+.codex-progress-info{
+ border:1px solid #d3e7da;background:#f7fff9;color:#22694f;
+ border-radius:10px;padding:9px 12px;margin-top:7px;
+ font-size:12px;font-weight:700;line-height:1.55;
+}
+.codex-set-row .codex-progress-label{font-weight:750;line-height:1.65;border-top:1px dashed #d8e8df;margin-top:5px;padding-top:7px;color:#206e51}
+ /* Codex layout override: placed AFTER legacy five-column rules. */
+.glove-codex-line{align-items:center}
+.glove-codex-line .codex-clear-only{
+  flex:none;border:1px solid #b9d8c7;border-radius:9px;background:#fff;
+  padding:8px 10px;color:#24684d;font-size:12px;font-weight:850;cursor:pointer;
+}
+.glove-codex-line .codex-clear-only:focus-visible{outline:2px solid #218c68;outline-offset:2px}
+.glove-codex-detail .codex-groups{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;padding:12px;align-items:start;
+}
+.glove-codex-detail .codex-group{
+  min-width:0;margin:0;padding:0;overflow:hidden;border-radius:11px;
+}
+.glove-codex-detail .codex-sets{
+  display:flex;flex-direction:column;gap:8px;padding:9px;
+  grid-template-columns:none;
+}
+.glove-codex-detail .codex-set-row{
+  display:block;min-width:0;padding:9px;
+}
+.glove-codex-detail .codex-set-head{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;
+}
+.glove-codex-detail .codex-sets label.codex-registration-check{
+  display:inline-flex!important;align-items:center;gap:5px;
+  width:auto;min-width:0;text-align:left;font-size:12px!important;
+  line-height:1.35;white-space:nowrap;word-break:keep-all;
+}
+.glove-codex-detail .codex-sets .codex-registration-check input[type="checkbox"]{
+  width:17px;height:17px;min-width:17px;min-height:17px;
+  margin:0;padding:0;flex:none;
+}
+.glove-codex-detail .codex-sets input[type="hidden"]{display:none}
+.glove-codex-detail .codex-set-controllers{
+  display:flex;align-items:center;flex-wrap:nowrap;gap:7px;
+}
+.glove-codex-detail .codex-set-controllers button{
+  width:32px;height:32px;min-width:32px;min-height:32px;
+  padding:0;text-align:center;flex:none;
+}
+.glove-codex-detail .codex-level-view{
+  flex:1;min-width:0;text-align:center;line-height:1.45;
+  white-space:normal;overflow-wrap:break-word;
+}
+.glove-codex-detail .codex-progress-label{
+  padding:6px 0 4px;line-height:1.5;word-break:keep-all;
+}
+.glove-codex-detail .codex-progress-select{
+  width:100%!important;max-width:100%;min-height:36px!important;
+  text-align:left!important;
+}
+@media(max-width:840px){
+  .glove-codex-detail .codex-groups{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .glove-codex-detail .codex-groups{grid-template-columns:minmax(0,1fr);padding:8px}
+  .glove-codex-line{gap:7px}
+  .glove-codex-line label{min-width:130px}
+  .glove-codex-line b{font-size:13px}
+}
+
+/* 도감 입력은 완성/미완성 두 상태만 사용합니다. */
+.glove-codex-detail .codex-set-row{padding:10px 11px}
+.glove-codex-detail .codex-set-head{margin-bottom:5px}
+.glove-codex-detail .codex-set-status{font-size:12px;font-weight:800;line-height:1.5;color:#78877e;padding-top:4px}
+.glove-codex-detail .codex-set-row[data-registered="true"] .codex-set-status{color:#177c57}
+.glove-codex-detail .codex-sets label.codex-registration-check{cursor:pointer;user-select:none}
+.glove-codex-detail .codex-sets .codex-registration-check input[type="checkbox"]{cursor:pointer}
 </style>
+<link rel="stylesheet" href="./clarity-ui.css?v=2">
 </head>
 <body>
 <main>
@@ -95,18 +231,18 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
     <p><b>① 기본값</b> · 기본 능력치 관통은 직접 입력합니다. 갑파 및 정밀술은 레벨 입력값에서 관통 증가량을 계산한 뒤 합산합니다. 갑파 중간 레벨은 임시 계산입니다.</p>
     <p><b>② 정령·코스튬</b> · 정령 관통과 보유 코스튬 개수, 장착 효과를 입력합니다.</p>
     <p><b>③ 각인석</b> · 마석·경화석·생명석의 등급별 장착 수량을 입력합니다. 각 종류는 기본 최대 11칸입니다.</p>
-    <p><b>④ 오행 개방</b> · 완료 단계의 누적 관통을 합산합니다.</p><p><b>⑤ 결과</b> · 최종 관통과 각 항목의 관통 합계를 확인하고 초월의 탑으로 전달합니다.</p>
-    <p><b>예시</b> · 마석 전설 2개는 52 × 2 = 관통 <b>104</b>를 더합니다.</p>
+    <p><b>④ 장갑</b> · 3~1등급 장갑을 등급과 이름으로 선택합니다.</p><p><b>⑤ 오행 개방</b> · 완료 단계의 누적 관통을 합산합니다.</p><p><b>⑥ 결과</b> · 최종 관통과 각 항목의 관통 합계를 확인하고 초월의 탑으로 전달합니다.</p>
+    <p><b>예시</b> · 마석 전설 2개는 104 × 2 = 관통 <b>208</b>를 더합니다.</p>
    </div>
   </details>
  </div>
- <div class="sub">궁수키우기 RPG · 기본 능력치, 정밀술, 정령, 코스튬, 각인석, 오행 개방 관통 합산</div>
+ <div class="sub">궁수키우기 RPG · 기본 능력치, 정밀술, 정령, 코스튬, 각인석, 장갑, 오행 개방 관통 합산</div>
 </section>
 <div class="section-grid">
 <section class="card">
  <h2>01 · 기본 관통</h2>
  <div class="fields three basic-fields">
-  <div class="field"><label for="statAbility">능력치 강화 · 관통 (1~370)</label><input id="statAbility" type="number" inputmode="numeric" min="1" max="370" step="1" value="" placeholder="예: 370" autocomplete="off"></div>
+  <div class="field"><label for="statAbility">능력치 강화 · 관통 (1~400)</label><input id="statAbility" type="number" inputmode="numeric" min="1" max="400" step="1" value="" placeholder="예: 400" autocomplete="off"></div>
   <div class="field"><label for="statPassive">갑파 레벨 (1~300)</label><input id="statPassive" type="number" min="1" max="300" step="1" value="" autocomplete="off"><div class="readout" id="armorPierce">관통 +0</div></div>
   <div class="field"><label for="precisionLevel">정밀술 레벨 (1~300)</label><input id="precisionLevel" type="number" min="1" max="300" step="1" value="" autocomplete="off"><div class="readout" id="precisionPierceResult">관통 +0</div></div>
  </div>
@@ -115,59 +251,112 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 <section class="card">
  <h2>02 · 정령</h2>
  <div class="fields">
-  <div class="field"><label for="spiritStage">정령 단계 (APK 0~100)</label><input id="spiritStage" type="number" min="0" max="100" step="1" value="" autocomplete="off"></div>
-  <div class="field"><label for="spiritPen">정령 기본 관통 (MAX 1,022)</label><input id="spiritPen" type="number" min="0" max="1022" step="1" value="" autocomplete="off"></div>
+  <div class="field"><label for="spiritStage">정령 단계 (0~150)</label><input id="spiritStage" type="number" min="0" max="150" step="1" value="" autocomplete="off"></div>
+  <div class="field"><label for="spiritPen">정령 기본 관통 (게임값 직접 수정 가능)</label><input id="spiritPen" type="number" min="0" max="20000" step="1" value="" autocomplete="off"></div>
  </div>
- <div class="field" style="margin-top:10px"><label for="spiritMultiplier">정령 관통 적용 배율</label>
-  <select id="spiritMultiplier"><option value="1">기본 ×1</option><option value="5">조건부 ×5 (게임에서 적용 시)</option></select></div>
-  <div id="spiritNote" class="note">APK 0.1.91 정령 Flat 함수: 1~100단계 자동 계산 · 3단계 +22 · 100단계 +1,022. FlatForCombat의 조건부 ×5 효과는 실제 적용될 때만 선택하세요.</div>
+ <div id="spiritNote" class="note">0~100단계는 기존 게임 확인값으로 자동 계산합니다. 101~150단계는 기존 증가식을 연장한 예상값입니다. 실제 게임의 관통이 다르면 위의 관통 입력칸에서 직접 수정하세요.</div>
 </section>
 </div>
 <section class="card">
  <h2>03 · 코스튬 관통</h2>
- <div class="note" style="margin:0 0 10px">보유 개수를 입력하면 관통 증가량만 합산합니다. 캐시 최대 +450, 월드보스 최대 +200, 마일리지 갑주 최대 +630입니다. 관통이 없는 코스튬은 제외했습니다.</div>
+ <div class="note" style="margin:0 0 10px">보유 개수를 입력하면 관통 증가량만 합산합니다. 캐시 최대 +750, 월드보스 관통형 최대 +440, 마일리지 갑주 최대 +630, 할로윈 코스튬 최대 +1,200입니다. 관통이 없는 코스튬은 제외했습니다.</div>
  <div class="costume-grid">
-  <div class="costume"><b>캐시 코스튬 · 개당 관통 +75</b><small>최대 6종 · 보유 효과</small><input id="costumeCash" type="number" min="0" max="6" step="1" value="" autocomplete="off"></div>
-  <div class="costume"><b>월드보스 코스튬 · 관통형 +20</b><small>최대 10종 · 보유 관통</small><input id="costumeWorld" type="number" min="0" max="10" step="1" value="" autocomplete="off"></div>
+  <div class="costume"><b>캐시 코스튬 · 개당 관통 +75</b><small>최대 10종 · 보유 효과</small><input id="costumeCash" type="number" min="0" max="10" step="1" value="" autocomplete="off"></div>
+  <div class="costume"><b>월드보스 코스튬 · 관통형 +20</b><small>전체 24종 중 관통형 최대 22종 · 기존 방어형 2종 제외</small><input id="costumeWorld" type="number" min="0" max="22" step="1" value="" autocomplete="off"></div>
   <div class="costume"><b>마일리지 갑주 · 개당 관통 +35</b><small>최대 18종 · 보유 효과</small><input id="costumeMileage" type="number" min="0" max="18" step="1" value="" autocomplete="off"></div>
-  <div class="costume"><b>다이아 코스튬 · 개당 관통 +3</b><small>최대 3개</small><input id="costumeDiamond" type="number" min="0" max="3" step="1" value="" autocomplete="off"></div>
+  <div class="costume"><b>다이아 코스튬 · 개당 관통 +3</b><small>최대 9개</small><input id="costumeDiamond" type="number" min="0" max="9" step="1" value="" autocomplete="off"></div>
+   <div class="costume"><b>할로윈 코스튬 · 개당 관통 +75</b><small>최대 16종 · 보유 효과</small><input id="costumeHalloween" type="number" min="0" max="16" step="1" value="" autocomplete="off"></div>
  </div>
  <label class="checkrow"><input id="diamondWear" type="checkbox">다이아 코스튬 장착 관통 +5 적용</label>
 </section>
 <section class="card">
  <h2>04 · 각인석 장착 수량</h2>
- <div class="note" style="margin:0 0 12px">마석·경화석·생명석은 각각 최대 11개를 장착할 수 있습니다. 같은 등급 여러 개도 입력할 수 있습니다. 초월·절대·혼돈급 관통은 게임 아이템 설명 스크린샷으로 확인했습니다. 장착 슬롯 11칸은 기존 참고자료 기준입니다.</div>
+ <div class="note" style="margin:0 0 12px">마석·경화석·생명석은 각각 최대 11개를 장착할 수 있습니다. 같은 등급 여러 개도 입력할 수 있습니다. 마석·경화석·생명석의 13개 등급 관통 수치를 최신 게임 스크린샷 기준으로 반영했습니다. 장착 슬롯 11칸은 기존 참고자료 기준입니다.</div>
  <div class="engrave-grid" id="engraveGrid"></div>
  <div class="free">
-  <label class="checkrow" style="margin:0"><input id="extraEnabled" type="checkbox">자유 각인 +1칸 사용</label>
+  <label class="checkrow" style="margin:0"><input id="extraEnabled" type="checkbox">자유 각인 1번 슬롯 사용</label>
   <div class="free-options">
    <div class="field"><label for="extraType">각인석 종류</label><select id="extraType"><option value="0">마석</option><option value="1">경화석</option><option value="2">생명석</option></select></div>
    <div class="field"><label for="extraRank">등급</label><select id="extraRank"></select></div>
   </div>
-  <div class="note">자유 각인 슬롯 1개에 선택한 각인석 1개의 관통을 추가합니다. 초월·절대·혼돈급도 선택 가능합니다.</div>
+  <div class="free-slot"><label class="checkrow" style="margin:0"><input id="extraEnabled2" type="checkbox">자유 각인 2번 슬롯 사용</label><div id="extra2State" class="free-slot-status" aria-live="polite">미적용 · 종류나 등급을 선택하면 자동으로 적용됩니다.</div><div class="free-options"><div class="field"><label for="extraType2">각인석 종류</label><select id="extraType2"><option value="0">마석</option><option value="1">경화석</option><option value="2">생명석</option></select></div><div class="field"><label for="extraRank2">등급</label><select id="extraRank2"></select></div></div></div><div class="note">자유 각인 최대 2칸 · 각 슬롯에서 선택한 각인석 1개씩의 관통을 합산합니다. 초월·절대·혼돈급도 선택할 수 있습니다.</div>
  </div>
 </section>
 
+<section class="card" id="gloveSection">
+<h2>05 · 장갑 관통 (3~1등급)</h2>
+<div class="note">보유 중인 장갑의 등급과 이름을 선택하면 즉시 등록되고 관통 Total에 합산됩니다. 같은 장갑은 한 번만 등록할 수 있으며, 아래 목록에서 삭제할 수 있습니다.</div>
+<div class="glove-pick">
+<div class="field"><label for="gloveGrade">등급 선택</label><select id="gloveGrade"><option value="">등급 선택</option><option value="3">3등급</option><option value="2">2등급</option><option value="1">1등급</option></select></div>
+<div class="field glove-name-field"><label for="gloveName">장갑 이름</label><select id="gloveName"><option value="">등급을 먼저 선택하세요</option></select></div>
+<div class="field"><label>선택한 장갑 관통</label><div class="readout" id="glovePreview">+0</div></div>
+</div>
+<div class="note" id="gloveAutoHelp">장갑 이름 선택 즉시 보유 목록 등록 및 자동 합산 · 별도 추가 버튼 없음</div>
+<div class="glove-stat"><span>보유 장갑 <span id="gloveNum">0</span>종</span><b id="gloveSum">관통 +0</b></div>
+<div id="gloveItems" class="glove-list"></div>
+<div class="glove-codex-line">
+  <label class="checkrow"><input id="gloveCodexEnabled" type="checkbox" autocomplete="off"> 장갑 도감 보너스 적용</label>
+  <b id="gloveCodexPreview">관통 +0 · 도감 완성 0/45세트</b>
+  <button id="codexAllZero" class="codex-clear-only" type="button">도감만 초기화</button>
+</div>
+<div class="codex-progress-info" id="codexProgressInfo" aria-live="polite">미완성 세트는 관통 +0, 완성 세트는 15레벨 최대 관통 보너스를 적용합니다.</div>
+<details class="glove-codex-detail" id="gloveCodexDetail">
+ <summary>도감 완성 현황 · 45세트 (클릭해서 펼치기)</summary>
+ <div id="gloveCodexGroups" class="codex-groups"></div>
+
+ <p class="codex-guide">각 세트의 장갑 5개를 모두 획득해 도감이 완성됐으면 <b>도감 완성</b>을 체크하세요. 완성은 해당 세트의 최대 관통 보너스를 더하고, 미완성은 장갑을 몇 개 보유했든 <b>관통 +0</b>으로 계산합니다. 기존에 15레벨로 저장한 세트는 완성 상태로 유지됩니다.</p>
+</details>
+</section>
+
+<section class="card" id="shoeSection">
+<h2>05-1 · 신발 관통 (1등급 · 장착 효과)</h2>
+<div class="note">신발은 장착 효과입니다. 장갑과 달리 현재 장착 중인 신발 1종의 관통만 합산합니다. 아래 값은 게임 화면에서 확인한 +15 강화 기준입니다.</div>
+<div class="glove-pick">
+<div class="field"><label for="shoeGrade">신발 등급</label><select id="shoeGrade" disabled><option value="1">1등급</option></select></div>
+<div class="field glove-name-field"><label for="shoeName">장착할 신발</label><select id="shoeName"><option value="">미장착 · 관통 +0</option></select></div>
+<div class="field"><label>장착 신발 관통</label><div class="readout" id="shoePreview">관통 +0</div></div>
+</div>
+<div class="glove-stat"><span>현재 장착 <span id="shoeEquippedName">없음</span></span><b id="shoeSum">관통 +0</b></div>
+<div class="note">다른 신발을 선택하면 기존 신발 대신 새 신발 관통만 적용합니다. 해제하려면 미장착을 선택하세요.</div>
+</section>
+<section class="card" id="shoeCodexSection">
+<h2>05-2 · 신발 도감 관통 (9~1등급)</h2>
+<div class="note">등급마다 5세트, 총 45세트입니다. 완성한 세트에만 해당 등급의 관통 보너스를 적용하며, 신발 장착 관통과 별도로 합산합니다.</div>
+<div class="glove-codex-line">
+<label class="checkrow"><input id="shoeCodexEnabled" type="checkbox" autocomplete="off"> 신발 도감 보너스 적용</label>
+<b id="shoeCodexPreview">관통 +0 · 도감 완성 0/45세트</b>
+<button id="shoeCodexAllZero" class="codex-clear-only" type="button">도감만 초기화</button>
+</div>
+<div class="codex-progress-info" id="shoeCodexProgressInfo" aria-live="polite">미완성 세트는 관통 +0입니다. 완료한 세트에만 등급별 관통값을 더합니다.</div>
+<details class="glove-codex-detail" id="shoeCodexDetail">
+<summary>신발 도감 완성 현황 · 45세트 (클릭해서 펼치기)</summary>
+<div id="shoeCodexGroups" class="codex-groups"></div>
+<p class="codex-guide">등급별 5세트 중 완성한 항목만 체크하세요. 체크한 세트 1개당 9등급 +75, 8등급 +105, 7등급 +150, 6등급 +210, 5등급 +300, 4등급 +420, 3등급 +1,200, 2등급 +1,680, 1등급 +2,400 관통을 적용합니다. 전체 45세트 완성 시 +32,700입니다.</p>
+</details>
+</section>
 <section class="card">
-<h2>05 · 오행 개방 누적 관통</h2>
+<h2>06 · 오행 개방 누적 관통</h2>
 <div class="fields">
- <div class="field"><label for="openingCompleted">오행 개방 완료 단계 (0~100)</label><input id="openingCompleted" type="number" min="0" max="100" step="1" value="" autocomplete="off"></div>
+ <div class="field"><label for="openingCompleted">오행 개방 완료 단계 (0~500)</label><input id="openingCompleted" type="number" min="0" max="500" step="1" value="" autocomplete="off"></div>
  <div class="field"><label>완료 단계 누적 관통</label><div class="readout" id="openingGain">+0</div></div>
 </div>
-<div class="note">오행 개방 완료 보상만 합산합니다. 현재 강화 중인 단계가 완료되기 전에는 단계 완료 관통을 더하지 않습니다. 100단계 완료 시 +15,000입니다.</div>
+<div class="note">오행 개방 완료 보상만 합산합니다. 현재 강화 중인 단계가 완료되기 전에는 단계 완료 관통을 더하지 않습니다. 100단계 완료 관통 +15,000은 기존 확인값입니다. 101~500단계 추가 보너스는 확인되지 않아 현재 관통 Total에 임의 추가하지 않습니다.</div>
 </section>
 <section class="card summary" id="summary">
- <h2>06 · 관통 Total 계산 결과</h2>
+ <h2>07 · 관통 Total 계산 결과</h2>
  <div class="total-layout">
   <div class="total-box"><div class="headline">최종 관통</div><strong id="penetrationTotal" aria-live="polite">0</strong><div class="note">유효한 입력값일 때 자동 계산</div></div>
   <div class="mini-box"><span>기본 능력치 (갑파 포함)</span><b id="partBasic">0</b></div>
   <div class="mini-box"><span>정령</span><b id="partSpirit">0</b></div>
   <div class="mini-box"><span>코스튬</span><b id="partCostume">0</b></div>
-  <div class="mini-box"><span>각인석</span><b id="partEngrave">0</b></div>
+  <div class="mini-box"><span>각인석</span><b id="partEngrave">0</b></div><div class="mini-box"><span>장갑 (3~1등급)</span><b id="partGlove">0</b></div>
+<div class="mini-box"><span>신발 (1등급)</span><b id="partShoe">0</b></div>
+<div class="mini-box"><span>장갑 도감</span><b id="partGloveCodex">0</b></div>
+<div class="mini-box"><span>신발 도감</span><b id="partShoeCodex">0</b></div>
 <div class="mini-box"><span>오행 개방</span><b id="partOpening">0</b></div>
  </div>
  <div class="detail-strip">
-  <div>갑파 관통 (레벨 환산)<b id="sumPassive">+0</b></div><div>마석 합계<b id="sumRune0">0</b></div><div>경화석 합계<b id="sumRune1">0</b></div><div>생명석 합계<b id="sumRune2">0</b></div><div>자유 각인<b id="sumExtra">0</b></div><div>코스튬 상세<b id="sumCostume">0</b></div>
+  <div>갑파 관통 (레벨 환산)<b id="sumPassive">+0</b></div><div>마석 합계<b id="sumRune0">0</b></div><div>경화석 합계<b id="sumRune1">0</b></div><div>생명석 합계<b id="sumRune2">0</b></div><div>자유 각인 1번<b id="sumExtra1">0</b></div><div>자유 각인 2번<b id="sumExtra2">0</b></div><div>자유 각인 합계<b id="sumExtra">0</b></div><div>코스튬 상세<b id="sumCostume">0</b></div><div>장갑 합계<b id="sumGlove">+0</b></div><div>장갑 도감 관통<b id="sumGloveCodex">+0</b></div>
  </div>
  <div id="validationError" class="error" role="alert"></div>
  <div class="note" id="saveStatus" role="status">현재 브라우저에 입력값 자동 저장</div>
@@ -176,13 +365,13 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
   <button id="clearFields" class="action secondary" type="button">입력 초기화</button>
  </div>
  <div class="note">갑파·정밀술 강화 레벨은 관통 수치로 환산 후 합산하며 레벨 자체는 더하지 않습니다. 아래 갑파 상세값은 기본 능력치 합계에 포함된 관통을 표시한 것으로 중복 합산하지 않습니다.</div>
- <div class="note">검증 구분: 능력치 강화 관통은 게임 화면에 표시된 수치를 직접 입력합니다. 요청하신 입력 상한 MAX 370을 적용했습니다. 오행 개방은 기존 APK 분석식, 정령·정밀술은 APK 네이티브 코드, 코스튬·기존 각인석은 첨부 참고자료, 절대·혼돈급은 게임 아이템 설명 이미지 기반입니다. 패시브·일부 코스튬·각인석 장착 슬롯 MAX와 추가 효과 조건은 별도 확인이 필요합니다. 입력값은 현재 브라우저에 자동 저장되고 다음 방문 시 복원됩니다. 다른 기기나 브라우저와는 공유되지 않으며, 입력 초기화 시 저장값도 삭제합니다.</div>
+ <div class="note">검증 구분: 능력치 강화 관통은 게임 화면에 표시된 수치를 직접 입력합니다. 요청하신 입력 상한 MAX 400을 적용했습니다. 오행 개방은 기존 APK 분석식, 정령·정밀술은 APK 네이티브 코드, 코스튬·기존 각인석은 첨부 참고자료, 절대·혼돈급은 게임 아이템 설명 이미지 기반입니다. 패시브·일부 코스튬·각인석 장착 슬롯 MAX와 추가 효과 조건은 별도 확인이 필요합니다. 입력값은 현재 브라우저에 자동 저장되고 다음 방문 시 복원됩니다. 다른 기기나 브라우저와는 공유되지 않으며, 입력 초기화 시 저장값도 삭제합니다.</div>
  <details class="audit-details">
  <summary>APK 데이터 검증 범위 / MAX값 확인</summary>
  <div class="audit-content">
-  <p><b>능력치 강화 관통</b> · 게임 ‘능력치 강화 → 관통’에 표시된 값(사진 예시 370)을 직접 입력합니다. 이전의 활 등급별 50~360 상한은 서로 다른 능력치 규칙이므로 여기에 적용하지 않습니다. 이번 계산기 입력 상한은 요청하신 MAX 370입니다.</p><p><b>APK 0.1.91 확인</b> · 정령 0~100단계 기본 관통 최대 +1,022. 전투 조건 플래그 활성 시 정령 관통 ×5.</p>
+  <p><b>능력치 강화 관통</b> · 게임 ‘능력치 강화 → 관통’에 표시된 값을 직접 입력합니다. 이전의 활 등급별 50~360 상한은 서로 다른 능력치 규칙이므로 여기에 적용하지 않습니다. 이번 계산기 입력 상한은 요청하신 MAX 400입니다.</p><p><b>정령 확장</b> · 게임 v0.2.3에서 최대 150단계로 확장. 0~100단계는 게임 확인값(100단계 +5,110), 101~150단계는 기존 증가식 연장 예상값(150단계 +7,685)을 적용합니다. 실제 게임 기본 관통값을 입력하면 그 값을 우선 합산합니다.</p>
   <p><b>APK 0.1.91 확인</b> · 초월 정밀술 0~300레벨, 관통 최대 +3,570. 100레벨에서는 +273. 오행 개방 0~100단계, 완료 보상 누적 관통 최대 +15,000.</p>
-  <p><b>첨부 참고값</b> · 갑파 레벨 입력 상한 300 (Lv.300 관통 +3,570은 게임 화면 확인, 중간 레벨은 정밀술 식 임시 적용), 코스튬 개수 6/12(관통형 10 + 방어형 2)/18/3(캐시 6종, 월드보스 12종 및 마일리지 갑주 18종은 제공 이미지 확인), 기존 각인석 등급 수치 및 11칸+자유 1칸. 초월·절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
+  <p><b>첨부 참고값</b> · 갑파 레벨 입력 상한 300 (Lv.300 관통 +3,570은 게임 화면 확인, 중간 레벨은 정밀술 식 임시 적용), 코스튬 개수 10/24(관통형 22 + 기존 방어형 2)/18/9(캐시 신규 4종, 월드보스 신규 12종 추가 반영; 관통 증가량은 기존과 동일), 기존 각인석 등급 수치 및 11칸+자유 2칸. 초월·절대·혼돈 관통은 사용자 게임 스크린샷을 반영했습니다. 슬롯 MAX와 조건의 APK 전체 대조는 끝나지 않았습니다.</p>
  </div>
 </details>
 </section>
@@ -191,9 +380,10 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 (function(){
  "use strict";
  const ranks=["최하급","하급","일반","상급","최상급","특급","전설","신화","태초","불멸","초월","절대급","혼돈급"];
- // 초월·절대·혼돈 수치는 사용자 제공 게임 아이템 설명 이미지의 관통 값을 적용.
- const stones=[{"name":"마석","values":[4,6,10,15,22,34,52,62,73,85,105,140,185]},{"name":"경화석","values":[12,18,30,45,66,102,156,186,219,255,315,420,555]},{"name":"생명석","values":[8,12,20,30,44,68,104,124,146,170,210,280,370]}];
- function spiritFlat(level){return level===0?0:Math.round(1+299*(level-1)/29);}
+ // 마석/경화석/생명석 13개 등급: 게임 스크린샷의 보유 관통 기준.
+ const stones=[{"name":"마석","values":[8,12,20,30,44,68,104,124,146,170,210,280,370]},{"name":"경화석","values":[24,36,60,90,132,204,312,372,438,510,630,840,1110]},{"name":"생명석","values":[16,24,40,60,88,136,208,248,292,340,420,560,740]}];
+ // 0~100단계는 기존 게임 화면으로 검증한 5배 상향 공식. 101~150단계는 v0.2.3 확대에 맞춘 기존 공식 연장(미검증 예상치).
+ function spiritFlat(level){return level===0?0:Math.round(1+299*(level-1)/29)*5;}
  const spiritKnown={"0":0};
  // APK TranscendenceBalance.GetPrecisionPierceBonus (slot 4, mode 0)
  function precisionPierce(level){
@@ -203,22 +393,248 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    return 273+Math.floor((100+(level-100)*3297)/200);
  }
  const costumes=[
-  {id:"costumeCash",max:6,per:75},
-  {id:"costumeWorld",max:10,per:20},
+  {id:"costumeCash",max:10,per:75},
+  {id:"costumeWorld",max:22,per:20},
   {id:"costumeMileage",max:18,per:35},
-  {id:"costumeDiamond",max:3,per:3}
+  {id:"costumeDiamond",max:9,per:3},
+   {id:"costumeHalloween",max:16,per:75}
  ];
  // APK arrow_stat_caps: grade 0 = 50, grade 31 = 360.
- function openingFlat(s){return 50*s+Math.floor(s*(s-1)*100/99);}
+ function openingFlat(s){s=Math.min(100,s);return 50*s+Math.floor(s*(s-1)*100/99);}
  const $=id=>document.getElementById(id);
  const fmt=n=>n.toLocaleString("ko-KR");
- const inputIds=["statAbility","statPassive","precisionLevel","spiritStage","spiritPen","openingCompleted","spiritMultiplier",
-  "costumeCash","costumeWorld","costumeMileage","costumeDiamond","diamondWear",
-  "extraEnabled","extraType","extraRank"];
- let countInputs=[],lastValidTotal=null;
+ const inputIds=["statAbility","statPassive","precisionLevel","spiritStage","spiritPen","openingCompleted",
+  "costumeCash","costumeWorld","costumeMileage","costumeDiamond","costumeHalloween","diamondWear",
+  "extraEnabled","extraType","extraRank","extraEnabled2","extraType2","extraRank2","gloveGrade","gloveName","gloveCodexEnabled","shoeCodexEnabled"];
+ let countInputs=[],codexInputs=[],codexControls=[],shoeCodexInputs=[],shoeCodexControls=[],lastValidTotal=null;
  const STORAGE_KEY="archer:penetration-total:v3";
  const LEGACY_STORAGE_KEY="archer:penetration-total:v2";
  const grid=$("engraveGrid");
+
+const GLOVE_DATA=[{"id":150,"grade":3,"name":"일식 관측자의 장갑"},{"id":151,"grade":3,"name":"흑양 집행자의 장갑"},{"id":152,"grade":3,"name":"태양심장 장갑"},{"id":153,"grade":3,"name":"불타는 왕관의 장갑"},{"id":154,"grade":3,"name":"영겁의 태양장갑"},{"id":155,"grade":3,"name":"월식 관측자의 장갑"},{"id":156,"grade":3,"name":"은월 집행자의 장갑"},{"id":157,"grade":3,"name":"달의 심장 장갑"},{"id":158,"grade":3,"name":"차가운 왕관의 장갑"},{"id":159,"grade":3,"name":"영겁의 달장갑"},{"id":160,"grade":3,"name":"별무리 관측자의 장갑"},{"id":161,"grade":3,"name":"유성 집행자의 장갑"},{"id":162,"grade":3,"name":"성운심장 장갑"},{"id":163,"grade":3,"name":"성좌 왕관의 장갑"},{"id":164,"grade":3,"name":"영겁의 별장갑"},{"id":165,"grade":3,"name":"천궁 관측자의 장갑"},{"id":166,"grade":3,"name":"천광 집행자의 장갑"},{"id":167,"grade":3,"name":"하늘심장 장갑"},{"id":168,"grade":3,"name":"천계 왕관의 장갑"},{"id":169,"grade":3,"name":"영겁의 천공장갑"},{"id":170,"grade":3,"name":"공허 관측자의 장갑"},{"id":171,"grade":3,"name":"허무 집행자의 장갑"},{"id":172,"grade":3,"name":"암흑심장 장갑"},{"id":173,"grade":3,"name":"공허 왕관의 장갑"},{"id":174,"grade":3,"name":"영겁의 공허장갑"},{"id":175,"grade":2,"name":"심연 파수자의 장갑"},{"id":176,"grade":2,"name":"심해 맹약의 장갑"},{"id":177,"grade":2,"name":"검은성좌 장갑"},{"id":178,"grade":2,"name":"심연군주의 장갑"},{"id":179,"grade":2,"name":"무저갱 왕의 장갑"},{"id":180,"grade":2,"name":"운명 방랑자의 장갑"},{"id":181,"grade":2,"name":"인과 맹약의 장갑"},{"id":182,"grade":2,"name":"금빛실타래 장갑"},{"id":183,"grade":2,"name":"운명군주의 장갑"},{"id":184,"grade":2,"name":"인과율 왕의 장갑"},{"id":185,"grade":2,"name":"영혼 인도자의 장갑"},{"id":186,"grade":2,"name":"망령 맹약의 장갑"},{"id":187,"grade":2,"name":"푸른혼불 장갑"},{"id":188,"grade":2,"name":"영혼군주의 장갑"},{"id":189,"grade":2,"name":"윤회 왕의 장갑"},{"id":190,"grade":2,"name":"폭풍 지배자의 장갑"},{"id":191,"grade":2,"name":"천뢰 맹약의 장갑"},{"id":192,"grade":2,"name":"뇌운심장 장갑"},{"id":193,"grade":2,"name":"폭풍군주의 장갑"},{"id":194,"grade":2,"name":"천둥왕의 장갑"},{"id":195,"grade":2,"name":"시간 감시자의 장갑"},{"id":196,"grade":2,"name":"영겁 맹약의 장갑"},{"id":197,"grade":2,"name":"모래시계 장갑"},{"id":198,"grade":2,"name":"시간군주의 장갑"},{"id":199,"grade":2,"name":"영원의 왕장갑"},{"id":200,"grade":1,"name":"태초의 첫빛 장갑"},{"id":201,"grade":1,"name":"태초의 별불 장갑"},{"id":202,"grade":1,"name":"태초의 생명 장갑"},{"id":203,"grade":1,"name":"태초의 왕관 장갑"},{"id":204,"grade":1,"name":"태초의 창궁 장갑"},{"id":205,"grade":1,"name":"혼돈의 잔향 장갑"},{"id":206,"grade":1,"name":"혼돈의 균열 장갑"},{"id":207,"grade":1,"name":"혼돈의 심장 장갑"},{"id":208,"grade":1,"name":"혼돈의 제왕 장갑"},{"id":209,"grade":1,"name":"혼돈의 원천 장갑"},{"id":210,"grade":1,"name":"창세의 새벽 장갑"},{"id":211,"grade":1,"name":"창세의 천명 장갑"},{"id":212,"grade":1,"name":"창세의 성좌 장갑"},{"id":213,"grade":1,"name":"창세의 권능 장갑"},{"id":214,"grade":1,"name":"창세의 궁신 장갑"},{"id":215,"grade":1,"name":"무한의 경계 장갑"},{"id":216,"grade":1,"name":"무한의 나선 장갑"},{"id":217,"grade":1,"name":"무한의 시간 장갑"},{"id":218,"grade":1,"name":"무한의 왕좌 장갑"},{"id":219,"grade":1,"name":"무한의 지배 장갑"},{"id":220,"grade":1,"name":"종언의 전조 장갑"},{"id":221,"grade":1,"name":"종언의 흑성 장갑"},{"id":222,"grade":1,"name":"종언의 심판 장갑"},{"id":223,"grade":1,"name":"종언의 절대 장갑"},{"id":224,"grade":1,"name":"종언을 꿰는 장갑"}];
+const gloveMap=new Map(GLOVE_DATA.map(g=>[g.id,g]));
+const SHOE_DATA=[{"name":"창세의 권능 전투화","pierce":7846},{"name":"창세의 궁신 전투화","pierce":7957},{"name":"무한의 경계 전투화","pierce":8069},{"name":"무한의 나선 전투화","pierce":8182},{"name":"무한의 시간 전투화","pierce":8296},{"name":"무한의 왕좌 전투화","pierce":8411},{"name":"무한의 지배 전투화","pierce":8528},{"name":"종언의 전조 전투화","pierce":8645},{"name":"종언의 흑성 전투화","pierce":8764},{"name":"종언의 심판 전투화","pierce":8883},{"name":"종언의 절대 전투화","pierce":9004},{"name":"종언을 딛는 전투화","pierce":9125}];
+const shoeMap=new Map(SHOE_DATA.map(s=>[s.name,s.pierce]));
+if(shoeMap.size!==SHOE_DATA.length||SHOE_DATA.some(s=>!Number.isSafeInteger(s.pierce)||s.pierce<0))throw Error("Invalid shoe data");
+let equippedShoe="";
+function shoeTotal(){return shoeMap.get(equippedShoe)??0;}
+function shoeRender(){
+ const selected=shoeMap.has(equippedShoe)?equippedShoe:"";
+ $("shoeName").value=selected;
+ $("shoePreview").textContent="관통 +"+fmt(shoeTotal());
+ $("shoeSum").textContent="관통 +"+fmt(shoeTotal());
+ $("shoeEquippedName").textContent=selected||"없음";
+}
+for(const shoe of SHOE_DATA){
+ const option=document.createElement("option");
+ option.value=shoe.name;
+ option.textContent=shoe.name+" (+"+fmt(shoe.pierce)+")";
+ $("shoeName").appendChild(option);
+}
+$("shoeName").addEventListener("change",()=>{
+ equippedShoe=shoeMap.has($("shoeName").value)?$("shoeName").value:"";
+ shoeRender();update();saveInputs();
+});
+shoeRender();
+
+let gloveIds=[];
+function glovePierce(id){return 1+Math.floor((id*id*id*18249+5619712)/11239424);}
+function glovePreview(){
+ const g=gloveMap.get(Number($("gloveName").value));
+ $("glovePreview").textContent=g?"관통 +"+fmt(glovePierce(g.id)):"+0";
+
+}
+function gloveChoices(){
+ const grade=Number($("gloveGrade").value),sel=$("gloveName");
+ sel.replaceChildren();
+ const opt=document.createElement("option");opt.value="";opt.textContent="장갑 선택";sel.appendChild(opt);
+ if([1,2,3].includes(grade)){
+   GLOVE_DATA.filter(g=>g.grade===grade).forEach(g=>{
+     const option=document.createElement("option");option.value=String(g.id);
+     option.textContent=g.name+" (+"+fmt(glovePierce(g.id))+")";sel.appendChild(option);
+   });
+   sel.disabled=false;
+ }else{opt.textContent="등급을 먼저 선택하세요";sel.disabled=true;}
+ glovePreview();
+}
+function gloveRender(){
+ const host=$("gloveItems");host.replaceChildren();
+ for(const id of [...gloveIds].sort((a,b)=>a-b)){
+   const g=gloveMap.get(id);if(!g)continue;
+   const row=document.createElement("div");row.className="glove-row";
+   const info=document.createElement("div");
+   const title=document.createElement("span");title.textContent=g.name;
+   const detail=document.createElement("small");detail.textContent=g.grade+"등급 · 관통 +"+fmt(glovePierce(id));
+   const remove=document.createElement("button");remove.type="button";remove.textContent="삭제";
+   remove.dataset.gloveId=String(id);remove.setAttribute("aria-label",g.name+" 삭제");
+   info.append(title,detail);row.append(info,remove);host.appendChild(row);
+ }
+ if(!gloveIds.length){const empty=document.createElement("div");empty.className="glove-empty";empty.textContent="추가한 장갑이 없습니다.";host.appendChild(empty);}
+ $("gloveNum").textContent=String(gloveIds.length);
+ $("gloveSum").textContent="관통 +"+fmt(gloveIds.reduce((s,id)=>s+glovePierce(id),0));
+ glovePreview();
+}
+$("gloveGrade").addEventListener("change",gloveChoices);
+$("gloveName").addEventListener("change",()=>{
+ const id=Number($("gloveName").value);
+ if(!gloveMap.has(id)){glovePreview();return;}
+ if(!gloveIds.includes(id)){
+   gloveIds.push(id);
+   gloveRender();
+   update();
+   saveInputs();
+ }else glovePreview();
+});
+$("gloveItems").addEventListener("click",e=>{
+ const target=e.target.closest("button[data-glove-id]");if(!target)return;
+ const removedId=Number(target.dataset.gloveId);
+ gloveIds=gloveIds.filter(id=>id!==removedId);
+ if(Number($("gloveName").value)===removedId)$("gloveName").value="";
+ gloveRender();update();saveInputs();
+});
+gloveChoices();gloveRender();
+
+ // Native APK 0.2.0: GloveCodex229Rules.GradePierce[9] / Weight(eligibleLevel).
+ // Grade 9 -> Grade 1; each grade has 5 sets. Native Weight(lv)=clamp(lv,0,15)*(clamp+1)/2.
+ // Native Pierce(set,level)=floor(GradePierce[floor(set/5)]*Weight(level)/600).
+ const CODEX_GRADE_PIERCE=[750,1050,1500,2100,3000,4200,12000,16800,24000];
+ function codexPierceAt(set,lv){
+   const level=Math.max(0,Math.min(15,Math.floor(lv)));
+   return Math.floor(CODEX_GRADE_PIERCE[Math.floor(set/5)]*level*(level+1)/1200);
+ }
+
+
+ function buildCodexSets(){
+   const host=$("gloveCodexGroups");
+   for(let grade=0;grade<9;grade++){
+     const group=document.createElement("details");group.className="codex-group";
+     const heading=document.createElement("summary");
+     heading.textContent=(9-grade)+"등급 · 0/5세트 완성";
+     group.appendChild(heading);
+     const grid=document.createElement("div");grid.className="codex-sets";
+     for(let member=0;member<5;member++){
+       const idx=grade*5+member;
+       const row=document.createElement("div");row.className="codex-set-row";
+       const head=document.createElement("div");head.className="codex-set-head";
+       const name=document.createElement("strong");name.textContent=(member+1)+"세트";
+       const label=document.createElement("label");label.className="codex-registration-check";
+       const registered=document.createElement("input");registered.type="checkbox";
+       registered.setAttribute("aria-label",(9-grade)+"등급 "+(member+1)+"세트 도감 완성");
+       label.appendChild(registered);
+       label.appendChild(document.createTextNode("도감 완성"));
+       head.append(name,label);
+       const status=document.createElement("div");status.className="codex-set-status";
+       status.textContent="미완성 · 관통 +0";
+       const hidden=document.createElement("input");hidden.type="hidden";
+       hidden.id="codexSet"+idx;hidden.value="0";codexInputs.push(hidden);
+       row.append(head,status,hidden);grid.appendChild(row);
+       codexControls.push({row,registered,hidden,status,heading});
+       registered.addEventListener("input",()=>{
+         hidden.value=registered.checked?"15":"0";
+         update();saveInputs();
+       });
+     }
+     group.appendChild(grid);host.appendChild(group);
+   }
+ }
+ function syncCodexUI(){
+   const completeByGrade=Array(9).fill(0);
+   for(let i=0;i<codexControls.length;i++){
+     const c=codexControls[i],complete=c.hidden.value==="15";
+     c.registered.checked=complete;
+     c.row.dataset.registered=String(complete);
+     c.status.textContent=complete
+       ?"완성 · 관통 +"+fmt(codexPierceAt(i,15))
+       :"미완성 · 관통 +0";
+     if(complete)completeByGrade[Math.floor(i/5)]++;
+   }
+   for(let grade=0;grade<9;grade++){
+     const c=codexControls[grade*5];
+     c.heading.textContent=(9-grade)+"등급 · "+completeByGrade[grade]+"/5세트 완성";
+   }
+ }
+ function calcCodexPierce(errors,enabled){
+   syncCodexUI();
+   let fullBonus=0,completed=0;
+   for(let i=0;i<codexInputs.length;i++){
+     if(codexInputs[i].value==="15"){completed++;fullBonus+=codexPierceAt(i,15);}
+   }
+   $("codexProgressInfo").textContent="도감 완성 "+completed+"/45세트 · 미완성 "+(45-completed)+"세트 · 미완성 세트 관통 +0"
+     +(enabled?"":" · 장갑 도감 보너스 적용이 꺼져 있습니다.");
+   $("gloveCodexPreview").textContent=enabled
+     ?"관통 +"+fmt(fullBonus)+" · 도감 완성 "+completed+"/45세트"
+     :"도감 완성 "+completed+"/45세트 · 보너스 미적용";
+   return enabled?fullBonus:0;
+ }
+
+// 신발 도감: 사용자 확인 보너스, 9~1등급 각 5세트(총 45세트).
+const SHOE_CODEX_GRADE_PIERCE=[75,105,150,210,300,420,1200,1680,2400];
+function buildShoeCodex(){
+ const host=$("shoeCodexGroups");
+ for(let grade=0;grade<9;grade++){
+  const group=document.createElement("details");group.className="codex-group";
+  const heading=document.createElement("summary");
+  group.appendChild(heading);
+  const grid=document.createElement("div");grid.className="codex-sets";
+  for(let member=0;member<5;member++){
+   const idx=grade*5+member;
+   const row=document.createElement("div");row.className="codex-set-row";
+   const head=document.createElement("div");head.className="codex-set-head";
+   const name=document.createElement("strong");name.textContent=(member+1)+"세트";
+   const label=document.createElement("label");label.className="codex-registration-check";
+   const checked=document.createElement("input");checked.type="checkbox";
+   checked.setAttribute("aria-label",(9-grade)+"등급 "+(member+1)+"세트 신발 도감 완성");
+   label.append(checked,document.createTextNode("도감 완성"));
+   head.append(name,label);
+   const status=document.createElement("div");status.className="codex-set-status";
+   const hidden=document.createElement("input");hidden.type="hidden";
+   hidden.id="shoeCodexSet"+idx;hidden.value="0";shoeCodexInputs.push(hidden);
+   row.append(head,status,hidden);grid.appendChild(row);
+   shoeCodexControls.push({row,checked,hidden,status,heading});
+   checked.addEventListener("input",()=>{
+    hidden.value=checked.checked?"1":"0";
+    update();saveInputs();
+   });
+  }
+  group.appendChild(grid);host.appendChild(group);
+ }
+}
+function calcShoeCodexPierce(){
+ let total=0,completed=0;
+ const byGrade=Array(9).fill(0);
+ for(let idx=0;idx<shoeCodexInputs.length;idx++){
+  const item=shoeCodexControls[idx];
+  const complete=item.hidden.value==="1";
+  item.checked.checked=complete;
+  item.row.dataset.registered=String(complete);
+  const grade=Math.floor(idx/5);
+  const pierce=complete?SHOE_CODEX_GRADE_PIERCE[grade]:0;
+  item.status.textContent=complete?"완성 · 관통 +"+fmt(pierce):"미완성 · 관통 +0";
+  if(complete){completed++;byGrade[grade]++;total+=pierce;}
+ }
+ for(let grade=0;grade<9;grade++){
+  shoeCodexControls[grade*5].heading.textContent=(9-grade)+"등급 · "+byGrade[grade]+"/5세트 완성";
+ }
+ const enabled=$("shoeCodexEnabled").checked;
+ $("shoeCodexPreview").textContent=enabled
+  ?"관통 +"+fmt(total)+" · 도감 완성 "+completed+"/45세트"
+  :"도감 완성 "+completed+"/45세트 · 보너스 미적용";
+ $("shoeCodexProgressInfo").textContent="도감 완성 "+completed+"/45세트 · 미완성 "+(45-completed)+"세트"
+   +(enabled?"":" · 신발 도감 보너스 적용이 꺼져 있습니다.");
+ return enabled?total:0;
+}
+buildShoeCodex();
+$("shoeCodexAllZero").addEventListener("click",()=>{
+ shoeCodexInputs.forEach(e=>e.value="0");
+ update();saveInputs();
+});
+
+ buildCodexSets();
+ $("codexAllZero").addEventListener("click",()=>{
+   codexInputs.forEach(e=>e.value="0");
+   update();saveInputs();
+ });
+ 
  stones.forEach((stone,t)=>{
    const card=document.createElement("div");
    card.className="engrave-card";
@@ -239,6 +655,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
  stones[0].values.forEach((_,g)=>{
    const option=document.createElement("option");option.value=String(g);
    option.textContent=ranks[g];$("extraRank").appendChild(option);
+   const option2=option.cloneNode(true);$("extraRank2").appendChild(option2);
  });
  function parseIntField(id,max,errors){
    const el=$(id);const raw=String(el.value).trim();
@@ -258,19 +675,28 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    if(!good)errors.push((el.labels?.[0]?.textContent||id)+"은(는) 1~"+fmt(max)+" 사이 정수를 입력하세요.");
    return good?n:0;
  }
- function allIds(){return inputIds.concat(countInputs.map(e=>e.id));}
+ function allIds(){return inputIds.concat(countInputs.map(e=>e.id),codexInputs.map(e=>e.id),shoeCodexInputs.map(e=>e.id));}
  function spiritStageChange(){
    const raw=String($("spiritStage").value).trim(),n=Number(raw);
-   if(/^\d+$/.test(raw)&&Number.isInteger(n)&&n>=0&&n<=100){
+   if(/^\d+$/.test(raw)&&Number.isInteger(n)&&n>=0&&n<=150){
      $("spiritPen").value=String(spiritFlat(n));
    }else $("spiritPen").value="";
    update();
  }
  function updateSpiritHelp(stage,invalid){
    const help=$("spiritNote");
-   if(invalid){help.textContent="정령 단계는 APK의 0~100 범위로 입력하세요.";return;}
-   help.textContent="APK 단계별 기본 관통: "+stage+"단계 +"+fmt(spiritFlat(stage))+
-     " · 기본 ×1 / 게임에서 조건부 강화 효과 적용 시 ×5 선택 · 직접 입력도 가능합니다.";
+   if(invalid){help.textContent="정령 단계는 0~150 사이 정수로 입력하세요.";return;}
+   const estimated=spiritFlat(stage);
+   const entered=Number($("spiritPen").value);
+   const hasOverride=String($("spiritPen").value).trim()!==""&&Number.isSafeInteger(entered)&&entered!==estimated;
+   if(stage>100){
+     help.textContent="정령 "+stage+"단계 기존식 연장 예상 관통 +"+fmt(estimated)
+       +" (101~150단계 실제 보너스 미검증) · 게임 표시 관통값을 직접 입력해 수정할 수 있습니다."
+       +(hasOverride?" 현재 입력 관통 +"+fmt(entered)+" 적용.":"");
+   }else{
+     help.textContent="정령 "+stage+"단계 기존 확인 관통 +"+fmt(estimated)
+       +(hasOverride?" · 게임 표시값 +"+fmt(entered)+" 직접 적용.":" · 기본값 자동 적용.");
+   }
  }
  function update(){
    const errors=[];
@@ -280,11 +706,9 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    const precision=precisionPierce(precisionLevel);
    $("armorPierce").textContent="관통 +"+fmt(passive)+(armorLevel>0&&armorLevel<300?" (임시 계산)":"");
    $("precisionPierceResult").textContent="관통 +"+fmt(precision);
-   const base=parsePositiveField("statAbility",370,errors)+passive+precision;
-   const stage=parseIntField("spiritStage",100,errors);
-   const spiritMultiplier=Number($("spiritMultiplier").value);
-   if(spiritMultiplier!==1&&spiritMultiplier!==5)errors.push("정령 적용 배율을 확인하세요.");
-   const spirit=parseIntField("spiritPen",1022,errors)*spiritMultiplier;
+   const base=parsePositiveField("statAbility",400,errors)+passive+precision;
+   const stage=parseIntField("spiritStage",150,errors);
+   const spirit=parseIntField("spiritPen",20000,errors);
    const costume=costumes.reduce((acc,row)=>acc+parseIntField(row.id,row.max,errors)*row.per,0)+($("diamondWear").checked?5:0);
    const runeSums=[],countTotals=[];
    stones.forEach((stone,t)=>{
@@ -303,20 +727,38 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    });
    const extraType=parseIntField("extraType",2,errors);
    const extraRank=parseIntField("extraRank",ranks.length-1,errors);
-   const extra=$("extraEnabled").checked?stones[extraType].values[extraRank]:0;
+   const extra1=$("extraEnabled").checked?stones[extraType].values[extraRank]:0;
+   const extraType2=parseIntField("extraType2",2,errors);
+   const extraRank2=parseIntField("extraRank2",ranks.length-1,errors);
+   const extra2=$("extraEnabled2").checked?stones[extraType2].values[extraRank2]:0;
+   $("extra2State").textContent=$("extraEnabled2").checked
+     ?"적용 중 · "+stones[extraType2].name+" "+ranks[extraRank2]+" · 관통 +"+fmt(extra2)
+     :"미적용 · 종류나 등급을 선택하면 자동으로 적용됩니다.";
+   $("extra2State").classList.toggle("active",$("extraEnabled2").checked);
+   const extra=extra1+extra2;
    if($("diamondWear").checked&&Number($("costumeDiamond").value)===0){
      errors.push("다이아 코스튬 장착 효과를 적용하려면 다이아 코스튬 보유량이 1개 이상이어야 합니다.");
    }
    updateSpiritHelp(stage,$("spiritStage").getAttribute("aria-invalid")==="true");
    const engraving=runeSums.reduce((a,b)=>a+b,0)+extra;
-   const completed=parseIntField("openingCompleted",100,errors);
+   const completed=parseIntField("openingCompleted",500,errors);
    const opening=openingFlat(completed);
    $("openingGain").textContent="+"+fmt(opening)+" 관통 · +"+fmt(opening)+" 명중";
-   const total=base+spirit+costume+engraving+opening;
+   const gloveTotal=gloveIds.reduce((s,id)=>s+glovePierce(id),0);
+   const codexTotal=calcCodexPierce(errors,$("gloveCodexEnabled").checked);
+   const shoePierceTotal=shoeTotal();
+   const shoeCodexTotal=calcShoeCodexPierce();
+   const total=base+spirit+costume+engraving+opening+gloveTotal+codexTotal+shoePierceTotal+shoeCodexTotal;
    $("partBasic").textContent=fmt(base);$("sumPassive").textContent="+"+fmt(passive);$("partSpirit").textContent=fmt(spirit);
    $("partCostume").textContent=fmt(costume);$("partEngrave").textContent=fmt(engraving);
+   $("partShoe").textContent=fmt(shoePierceTotal);
+   $("partShoeCodex").textContent=fmt(shoeCodexTotal);
+   $("partGlove").textContent=fmt(gloveTotal);$("sumGlove").textContent="+"+fmt(gloveTotal);
+   $("partGloveCodex").textContent=fmt(codexTotal);$("sumGloveCodex").textContent="+"+fmt(codexTotal);
    $("partOpening").textContent=fmt(opening);
    runeSums.forEach((v,i)=>$("sumRune"+i).textContent="+"+fmt(v));
+   $("sumExtra1").textContent="+"+fmt(extra1);
+   $("sumExtra2").textContent="+"+fmt(extra2);
    $("sumExtra").textContent="+"+fmt(extra);
    $("sumCostume").textContent="+"+fmt(costume);
    const good=errors.length===0;
@@ -334,6 +776,10 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
      if(!field)continue;
      snapshot[id]=field.type==="checkbox"?field.checked:field.value;
    }
+   snapshot.gloveIds=gloveIds.slice();
+   snapshot.shoeEquippedName=equippedShoe;
+   snapshot.spiritCalcVersion=3;
+   snapshot.codexFormat="complete-v1";
    try{
      localStorage.setItem(STORAGE_KEY,JSON.stringify(snapshot));
      $("saveStatus").textContent="현재 브라우저에 자동 저장됨";
@@ -365,6 +811,22 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
        migrated.extraRank=String(rank+1);
      saved=migrated;
    }
+   // 이전에 저장한 기본 관통값을 새 기준으로 한 번만 변환합니다.
+   if(saved.spiritCalcVersion!==3){
+     const oldSpirit=Number(saved.spiritPen);
+     if(typeof saved.spiritPen==="string"&&saved.spiritPen.trim()!==""&&Number.isInteger(oldSpirit)&&oldSpirit>=0&&oldSpirit<=1022)
+       saved.spiritPen=String(oldSpirit*5);
+     saved.spiritCalcVersion=3;
+     delete saved.spiritMultiplier;
+     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(saved))}catch(_){}
+   }
+   if(saved.codexFormat!=="complete-v1"){
+     for(let i=0;i<45;i++)saved["codexSet"+i]=String(Number(saved["codexSet"+i])===15?15:0);
+     for(const key of Object.keys(saved))if(/^codexProgress\d+$/.test(key))delete saved[key];
+     saved.codexFormat="complete-v1";
+     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(saved))}catch(_){}
+   }
+   if(["1","2","3"].includes(saved.gloveGrade)){$("gloveGrade").value=saved.gloveGrade;gloveChoices();}
    for(const id of allIds()){
      if(!Object.prototype.hasOwnProperty.call(saved,id))continue;
      const field=$(id);
@@ -378,6 +840,13 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
        }else field.value=value;
      }
    }
+   if(Array.isArray(saved.gloveIds))gloveIds=[...new Set(saved.gloveIds.filter(id=>Number.isInteger(id)&&gloveMap.has(id)))];
+   equippedShoe=typeof saved.shoeEquippedName==="string"&&shoeMap.has(saved.shoeEquippedName)?saved.shoeEquippedName:"";
+   shoeRender();
+   // Prior version required a separate Add click. Preserve the name the user chose even if not yet added.
+   const selectedGlove=Number($("gloveName").value);
+   if(gloveMap.has(selectedGlove)&&!gloveIds.includes(selectedGlove))gloveIds.push(selectedGlove);
+   gloveRender();
    if(legacy){
      // Only remove legacy data after the migrated copy is successfully written.
      try{
@@ -394,7 +863,12 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
      else if(el.tagName==="SELECT")el.selectedIndex=0;
      else el.value="";
    }
-   $("extraType").value="0";$("extraRank").value="0";$("spiritMultiplier").value="1";
+   $("extraType").value="0";$("extraRank").value="0";
+   $("extraType2").value="0";$("extraRank2").value="0";
+   codexInputs.forEach(e=>e.value="0");
+   shoeCodexInputs.forEach(e=>e.value="0");
+   gloveIds=[];gloveChoices();gloveRender();
+   equippedShoe="";shoeRender();
    try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LEGACY_STORAGE_KEY);}catch(_){}
    update();
    $("saveStatus").textContent="입력값과 브라우저 저장값을 초기화했습니다.";
@@ -414,10 +888,18 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
    if(el.id==="spiritStage")el.addEventListener("input",spiritStageChange);
    else el.addEventListener("input",update);
    el.addEventListener("input",saveInputs);
+   if(el.id==="gloveName")el.addEventListener("input",glovePreview);
    if(el.id==="spiritStage")el.addEventListener("change",spiritStageChange);
    else el.addEventListener("change",update);
    el.addEventListener("change",saveInputs);
  });
+ // 2번 슬롯은 종류/등급을 고르는 즉시 사용 체크를 자동으로 켭니다.
+ function activateExtra2(){
+   $("extraEnabled2").checked=true;
+   update();saveInputs();
+ }
+ $("extraType2").addEventListener("change",activateExtra2);
+ $("extraRank2").addEventListener("change",activateExtra2);
  $("clearFields").addEventListener("click",clear);
  $("sendTower").addEventListener("click",sendTower);
  update();

@@ -1,0 +1,93 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>각인석 재활용 시뮬레이터</title><style>*{box-sizing:border-box}body{margin:0;background:#f4fff8;color:#29463b;font:14px system-ui,'Malgun Gothic',sans-serif}.wrap{max-width:1150px;margin:auto;padding:18px}.card{background:white;border:1px solid #cfe9d9;border-radius:15px;padding:16px;margin:12px 0}h1{color:#22694f;font-size:24px}h2{font-size:17px;margin:0 0 12px}h3{font-size:15px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px}label{display:block;font-size:12px;color:#61776d;font-weight:700}input,select{width:100%;padding:9px;border:1px solid #cde7d7;border-radius:8px;margin-top:4px;font:inherit;background:#fbfffc}input{min-width:0}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}button{background:#2fae93;color:white;border:0;border-radius:9px;padding:10px 13px;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:12px}td,th{border-bottom:1px solid #e1eee6;padding:7px;text-align:right}td:first-child,th:first-child{text-align:left}.scroll{overflow:auto}.muted{color:#6c8177;font-size:12px;line-height:1.6}.warn{color:#b46a1d}.metric{font-size:20px;font-weight:800;color:#218b6a}.pill{padding:7px 11px;background:#e8f8ee;border-radius:8px}details{margin-top:12px}summary{cursor:pointer;font-weight:700}@media(max-width:600px){.wrap{padding:9px}.card{padding:11px}h1{font-size:20px}}</style><script>
+(function(){
+ 'use strict';
+ // Verified by v0.2.6 IL2CPP DungeonMastery.Multiplier() and 6억-100 in-game screen.
+ window.archerMasteryMultiplier=function(level){
+  var n=Number(level);
+  if(!Number.isFinite(n) || n<=0)return 1;
+  n=Math.min(13507,Math.floor(n));
+  return n<=5507?1.25+n/4:1378+(n-5507)/8;
+ };
+})();
+</script><link rel="stylesheet" href="./clarity-ui.css?v=2">
+</head><body><main class="wrap"><section class="page-hero"><h1>각인석 재활용 시뮬레이터</h1><p class="hero-sub muted">마석 등반 후 분해 → 경화석·생명석 제작 → 남은 재료로 마석 재제작. 제작식과 숙련도 기준은 기존 각인석 계산기를 사용합니다.</p></section>
+<section class="card"><h2>1. 보유 각인석과 분해 계획</h2><p class="muted">각 종류·등급별 보유량과 분해할 수량을 입력하세요. 분해하지 않는 각인석은 제작 재료로 사용할 수 있습니다.</p><div id="inventory"></div></section>
+<section class="card"><h2>2. 분해 반환 재료 (100%)</h2><p class="muted">분해하면 해당 등급 제작에 소모된 재료가 100% 반환됩니다. 하위 등급 각인석을 새로 제작하는 데 들어간 재료까지 누적 계산합니다.</p></section>
+<section class="card"><h2>3. 현재 보유 재료와 제작 목표</h2><div id="materials" class="grid"></div><h3>목표 제작 수량</h3><div id="targets" class="grid"></div><p class="muted">제작 순서: 경화석 → 생명석 → 마석. 같은 재료를 중복 사용하지 않습니다.</p></section>
+<section class="card"><h2>4. 숙련도 및 입장권</h2><div class="grid"><label>던전 숙련도 (1~13507 · 0.2.6 최대 ×2378)<input id="mastery" type="number" min="1" max="13507" value="13507"></label><label>던전 티켓 보유<input id="dticket" type="number" min="0" value="0"></label><label>사냥터 티켓 보유<input id="hticket" type="number" min="0" value="0"></label><label>티켓 1장 가격(다이아)<input id="price" type="number" min="0" value="20"></label></div></section>
+<section class="card"><h2>5. 제작 및 소탕 결과</h2><div id="results"></div></section></main><script>var G=['최하급','하급','일반','상급','최상급','특급','전설','신화','태초','불멸','초월','절대','혼돈급'];
+var configs={
+maseok:{
+name:'마석',child:[0,3,3,3,3,5,4,4,4,4,4,4,4],
+resources:[
+{name:'비명초',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000,25000000,100000000,600000000,3000000000],base:1526775},
+{name:'활력수',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000,25000000,100000000,600000000,3000000000],base:2508670},
+{name:'복원석',direct:[500,2000,3000,5000,10000,60000,150000,400000,1000000,25000000,100000000,600000000,3000000000],base:4587000},
+{name:'금행석',direct:[0,0,0,0,0,0,0,0,0,0,0,0,50000000]},
+{name:'목행석',direct:[0,0,0,0,0,0,0,0,0,0,0,0,50000000]},
+{name:'수행석',direct:[0,0,0,0,0,0,0,0,0,0,0,0,50000000]},
+{name:'화행석',direct:[0,0,0,0,0,0,0,0,0,0,0,0,50000000]},
+{name:'토행석',direct:[0,0,0,0,0,0,0,0,0,0,0,0,50000000]}
+],
+coverage:'혼돈급 마석은 절대 마석 4개 + 비명초·활력수·복원석 각 30억 + 금행석·목행석·수행석·화행석·토행석 각 5,000만이 필요합니다. 오행석은 오행의 성역에서 얻는 재화로 수량만 계산하며 소탕 계산은 하지 않습니다.'
+},
+hard:{
+name:'경화석',child:[0,3,3,3,3,5,5,4,4,4,4,4,4],
+resources:[
+{name:'곰뼈',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000,75000000000,375000000000,2000000000000,10000000000000],base:1999900000,fixed:true},
+{name:'곰가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000,75000000000,375000000000,2000000000000,10000000000000],base:1999900000,fixed:true},
+{name:'늑대가죽',direct:[3000,5000,10000,60000,400000,50000000,500000000,5000000000,15000000000,75000000000,375000000000,2000000000000,10000000000000],base:1999900000,fixed:true},
+{name:'복원석',direct:[1000,3000,4000,5000,10000,100000,500000,1500000,5000000,25000000,100000000,600000000,3000000000],base:4587000}
+],
+coverage:'혼돈급 경화석까지 반영했습니다. 혼돈급은 절대 경화석 4개 + 곰뼈·곰가죽·늑대가죽 각 10조 + 복원석 30억이 필요합니다.'
+},
+life:{
+name:'생명석',child:[0,3,3,3,3,5,5,4,4,4,4,4,4],
+resources:[
+{name:'곰심장',direct:[500,3000,8000,50000,500000,50000000,500000000,5000000000,15000000000,75000000000,375000000000,2000000000000,10000000000000],base:1999900000,fixed:true},
+{name:'활력수',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000,25000000,100000000,600000000,3000000000],base:2508670},
+{name:'복원석',direct:[1000,2000,3000,5000,10000,100000,500000,1500000,5000000,25000000,100000000,600000000,3000000000],base:4587000}
+],
+coverage:'혼돈급 생명석까지 반영했습니다. 혼돈급은 절대 생명석 4개 + 곰심장 10조 + 활력수 30억 + 복원석 30억이 필요합니다.'
+}
+};
+
+const kinds=['maseok','hard','life'], names={maseok:'마석',hard:'경화석',life:'생명석'};
+const materials=[...new Set(kinds.flatMap(k=>configs[k].resources.map(r=>r.name)))];
+const byId=id=>document.getElementById(id),fmt=n=>Math.round(n).toLocaleString('ko-KR');
+function fmtSweepRuns(value){
+ var n=Math.max(0,Math.round(Number(value)||0)),parts=[];
+ var units=[{v:1e16,s:'경'},{v:1e12,s:'조'},{v:1e8,s:'억'},{v:1e4,s:'만'}];
+ units.forEach(function(u){if(n>=u.v){var q=Math.floor(n/u.v);parts.push(q.toLocaleString('ko-KR')+u.s);n-=q*u.v;}});
+ if(n||!parts.length)parts.push(n.toLocaleString('ko-KR'));
+ return parts.join(' ')+' 회';
+}
+function numeric(id){let v=Number(byId(id)?.value||0);return Number.isFinite(v)?Math.max(0,Math.floor(v)):0}
+function directCosts(k,g,q,acc,recursive){if(q<=0)return;let c=configs[k];c.resources.forEach(r=>acc[r.name]=(acc[r.name]||0)+r.direct[g]*q);if(recursive&&g>0)directCosts(k,g-1,q*c.child[g],acc,true)}
+function makeUI(){
+byId('inventory').innerHTML='<div class="scroll"><div style="display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:10px;min-width:780px">'+kinds.map(k=>'<div><h3>'+names[k]+'</h3><table><thead><tr><th>등급</th><th>보유</th><th>분해</th></tr></thead><tbody>'+G.map((g,i)=>'<tr><td>'+g+'</td><td><input aria-label="'+names[k]+' '+g+' 보유" type="number" min="0" id="have_'+k+'_'+i+'" value="0"></td><td><input aria-label="'+names[k]+' '+g+' 분해" type="number" min="0" id="break_'+k+'_'+i+'" value="0"></td></tr>').join('')+'</tbody></table></div>').join('')+'</div></div>';
+byId('materials').innerHTML=materials.map(m=>'<label>'+m+'<input type="number" min="0" id="mat_'+m+'" value="0"></label>').join('');
+byId('targets').innerHTML='<div class="scroll" style="grid-column:1/-1"><div style="display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:10px;min-width:780px">'+kinds.map(k=>'<div><h3>'+names[k]+'</h3><table><thead><tr><th>등급</th><th>제작 목표 수량</th></tr></thead><tbody>'+G.map((g,i)=>i<8?null:'<tr><td>'+g+'</td><td><input aria-label="'+names[k]+' '+g+' 제작 목표" type="number" min="0" id="target_'+k+'_'+i+'" value="0"></td></tr>').filter(Boolean).join('')+'</tbody></table></div>').join('')+'</div></div>';
+}
+const KEY='archer:recycle:v3';
+function restore(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');for(let [id,v] of Object.entries(x)){if(byId(id)){if(byId(id).type==='checkbox')byId(id).checked=!!v;else byId(id).value=v}}}catch(e){}}
+function save(){let x={};document.querySelectorAll('input,select').forEach(e=>x[e.id]=e.type==='checkbox'?e.checked:e.value);try{localStorage.setItem(KEY,JSON.stringify(x))}catch(e){}}
+function calculate(){let raw=Object.fromEntries(materials.map(m=>[m,numeric('mat_'+m)])),inv={},invalid=[],salvage={},spent={},crafted={};
+for(let k of kinds){inv[k]=G.map((g,i)=>{let h=numeric('have_'+k+'_'+i),b=numeric('break_'+k+'_'+i);if(b>h)invalid.push(names[k]+' '+g+' 분해 수량이 보유량 초과');if(b){let temp={};directCosts(k,i,b,temp,true);for(let [m,n] of Object.entries(temp))salvage[m]=(salvage[m]||0)+n;}return Math.max(0,h-b)})}
+if(invalid.length){byId('results').innerHTML='<p class="warn">'+[...new Set(invalid)].join('<br>')+'</p>';return}
+for(let m of materials)raw[m]+=(salvage[m]||0);
+const initial={...raw};let stages=[],needs={};
+function consume(k,g,q){if(q<=0)return;let use=Math.min(q,inv[k][g]);inv[k][g]-=use;q-=use;if(!q)return;crafted[k][g]+=q;let c=configs[k];c.resources.forEach(r=>{let n=r.direct[g]*q;raw[r.name]-=n;spent[r.name]=(spent[r.name]||0)+n});if(g>0)consume(k,g-1,q*c.child[g])}
+for(let k of ['hard','life','maseok']){crafted[k]=Array(G.length).fill(0);for(let g=G.length-1;g>=8;g--){let q=numeric('target_'+k+'_'+g);if(q>0){consume(k,g,q);stages.push(names[k]+' '+G[g]+' '+fmt(q)+'개 목표')}}}
+let lv=numeric('mastery'),valid=lv>=1&&lv<=13507,mult=window.archerMasteryMultiplier(lv);let dr=0,hr=0,sharedBearRuns=0;
+let rows=materials.map(m=>{let shortage=Math.max(0,-raw[m]);let r=kinds.flatMap(k=>configs[k].resources).find(x=>x.name===m);let runs=null,per=null;if(shortage&&r&&r.base&&valid){per=r.fixed?r.base:r.base*(mult/5);runs=Math.ceil(shortage/per*100000/10000)*10000;if(r.fixed){if(m==='곰뼈'||m==='곰가죽')sharedBearRuns=Math.max(sharedBearRuns,runs);else hr+=runs}else dr+=runs}return '<tr><td>'+m+'</td><td>'+fmt(initial[m])+'</td><td>'+fmt(spent[m]||0)+'</td><td>'+fmt(Math.max(0,raw[m]))+'</td><td>'+fmt(shortage)+'</td><td>'+(runs===null?(shortage?'별도 수급/숙련도 확인':'0 회'):fmtSweepRuns(runs)+((m==='곰뼈'||m==='곰가죽')?' (공동 소탕)':''))+'</td></tr>'}).join('');
+hr+=sharedBearRuns;
+let dt=dr*2,ht=hr*2,ds=Math.max(0,dt-numeric('dticket')),hs=Math.max(0,ht-numeric('hticket'));
+let report='<div class="row"><span class="pill">숙련도 '+(valid?('×'+mult):'입력 확인')+'</span><span class="pill">던전 '+fmtSweepRuns(dr)+'</span><span class="pill">사냥터 '+fmtSweepRuns(hr)+'</span><span class="pill">필요 티켓 '+fmt(dt+ht)+'장</span><span class="pill">부족 티켓 '+fmt(ds+hs)+'장</span><span class="pill">구매 다이아 '+fmt((ds+hs)*numeric('price'))+'</span></div>';
+report+='<p class="muted">곰굴 공동 소탕: 곰뼈와 곰가죽은 함께 드롭되므로 필요한 소탕 횟수 중 더 큰 값인 '+fmtSweepRuns(sharedBearRuns)+'를 사냥터 소탕과 티켓 합계에 한 번만 반영합니다.</p>';
+report+='<p class="muted">'+stages.join(' → ')+'</p><h3>분해 반환 재료</h3><p class="muted">'+(Object.entries(salvage).filter(([m,n])=>n).map(([m,n])=>m+' '+fmt(n)).join(' / ')||'없음')+'</p><h3>제작 과정</h3>'+kinds.map(k=>'<p>'+names[k]+': '+(crafted[k].map((n,i)=>n?G[i]+' '+fmt(n)+'개':null).filter(Boolean).join(' → ')||'추가 제작 없음')+'</p>').join('');
+report+='<div class="scroll"><table><thead><tr><th>재료</th><th>보유+분해</th><th>제작 소모</th><th>잔여</th><th>부족</th><th>필요 소탕</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="muted">소탕은 재료별 1만회 단위 올림. 곰뼈·곰가죽은 곰굴 동시 드롭으로 중복 소탕하지 않습니다. 다른 재료의 공동 소탕 여부는 별도 확인이 필요합니다. 오행석은 소탕 계산 대상이 아닙니다.</p>';
+byId('results').innerHTML=report;
+}
+makeUI();restore();document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',()=>{save();calculate()}));calculate();
+</script></body></html>
