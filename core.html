@@ -388,7 +388,7 @@ async function importPieces(file){
     row[k]=p[k];
    });return row;
   });
-  next.forEach((p,i)=>Object.assign(pieces[i],p));savePieces();buildPieceRows();renderCraft();
+  next.forEach((p,i)=>Object.assign(pieces[i],p));savePieces();buildPieceRows();renderCraft();renderRealRecipe();
   $("pieceStatus").textContent="20조각 데이터를 불러왔습니다.";$("pieceStatus").className="status";
  }catch(e){$("pieceStatus").textContent="불러오기 실패: "+e.message;$("pieceStatus").className="status warn";}
 }
@@ -546,7 +546,7 @@ $("pieceRows").addEventListener("input",e=>{
 $("resetPieceData").addEventListener("click",()=>{
  if(!confirm("조각별 데이터와 보유량을 모두 초기화할까요?"))return;
  pieces.forEach(p=>{p.owned="0";pieceKeys.forEach(k=>p[k]="");});
- savePieces();buildPieceRows();renderCraft();
+ savePieces();buildPieceRows();renderCraft();renderRealRecipe();
 });
 $("exportPieceJson").addEventListener("click",exportPieces);
 $("importPieceJson").addEventListener("click",()=>$("pieceJsonFile").click());
