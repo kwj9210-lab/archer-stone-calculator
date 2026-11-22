@@ -1,0 +1,15 @@
+{
+  "name": "archer-access-approval-draft",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@vercel/functions": "3.11.3"
+  },
+  "scripts": {
+    "test:access": "node --test tests/access-control.test.mjs"
+  }
+}
