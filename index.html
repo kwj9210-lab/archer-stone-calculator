@@ -397,7 +397,7 @@ th:first-child,td:first-child{text-align:left}
 </section>
 
 
-<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 던전은 100만회·10만회·1만회 단위, 사냥터는 10만회·1만회 단위로 실제 계산 횟수를 나눠 표시합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회당 해당 종류의 티켓 2장. 던전·사냥터 티켓은 서로 구분하며 각각 1장당 20다이아입니다.</div>
+<div class="foot">드랍 기준: 비명초·활력수·복원석은 숙련도 15단계(×5.00) 10만 소탕 실수령값을 숙련도에 맞춰 환산합니다. 던전은 100만회·10만회·1만회 단위, 사냥터는 1,000만회·100만회·10만회·1만회 단위로 실제 계산 횟수를 나눠 표시합니다. 곰뼈·곰가죽·늑대가죽·곰심장은 전 유저 공통 10만 소탕 1,999,900,000개로 고정 계산합니다. 소탕 1회당 해당 종류의 티켓 2장. 던전·사냥터 티켓은 서로 구분하며 각각 1장당 20다이아입니다.</div>
 </main>
 
 <script>
@@ -492,6 +492,15 @@ function fmt(v){
 }
 function fmtKoreanUnit(v){return fmt(v)}
 function fmtPlain(v){return Math.round(v).toLocaleString('ko-KR')}
+function fmtSweepBreakdown(value,isHunting){
+ var remaining=Math.max(0,Math.round(Number(value)||0)),parts=[];
+ var units=isHunting?[[10000000,'1,000만회'],[1000000,'100만회'],[100000,'10만회'],[10000,'1만회']]:[[1000000,'100만회'],[100000,'10만회'],[10000,'1만회']];
+ units.forEach(function(unit){
+  var count=Math.floor(remaining/unit[0]);
+  if(count){parts.push(unit[1]+' 소탕 '+fmt(count)+'회');remaining-=count*unit[0];}
+ });
+ return parts.length?parts.join(' · '):'소탕 0회';
+}
 function fmtSweepRuns(value){
  var n=Math.max(0,Math.round(Number(value)||0)),parts=[];
  var units=[{v:1e16,s:'경'},{v:1e12,s:'조'},{v:1e8,s:'억'},{v:1e4,s:'만'}];
@@ -554,17 +563,8 @@ function calc(){
      if(type==='hard'&&(r.name==='곰뼈'||r.name==='곰가죽'))sharedBearRuns=Math.max(sharedBearRuns,runs);
      else huntingRuns+=runs;
    }else dungeonRuns+=runs;
-   // Display the exact rounded sweep count used for admission tickets.
-    var remainingRuns=runs,parts=[];
-    if(!r.fixed){
-      var million=Math.floor(remainingRuns/1000000);
-      if(million){parts.push('100만회 소탕 '+fmt(million)+'회');remainingRuns-=million*1000000;}
-    }
-    var hundredK=Math.floor(remainingRuns/100000);
-    if(hundredK){parts.push('10만회 소탕 '+fmt(hundredK)+'회');remainingRuns-=hundredK*100000;}
-    var tenK=Math.round(remainingRuns/10000);
-    if(tenK)parts.push('1만회 소탕 '+fmt(tenK)+'회');
-    var sweepText=parts.length?parts.join(' · '):'소탕 0회';
+   // Group the rounded sweep total by the actual in-game button sizes.
+    var sweepText=fmtSweepBreakdown(runs,r.fixed);
     var approx100k=Math.round(per100k/10000);
    html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong"><span class="sweep-breakdown">'+sweepText+'</span><span class="resource-ticket">'+(type==='hard'&&(r.name==='곰뼈'||r.name==='곰가죽')?'곰굴 공동 소탕 · 아래 공동 소탕 티켓에 합산':'필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(runs*2)+'장')+'</span></div></div>';
   }else{
@@ -573,7 +573,7 @@ function calc(){
  });
  if(type==='hard'){
    huntingRuns+=sharedBearRuns;
-   html+='<div class="box"><h3>곰굴 공동 소탕 · 곰뼈 + 곰가죽</h3><div class="line">두 재료는 같은 소탕에서 함께 나오므로 각각 필요한 소탕 횟수 중 큰 값만 한 번 계산합니다.</div><div class="strong">'+fmtSweepRuns(sharedBearRuns)+'</div><div class="line">공동 사냥터 티켓 '+fmtKoreanUnit(sharedBearRuns*2)+'장</div></div>';
+   html+='<div class="box"><h3>곰굴 공동 소탕 · 곰뼈 + 곰가죽</h3><div class="line">두 재료는 같은 소탕에서 함께 나오므로 각각 필요한 소탕 횟수 중 큰 값만 한 번 계산합니다.</div><div class="strong">'+fmtSweepBreakdown(sharedBearRuns,true)+'</div><div class="line">총 '+fmtSweepRuns(sharedBearRuns)+' · 공동 사냥터 티켓 '+fmtKoreanUnit(sharedBearRuns*2)+'장</div></div>';
  }
  el('resourceResults').innerHTML=html;
  var totalRuns=dungeonRuns+huntingRuns;
