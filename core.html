@@ -116,26 +116,6 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
   </div>
   <div id="dataStatus" class="status">단계별 수량은 APK v0.2.10의 libil2cpp.so에서 TranscendGroup, TranscendHeaven, TranscendNebula, TranscendCores, TranscendStepDigits, TranscendDigits 메서드를 역어셈블해 복원했습니다. 서버 응답과의 별도 교차검증은 아직 하지 않았습니다. 표의 값을 수정하면 해당 브라우저에 저장됩니다.</div>
  </section>
-<section class="card">
-  <h2>게임 데이터 일괄 불러오기</h2>
-  <p class="note">게임 서버 응답 JSON을 붙여넣으면 초월 관련 숫자 배열을 찾아 20단계 표에 반영합니다. 필드별 배열을 직접 지정할 수 있습니다. 배열이 21개 이상이면 첫 값은 0단계로 보고 1~20단계를 가져옵니다.</p>
-  <label for="sourceFile">서버 응답 JSON 파일 불러오기</label>
-  <input id="sourceFile" type="file" accept=".json,application/json" style="margin-bottom:10px">
-  <label for="sourceJson">서버 응답 JSON</label>
-  <textarea id="sourceJson" style="width:100%;min-height:125px;margin-top:8px;padding:10px;border:1px solid #c1ddcb;border-radius:10px;background:#fbfffc;font:12px/1.5 monospace" placeholder='{"HeavenRelic021":{"TranscendHeaven":[...],"TranscendNebula":[...],"TranscendCores":[...],"TranscendStepDigits":[...],"TranscendDigits":[...]}}'></textarea>
-  <div class="actions"><button class="action secondary" type="button" id="scanJson">JSON 필드 분석</button><button class="action secondary" type="button" id="clearJson">입력 지우기</button></div>
-  <div id="sourceMapping" style="display:none;margin-top:12px">
-   <div class="field"><label for="arrayOffset">배열에서 1단계가 시작되는 위치</label><select id="arrayOffset"><option value="auto">자동 판별 (20개=첫 값, 21개=두 번째 값)</option><option value="0">첫 번째 값부터 1단계</option><option value="1">두 번째 값부터 1단계</option></select></div>
-   <div class="grid">
-    <div class="field"><label for="mapHeaven">천명석 배열</label><select id="mapHeaven"></select></div>
-    <div class="field"><label for="mapNebula">성운석 배열</label><select id="mapNebula"></select></div>
-    <div class="field"><label for="mapCore">초월핵 배열</label><select id="mapCore"></select></div>
-    <div class="field"><label for="mapAttack">공격력 증가 배열</label><select id="mapAttack"></select></div>
-   </div>
-   <div class="actions"><button class="action" type="button" id="applyJson">선택한 배열을 20단계에 적용</button></div>
-  </div>
-  <div id="importStatus" class="status warn">JSON 분석 후 발견한 필드와 배열 길이를 확인할 수 있습니다. 적용 전에는 기존 단계 데이터가 변경되지 않습니다.</div>
- </section>
 </section>
 
 <section class="panel" id="panel-craft">
@@ -536,60 +516,6 @@ function renderRealRecipe(){
  $("realRecipeResult").textContent="추가 제작 초월핵 "+fmt(make)+"개 / 조각 "+fmt(piecesNeeded)+"개\n"+lines.join("\n");
 }
 
-let sourceArrays={};
-function flattenNumeric(v){
- if(Array.isArray(v))return v.flatMap(flattenNumeric);
- if(typeof v==="string"&&/^\s*\[.*\]\s*$/.test(v)){try{return flattenNumeric(JSON.parse(v));}catch(_){return [];}}
- if(v&&typeof v==="object"){for(const k of ["values","Values","value","Value","data","Data","items","Items","array","Array","list","List"])if(k in v)return flattenNumeric(v[k]);return [];}
- if(typeof v==="number"&&Number.isFinite(v))return [v];
- if(typeof v==="string"&&/^\d+(?:\.\d+)?$/.test(v.trim()))return [Number(v)];
- return [];
-}
-function findArrays(obj,path="",out={}){
- if(!obj||typeof obj!=="object")return out;
- if(Array.isArray(obj)){const a=flattenNumeric(obj);if(a.length>=10)out[path||"(root)"]=a;obj.forEach((v,i)=>{if(v&&typeof v==="object")findArrays(v,path+"["+i+"]",out);});}
- else Object.keys(obj).forEach(k=>{const p=path?path+"."+k:k,v=obj[k];if(Array.isArray(v)){const a=flattenNumeric(v);if(a.length>=10)out[p]=a;}else if(v&&typeof v==="object")findArrays(v,p,out);});
- return out;
-}
-function findStageRecords(obj,out){
- const paths=[obj&&obj.stages,obj&&obj.data,obj&&obj.data&&obj.data.stages,
-  obj&&obj.HeavenRelic021&&obj.HeavenRelic021.stages];
- const kinds=[["TranscendHeaven","heaven"],["TranscendNebula","nebula"],
-  ["TranscendCores","core"],["TranscendStepDigits","attack"]];
- paths.forEach(rows=>{
-  if(!Array.isArray(rows)||rows.length!==20||rows.some(r=>!r||typeof r!=="object"||Array.isArray(r)))return;
-  kinds.forEach(([native,plain])=>{
-   const vals=rows.map(r=>r[native]!==undefined?r[native]:r[plain]);
-   const numbers=vals.map(v=>typeof v==="string"&&v.trim()!==""?Number(v):v);
-   if(numbers.every(n=>Number.isSafeInteger(n)&&n>=0))out["stages."+native]=numbers;
-  });
- });
- return out;
-}
-function fillMap(id,keys,preferred){
- const el=$(id);el.textContent="";const blank=document.createElement("option");blank.value="";blank.textContent="선택 안 함";el.appendChild(blank);
- keys.forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=k+" ("+sourceArrays[k].length+"개)";el.appendChild(o);});
- const match=preferred?keys.find(k=>k.toLowerCase().endsWith(preferred.toLowerCase()))||keys.find(k=>k.toLowerCase().includes(preferred.toLowerCase())):null;if(match)el.value=match;
-}
-function scanSource(){
- try{const obj=JSON.parse($("sourceJson").value);sourceArrays=findStageRecords(obj,findArrays(obj));const keys=Object.keys(sourceArrays);if(!keys.length)throw new Error("숫자 배열을 찾지 못했습니다.");
- ["mapHeaven","mapNebula","mapCore","mapAttack"].forEach((id,i)=>fillMap(id,keys,["TranscendHeaven","TranscendNebula","TranscendCores","TranscendStepDigits"][i]));
- $("sourceMapping").style.display="block";$("importStatus").className="status";$("importStatus").textContent="숫자 배열 "+keys.length+"개 발견: "+keys.map(k=>k+" ("+sourceArrays[k].length+"개)").join(" · ")+". 배열의 단계 순서를 확인하고 적용하세요.";
- }catch(e){sourceArrays={};$("sourceMapping").style.display="none";$("importStatus").className="status warn";$("importStatus").textContent="JSON 분석 실패: "+e.message;}
-}
-function applySource(){
- const maps=[["mapHeaven","heaven"],["mapNebula","nebula"],["mapCore","core"],["mapAttack","attack"]];
- const selected=maps.map(([id,k])=>({key:$(id).value,kind:k})).filter(x=>x.key);
- if(!selected.length){$("importStatus").className="status warn";$("importStatus").textContent="적용할 배열을 하나 이상 선택하세요.";return;}
- const offsetMode=$("arrayOffset").value;
- const offset=offsetMode==="auto"?(selected.every(x=>sourceArrays[x.key].length===20)?0:selected.every(x=>sourceArrays[x.key].length===21)?1:null):Number(offsetMode);
- const bad=selected.filter(x=>sourceArrays[x.key].length<offset+20||sourceArrays[x.key].some(v=>!Number.isSafeInteger(v)||v<0));
- if(offset===null){$("importStatus").className="status warn";$("importStatus").textContent="선택한 배열 길이가 20개 또는 21개로 서로 다르거나, 자동 판별할 수 없습니다. 시작 위치를 직접 선택하세요.";return;}
- if(bad.length){$("importStatus").className="status warn";$("importStatus").textContent="배열 길이가 20개 미만이거나 0 이상의 정수가 아닌 값이 포함되어 있습니다: "+bad.map(x=>x.key+" ("+sourceArrays[x.key].length+"개)").join(", ");return;}
- selected.forEach(x=>{const vals=sourceArrays[x.key].slice(offset,offset+20);vals.forEach((v,i)=>stageData[i][x.kind]=String(v));});
- buildRows();update();$("importStatus").className="status";$("importStatus").textContent="적용 완료: "+selected.map(x=>x.key+" → "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[x.kind])).join(" · ")+". 배열 시작 위치 "+(offset+1)+"번째 값부터 적용했습니다. 브라우저에 저장했습니다." ;
-}
-
 function update(){render();renderVerifiedCoreCraft();renderCraft();renderRealRecipe();save();}
 restorePieces();buildRows();restore();buildRows();buildPieceRows();loadRealRecipe();
 document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",update);e.addEventListener("change",update);});
@@ -646,19 +572,11 @@ $("realRecipeStock").addEventListener("input",e=>{
  try{localStorage.setItem(realRecipeKey,JSON.stringify({recipe:realRecipe,stock:realStock}));}catch(_){}
  renderRealRecipe();
 });
-$("scanJson").addEventListener("click",scanSource);
-$("sourceFile").addEventListener("change",async e=>{
- const file=e.target.files&&e.target.files[0];if(!file)return;
- try{$("sourceJson").value=await file.text();scanSource();$("importStatus").textContent="파일 불러오기 완료: "+file.name+" · "+$("importStatus").textContent;}
- catch(err){$("importStatus").className="status warn";$("importStatus").textContent="파일을 읽지 못했습니다: "+err.message;}
-});
 $("exportJson").addEventListener("click",()=>{
  const payload={format:"archer-heaven-core-transcend-v1",exportedAt:new Date().toISOString(),stages:stageData.map((d,i)=>({stage:i+1,heaven:d.heaven===""?null:Number(d.heaven),nebula:d.nebula===""?null:Number(d.nebula),core:d.core===""?null:Number(d.core),attack:d.attack===""?null:Number(d.attack)}))};
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cheonmyeong-core-transcend-20.json";a.click();URL.revokeObjectURL(url);
 });
-$("applyJson").addEventListener("click",applySource);
-$("clearJson").addEventListener("click",()=>{$("sourceJson").value="";$("sourceMapping").style.display="none";$("importStatus").textContent="JSON 입력을 지웠습니다. 기존 단계 데이터는 유지됩니다.";});
 $("resetStageData").addEventListener("click",()=>{
  if(!confirm("수정한 20단계 데이터를 APK 기본값으로 되돌릴까요?"))return;
  stageData.forEach((d,i)=>Object.assign(d,defaultStageData[i]));
