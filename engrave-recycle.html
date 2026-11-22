@@ -10,11 +10,12 @@
  };
 })();
 </script><link rel="stylesheet" href="./clarity-ui.css?v=2">
+<script src="./korean-amount.js?v=1"></script>
 </head><body><main class="wrap"><section class="page-hero"><h1>각인석 재활용 시뮬레이터</h1><p class="hero-sub muted">마석 등반 후 분해 → 경화석·생명석 제작 → 남은 재료로 마석 재제작. 제작식과 숙련도 기준은 기존 각인석 계산기를 사용합니다.</p></section>
 <section class="card"><h2>1. 보유 각인석과 분해 계획</h2><p class="muted">각 종류·등급별 보유량과 분해할 수량을 입력하세요. 분해하지 않는 각인석은 제작 재료로 사용할 수 있습니다.</p><div id="inventory"></div></section>
 <section class="card"><h2>2. 분해 반환 재료 (100%)</h2><p class="muted">분해하면 해당 등급 제작에 소모된 재료가 100% 반환됩니다. 하위 등급 각인석을 새로 제작하는 데 들어간 재료까지 누적 계산합니다.</p></section>
-<section class="card"><h2>3. 현재 보유 재료와 제작 목표</h2><div id="materials" class="grid"></div><h3>목표 제작 수량</h3><div id="targets" class="grid"></div><p class="muted">제작 순서: 경화석 → 생명석 → 마석. 같은 재료를 중복 사용하지 않습니다.</p></section>
-<section class="card"><h2>4. 숙련도 및 입장권</h2><div class="grid"><label>던전 숙련도 (1~33507 · 최대 ×4878)<input id="mastery" type="number" min="1" max="33507" value="33507"></label><label>던전 티켓 보유<input id="dticket" type="number" min="0" value="0"></label><label>사냥터 티켓 보유<input id="hticket" type="number" min="0" value="0"></label><label>티켓 1장 가격(다이아)<input id="price" type="number" min="0" value="20"></label></div></section>
+<section class="card"><h2>3. 현재 보유 재료와 제작 목표</h2><p class="muted">게임에 표시된 수량을 그대로 입력할 수 있습니다. 예: 1조 2211억, 8389억 1745만, 123,456,789.</p><div id="materials" class="grid"></div><h3>목표 제작 수량</h3><div id="targets" class="grid"></div><p class="muted">제작 순서: 경화석 → 생명석 → 마석. 같은 재료를 중복 사용하지 않습니다.</p></section>
+<section class="card"><h2>4. 숙련도 및 입장권</h2><div class="grid"><label>던전 숙련도 (1~33507 · 최대 ×4878)<input id="mastery" type="number" min="1" max="33507" value="33507"></label><label>던전 티켓 보유<input id="dticket" type="text" inputmode="text" autocomplete="off" data-game-amount value="0"></label><label>사냥터 티켓 보유<input id="hticket" type="text" inputmode="text" autocomplete="off" data-game-amount value="0"></label><label>티켓 1장 가격(다이아)<input id="price" type="text" inputmode="text" autocomplete="off" data-game-amount value="20"></label></div></section>
 <section class="card"><h2>5. 제작 및 소탕 결과</h2><div id="results"></div></section></main><script>var G=['최하급','하급','일반','상급','최상급','특급','전설','신화','태초','불멸','초월','절대','혼돈급'];
 var configs={
 maseok:{
@@ -72,17 +73,26 @@ function fmtSweepRuns(value){
  if(n||!parts.length)parts.push(n.toLocaleString('ko-KR'));
  return parts.join(' ')+' 회';
 }
-function numeric(id){let v=Number(byId(id)?.value||0);return Number.isFinite(v)?Math.max(0,Math.floor(v)):0}
+function numeric(id){return window.ArcherKoreanAmount.parse(byId(id)?.value||'0')}
 function directCosts(k,g,q,acc,recursive){if(q<=0)return;let c=configs[k];c.resources.forEach(r=>acc[r.name]=(acc[r.name]||0)+r.direct[g]*q);if(recursive&&g>0)directCosts(k,g-1,q*c.child[g],acc,true)}
 function makeUI(){
-byId('inventory').innerHTML='<div class="scroll"><div style="display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:10px;min-width:780px">'+kinds.map(k=>'<div><h3>'+names[k]+'</h3><table><thead><tr><th>등급</th><th>보유</th><th>분해</th></tr></thead><tbody>'+G.map((g,i)=>'<tr><td>'+g+'</td><td><input aria-label="'+names[k]+' '+g+' 보유" type="number" min="0" id="have_'+k+'_'+i+'" value="0"></td><td><input aria-label="'+names[k]+' '+g+' 분해" type="number" min="0" id="break_'+k+'_'+i+'" value="0"></td></tr>').join('')+'</tbody></table></div>').join('')+'</div></div>';
-byId('materials').innerHTML=materials.map(m=>'<label>'+m+'<input type="number" min="0" id="mat_'+m+'" value="0"></label>').join('');
-byId('targets').innerHTML='<div class="scroll" style="grid-column:1/-1"><div style="display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:10px;min-width:780px">'+kinds.map(k=>'<div><h3>'+names[k]+'</h3><table><thead><tr><th>등급</th><th>제작 목표 수량</th></tr></thead><tbody>'+G.map((g,i)=>i<8?null:'<tr><td>'+g+'</td><td><input aria-label="'+names[k]+' '+g+' 제작 목표" type="number" min="0" id="target_'+k+'_'+i+'" value="0"></td></tr>').filter(Boolean).join('')+'</tbody></table></div>').join('')+'</div></div>';
+byId('inventory').innerHTML='<div class="scroll"><div style="display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:10px;min-width:780px">'+kinds.map(k=>'<div><h3>'+names[k]+'</h3><table><thead><tr><th>등급</th><th>보유</th><th>분해</th></tr></thead><tbody>'+G.map((g,i)=>'<tr><td>'+g+'</td><td><input aria-label="'+names[k]+' '+g+' 보유" type="text" inputmode="text" autocomplete="off" data-game-amount id="have_'+k+'_'+i+'" value="0"></td><td><input aria-label="'+names[k]+' '+g+' 분해" type="text" inputmode="text" autocomplete="off" data-game-amount id="break_'+k+'_'+i+'" value="0"></td></tr>').join('')+'</tbody></table></div>').join('')+'</div></div>';
+byId('materials').innerHTML=materials.map(m=>'<label>'+m+'<input type="text" inputmode="text" autocomplete="off" data-game-amount id="mat_'+m+'" value="0"></label>').join('');
+byId('targets').innerHTML='<div class="scroll" style="grid-column:1/-1"><div style="display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:10px;min-width:780px">'+kinds.map(k=>'<div><h3>'+names[k]+'</h3><table><thead><tr><th>등급</th><th>제작 목표 수량</th></tr></thead><tbody>'+G.map((g,i)=>i<8?null:'<tr><td>'+g+'</td><td><input aria-label="'+names[k]+' '+g+' 제작 목표" type="text" inputmode="text" autocomplete="off" data-game-amount id="target_'+k+'_'+i+'" value="0"></td></tr>').filter(Boolean).join('')+'</tbody></table></div>').join('')+'</div></div>';
 }
 const KEY='archer:recycle:v3';
 function restore(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');for(let [id,v] of Object.entries(x)){if(byId(id)){if(byId(id).type==='checkbox')byId(id).checked=!!v;else byId(id).value=v}}}catch(e){}}
 function save(){let x={};document.querySelectorAll('input,select').forEach(e=>x[e.id]=e.type==='checkbox'?e.checked:e.value);try{localStorage.setItem(KEY,JSON.stringify(x))}catch(e){}}
-function calculate(){let raw=Object.fromEntries(materials.map(m=>[m,numeric('mat_'+m)])),inv={},invalid=[],salvage={},spent={},crafted={};
+function calculate(){
+ const amountFields=Array.from(document.querySelectorAll('[data-game-amount]'));
+ const bad=amountFields.find(e=>!Number.isSafeInteger(window.ArcherKoreanAmount.parse(e.value)));
+ amountFields.forEach(e=>{if(e===bad)e.setAttribute('aria-invalid','true');else e.removeAttribute('aria-invalid')});
+ if(bad){
+  const label=bad.getAttribute('aria-label')||bad.closest('label')?.textContent.trim()||'수량';
+  byId('results').textContent=label+' 입력을 확인해 주세요. 예: 1조 2211억, 8389억 1745만, 123456789';
+  return;
+ }
+ let raw=Object.fromEntries(materials.map(m=>[m,numeric('mat_'+m)])),inv={},invalid=[],salvage={},spent={},crafted={};
 for(let k of kinds){inv[k]=G.map((g,i)=>{let h=numeric('have_'+k+'_'+i),b=numeric('break_'+k+'_'+i);if(b>h)invalid.push(names[k]+' '+g+' 분해 수량이 보유량 초과');if(b){let temp={};directCosts(k,i,b,temp,true);for(let [m,n] of Object.entries(temp))salvage[m]=(salvage[m]||0)+n;}return Math.max(0,h-b)})}
 if(invalid.length){byId('results').innerHTML='<p class="warn">'+[...new Set(invalid)].join('<br>')+'</p>';return}
 for(let m of materials)raw[m]+=(salvage[m]||0);
