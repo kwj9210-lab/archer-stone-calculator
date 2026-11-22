@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>회원 로그인 | 궁수키우기 통합계산기</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,'Noto Sans KR','Malgun Gothic',sans-serif;--bg:#faf8f3;--surface:#fffefa;--line:#e7dfd3;--text:#43392f;--muted:#71665b;--strong:#854119;--accent:#a95a2d}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--text)}
+main{width:min(440px,calc(100vw - 28px));background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:clamp(20px,5vw,35px);box-shadow:0 8px 25px rgba(98,67,37,.07)}
+h1{font-size:23px;margin:0 0 6px;color:var(--strong)}.lead{font-size:13px;color:var(--muted);margin:0 0 23px}
+label{display:block;font-size:13px;font-weight:750;margin:14px 0 7px}input{display:block;width:100%;border:1px solid #e2d6c5;padding:13px;border-radius:10px;font:inherit;background:#fff;color:var(--text)}
+input:focus{outline:2px solid #c78f64}button{font:inherit;cursor:pointer}button:disabled{cursor:wait;opacity:.6}
+.primary{width:100%;border:0;border-radius:11px;background:var(--accent);color:#fff;font-weight:800;padding:13px;margin-top:20px}
+.sub{display:flex;gap:8px;margin-top:14px;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}.sub button{border:0;background:none;color:var(--strong);font-weight:800;text-decoration:underline}
+#message{min-height:34px;font-size:13px;line-height:1.5;margin:12px 0 0;color:var(--strong)}
+.note{font-size:12px;color:var(--muted);line-height:1.55;padding:11px;background:#fff5e8;border-radius:9px}
+</style>
+</head>
+<body>
+<main>
+<h1>궁수키우기 통합계산기</h1>
+<p class="lead" id="lead">승인된 회원만 이용할 수 있습니다.</p>
+<form id="authForm" autocomplete="on">
+<label for="nickname">닉네임</label>
+<input id="nickname" type="text" minlength="2" maxlength="20" autocomplete="username" required placeholder="한글·영문·숫자 2~20자">
+<label for="password">비밀번호</label>
+<input id="password" type="password" minlength="10" maxlength="128" autocomplete="current-password" required placeholder="10자 이상">
+<button class="primary" id="submitButton" type="submit">로그인</button>
+</form>
+<div class="sub"><span id="switchText">아직 회원이 아니신가요?</span><button id="switchMode" type="button">회원가입</button></div>
+<p id="message" role="status" aria-live="polite"></p>
+<p class="note" id="note">회원가입 후 관리자가 닉네임을 확인하고 승인하면 로그인할 수 있습니다.</p>
+</main>
+<script>
+(function(){
+'use strict';
+const el=id=>document.getElementById(id);
+let mode='login';
+el('switchMode').addEventListener('click',()=>{
+ mode=mode==='login'?'signup':'login';
+ el('submitButton').textContent=mode==='login'?'로그인':'가입 신청';
+ el('switchText').textContent=mode==='login'?'아직 회원이 아니신가요?':'이미 가입하셨나요?';
+ el('switchMode').textContent=mode==='login'?'회원가입':'로그인';
+ el('lead').textContent=mode==='login'?'승인된 회원만 이용할 수 있습니다.':'가입 후 관리자 승인을 기다려 주세요.';
+ el('password').autocomplete=mode==='login'?'current-password':'new-password';
+ el('message').textContent='';
+});
+el('authForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const button=el('submitButton');button.disabled=true;el('message').textContent='처리 중입니다.';
+ try{
+  const response=await fetch('/api/access',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({action:mode,nickname:el('nickname').value,password:el('password').value})});
+  const data=await response.json();
+  if(!response.ok){el('message').textContent=data.message||'요청에 실패했습니다.';return;}
+  if(mode==='signup'){el('message').textContent=data.message;el('password').value='';return;}
+  window.location.replace(data.role==='admin'?'/admin.html':'/calculator.html');
+ }catch(_){el('message').textContent='연결 오류가 발생했습니다.'}
+ finally{button.disabled=false}
+});
+fetch('/api/access?view=me',{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+ if(d?.ok)window.location.replace(d.user.role==='admin'?'/admin.html':'/calculator.html');
+}).catch(()=>{});
+})();
+</script>
+</body></html>
