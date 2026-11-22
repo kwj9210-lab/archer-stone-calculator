@@ -1,0 +1,75 @@
+{
+  "game": "궁수키우기 : 스틱맨RPG",
+  "version": "0.2.10",
+  "item": "초월핵",
+  "recipeKind": "TranscendentCore243.Ingredients and Prices arrays",
+  "perCore": [
+    {
+      "id": 9701,
+      "name": "백금괴",
+      "quantity": 1000000000000
+    },
+    {
+      "id": 9702,
+      "name": "성철괴",
+      "quantity": 1000000000000
+    },
+    {
+      "id": 9703,
+      "name": "월광수",
+      "quantity": 10000000000
+    },
+    {
+      "id": 9704,
+      "name": "별의 핵",
+      "quantity": 10000000000
+    }
+  ],
+  "source": {
+    "apk": "base.apk, split_config.arm64_v8a.apk",
+    "lib": "lib/arm64-v8a/libil2cpp.so",
+    "metadata": "assets/bin/Data/Managed/Metadata/global-metadata.dat",
+    "nativeClass": "TranscendentCore243",
+    "initializerRva": "0x2189CB0",
+    "ingredientsFieldId": 26441,
+    "pricesFieldId": 26504,
+    "ingredientsRaw": [
+      9701,
+      9702,
+      9703,
+      9704
+    ],
+    "pricesRaw": [
+      1000000000000,
+      1000000000000,
+      10000000000,
+      10000000000
+    ],
+    "metadataFieldsMatchedToNativeInitializer": true,
+    "namedMaterialEvidence": "백금괴·성철괴·월광수·별의 핵으로 제작한 재료. 천명의 핵 초월 강화에 사용한다.",
+    "note": "Native arrays establish the IDs and numeric quantities. Korean item-name mapping follows the matching game-description order and should be cross-checked against runtime localization if necessary."
+  },
+  "totalsFor475": [
+    {
+      "id": 9701,
+      "name": "백금괴",
+      "quantity": 475000000000000
+    },
+    {
+      "id": 9702,
+      "name": "성철괴",
+      "quantity": 475000000000000
+    },
+    {
+      "id": 9703,
+      "name": "월광수",
+      "quantity": 4750000000000
+    },
+    {
+      "id": 9704,
+      "name": "별의 핵",
+      "quantity": 4750000000000
+    }
+  ],
+  "formula": "material.quantity = perCore.quantity * max(0, targetCoreQty - ownedCoreQty)"
+}

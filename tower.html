@@ -96,6 +96,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 @media(max-width:620px){.usage-title{gap:7px}.usage-title .usage-guide > summary{padding:6px 9px}}
 
 </style>
+<link rel="stylesheet" href="./clarity-ui.css?v=2">
 </head>
 <body><main>
 <section class="page-hero">
@@ -104,27 +105,34 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <details class="usage-guide">
 <summary>사용방법 <span aria-hidden="true">▾</span></summary>
 <div class="usage-panel">
-<p><b>① 관통 입력</b> · 현재 내 관통을 입력하면 500~3,000층에서 관통 기준 가능 최고층을 계산합니다.</p>
+<p><b>① 관통 입력</b> · 현재 내 관통을 입력하면 500~11,000층에서 관통 기준 가능 최고층을 계산합니다.</p>
 <p><b>② 결과 확인</b> · 해당 층의 필요 명중과 다음 층의 조건을 확인합니다. 실제 클리어에는 전투력 등 다른 조건도 필요합니다.</p>
-<p><b>③ 보상 확인</b> · ‘초월석 총합 보기’를 열면 누적 보상이 나옵니다. 500층 이후는 1,016층 실측값으로 보정한 계산입니다.</p>
-<p class="example"><b>예시</b> · 내 관통 <b>33,000</b>이면 관통 기준 <b>3,000층</b>, 필요 명중은 <b>86,000</b>입니다.</p>
+<p><b>③ 보상 확인</b> · ‘초월석 총합 보기’를 열면 누적 보상이 나옵니다. 초월석 보상은 APK 0.2.7에서 확인한 11,000층까지의 지급식을 적용합니다.</p>
+<p class="example"><b>예시</b> · 내 관통 <b>179,000</b>이면 관통 기준 <b>11,000층</b>, 필요 명중은 <b>118,800</b>입니다.</p>
 </div>
 </details>
 </div>
-<div class="hero-sub sub">내 관통 기준으로 500~3000층에서 가능한 최고층과 필요 관통·명중을 계산합니다.</div>
+<div class="hero-sub sub">내 관통 기준으로 500~11,000층에서 가능한 최고층과 필요 관통·명중을 계산합니다. APK 0.2.7에서 8,001~11,000층의 확장 분기와 관통·명중·초월석 지급식을 확인했습니다.</div>
 </section>
 <section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">내 관통으로 가능한 최고층</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>내 관통<input id="myPen" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="go" value="8508" placeholder="예: 8508"></label><div id="lookupResult" class="lookupResult">관통을 입력하면 가능한 최고층과 필요 명중을 표시합니다.</div></div></section>
 
-<details id="list">
-<summary>500층부터 필요 관통·명중 수치 보기</summary>
-<div class="tableWrap"><table><thead><tr><th>층</th><th>필요 관통</th><th>필요 명중</th></tr></thead><tbody id="rows"></tbody></table></div>
-</details>
+
+<section class="card" id="floorCheckCard">
+  <h2 style="font-size:17px;margin:0 0 10px">지정 층 필요 관통·명중 조회</h2>
+  <div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0">
+    <label>조회할 층수 (500~11,000)
+      <input id="floorCheck" type="number" inputmode="numeric" min="500" max="11000" step="1" value="11000" autocomplete="off">
+    </label>
+    <div id="floorCheckResult" class="lookupResult" aria-live="polite"></div>
+  </div>
+  <div class="note">APK 0.2.7 확인: 11,000층 필요 관통 179,000 · 필요 명중 118,800. 8,001~11,000층은 관통 20/층, 명중 5/층 증가합니다.</div>
+</section>
 
 <details id="rewardTab" style="margin-top:14px">
 <summary>가능 최고층까지 초월석 총합 보기</summary>
 <div style="border-top:1px solid var(--line);padding:14px 16px">
   <div id="rewardResult" class="lookupResult" style="display:block;min-height:0;line-height:1.65">관통을 입력하면 초월석 누적 보상을 계산합니다.</div>
-  <div class="note" style="margin-top:9px">1~500층은 APK 보상 구간을 사용하고, 500층 이후는 <b>1016층 초기화 실측 307,800개</b>에 맞춰 보정합니다.</div>
+  <div class="note" style="margin-top:9px">1~11,000층 최초 클리어 보상을 합산합니다. APK 0.2.7에서 8,001~11,000층 보상도 층당 초월석 1,280개임을 확인했습니다.</div>
 </div>
 </details>
 
@@ -132,7 +140,7 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 </main>
 <script>
 const fmt=n=>Math.trunc(n).toLocaleString('ko-KR');
-// APK 0.1.87 TranscendenceTower1000/1500/3000Balance 원본 배열·보간식.
+// 기존 500~3000층: TranscendenceTower1000/1500/3000Balance 배열·보간식.
 const B1=[2500,3000,3600,4300,5100,6000], E1=[8000,9500,11200,13100,15200,17500];
 const B2=[6000,7000,8100,9300,10600,12000], E2=[17500,20000,22700,25600,28700,32000];
 const B3=[12000,18000,25000,33000], E3=[32000,48000,66000,86000];
@@ -155,11 +163,40 @@ function tower3000Value(f,vals){
  const t=level-i*500-1500;
  return vals[i]+Math.trunc((vals[i+1]-vals[i])/500)*t;
 }
+// APK 0.1.99 재검증: TranscendenceTower5000Balance ARM64 GetBossBlock/GetBossEvasion (기존 수치 유지)
+// 3001~5000층에만 적용. 보스 방어=관통 대응, 보스 회피=명중 대응.
+function tower5000Block(f){
+ if(f<=3500)return 18*f-21000;
+ if(f<=4000)return 20*f-28000;
+ if(f<=4500)return 6*f+28000;
+ return 8*f+19000;
+}
+function tower5000Evasion(f){
+ if(f<=3500)return 2*f+80000;
+ if(f<=4000)return 3*f+76500;
+ if(f<=4500)return 88500+Math.floor((f-4000)/5);
+ return 88600+Math.floor(2*(f-4500)/5);
+}
+// APK 0.1.99 재검증: TranscendenceTower7000Balance.GetBossBlock/GetBossEvasion (ARM64, 변경 없음).
+// This segment begins at floor 5001; prior 3001~5000 formulas are unchanged.
+function tower7000Block(f){const lv=Math.max(5001,Math.min(7000,f));return 20*lv-41000;}
+function tower7000Evasion(f){const lv=Math.max(5001,Math.min(7000,f));return 5*lv+63800;}
+// 7,001~8,000층 구간: 기존 확장 공식.
+function tower8000Block(f){const lv=Math.max(7001,Math.min(8000,f));return 20*lv-41000;}
+function tower8000Evasion(f){const lv=Math.max(7001,Math.min(8000,f));return 5*lv+63800;}
+// APK 0.2.7 TranscendenceTowerBalance.GetBossBlock/GetBossEvasion.
+// 8,001~11,000층 확장 플래그가 활성화되면 관통 20/층, 명중 5/층 증가.
+function tower11000Block(f){const lv=Math.max(8001,Math.min(11000,f));return 20*lv-41000;}
+function tower11000Evasion(f){const lv=Math.max(8001,Math.min(11000,f));return 5*lv+63800;}
 function req(f){
  if(f===500)return [B1[0],E1[0]];
  if(f<=1000)return [tower1000Value(f,B1),tower1000Value(f,E1)];
  if(f<=1500)return [tower1500Value(f,B2),tower1500Value(f,E2)];
- return [tower3000Value(f,B3),tower3000Value(f,E3)];
+ if(f<=3000)return [tower3000Value(f,B3),tower3000Value(f,E3)];
+ if(f<=5000)return [tower5000Block(f),tower5000Evasion(f)];
+ if(f<=7000)return [tower7000Block(f),tower7000Evasion(f)];
+ if(f<=8000)return [tower8000Block(f),tower8000Evasion(f)];
+ return [tower11000Block(f),tower11000Evasion(f)];
 }
 const myPen=document.getElementById('myPen'),lookupResult=document.getElementById('lookupResult');
 function penNum(v){
@@ -170,36 +207,27 @@ function penNum(v){
 }
 function maxFloorByPen(pen){
  if(pen<req(500)[0])return null;
- let lo=500,hi=3000,best=500;
+ let lo=500,hi=11000,best=500;
  while(lo<=hi){
   const mid=Math.floor((lo+hi)/2),need=req(mid)[0];
   if(need<=pen){best=mid;lo=mid+1}else hi=mid-1;
  }
  return best;
 }
-// 1~500층: APK 0.1.87 GetReward 구간값.
-// 500층 이후: 사용자 실측 1016층 초기화 총 307,800개를 앵커로 보정.
-// 추가 실측값이 확보되면 500층 이후를 구간별 실데이터로 교체한다.
+// APK ARM64 GetReward: 1~500 (50개/100층), 501~3000 (40개/100층).
+// 3001~5000: Tower5000Balance fixed 1280; 5001~7000: Tower7000Balance forwards to Tower5000Balance.GetReward.
+// APK 0.2.7: 8,001~11,000층 확장 구간도 층당 초월석 1,280개를 반환.
 function stoneRewardAtFloor(floor){
- const f=Math.max(1,Math.min(500,Math.floor(floor)));
- return 100+Math.floor((f-1)/100)*50;
+ const f=Math.max(1,Math.min(11000,Math.floor(floor)));
+ if(f<=500)return 100+Math.floor((f-1)/100)*50;
+ if(f<=3000)return 320+Math.floor((f-501)/100)*40;
+ return 1280;
 }
-function apkTotalTo500(toFloor){
- const to=Math.max(0,Math.min(500,Math.floor(toFloor)));
+function totalStoneReward(toFloor){
+ const to=Math.max(0,Math.min(11000,Math.floor(toFloor)));
  let total=0;
  for(let f=1;f<=to;f++)total+=stoneRewardAtFloor(f);
  return total;
-}
-const REWARD_ANCHOR_FLOOR=1016;
-const REWARD_ANCHOR_TOTAL=307800;
-const REWARD_BASE_FLOOR=500;
-const REWARD_BASE_TOTAL=apkTotalTo500(REWARD_BASE_FLOOR);
-const REWARD_POST500_AVG=(REWARD_ANCHOR_TOTAL-REWARD_BASE_TOTAL)/(REWARD_ANCHOR_FLOOR-REWARD_BASE_FLOOR);
-function totalStoneReward(toFloor){
- const to=Math.max(0,Math.floor(toFloor));
- if(to<=REWARD_BASE_FLOOR)return apkTotalTo500(to);
- if(to===REWARD_ANCHOR_FLOOR)return REWARD_ANCHOR_TOTAL;
- return Math.round(REWARD_BASE_TOTAL+(to-REWARD_BASE_FLOOR)*REWARD_POST500_AVG);
 }
 function updateReward(f){
  const out=document.getElementById('rewardResult');
@@ -208,14 +236,18 @@ function updateReward(f){
   out.textContent='500층 관통 기준을 충족하면 초월석 누적 보상을 표시합니다.';
   return;
  }
- const all=totalStoneReward(f,1);
- out.innerHTML='<b style="font-size:17px">'+f+'층까지 전체 누적 '+fmt(all)+'개</b>';
+ const all=totalStoneReward(f);
+ const base=totalStoneReward(Math.min(f,8000));
+ const extension=Math.max(0,f-8000)*1280;
+ const detail=f>8000
+  ? '<div style="margin-top:6px;font-size:12px;color:#71867c">기존 1~8,000층 누적 '+fmt(base)+'개</div><div style="font-size:12px;color:#198b64">확장 8,001~'+fmt(f)+'층 추가 '+fmt(extension)+'개</div>'
+  : '<div style="margin-top:6px;font-size:12px;color:#71867c">기존 구간 누적 '+fmt(base)+'개</div>';
+ out.innerHTML='<b style="font-size:17px">'+fmt(f)+'층까지 전체 누적 '+fmt(all)+'개</b>'+detail;
 }
 function updateLookup(){
  const pen=penNum(myPen.value);
  const ok=Number.isFinite(pen)&&pen>=0;
  myPen.setAttribute('aria-invalid',ok?'false':'true');
- document.querySelectorAll('tr.hit').forEach(r=>r.classList.remove('hit'));
  if(!ok){lookupResult.textContent='관통 수치를 정수로 입력해 주세요.';updateReward(null);return}
  const f=maxFloorByPen(pen);
  if(f===null){
@@ -226,37 +258,29 @@ function updateLookup(){
  }
  const [p,a]=req(f);
  let extra='';
- if(f<3000){
+ if(f<11000){
   const [np,na]=req(f+1);
   extra='<br><span style="font-size:12px;color:#71867c">다음 '+(f+1)+'층 · 필요 관통 '+fmt(np)+' / 필요 명중 '+fmt(na)+'</span>';
  }
  lookupResult.innerHTML='<span>'+f+'층까지 가능</span> · 필요 관통 '+fmt(p)+' / 필요 명중 '+fmt(a)+extra;
  updateReward(f);
- const row=document.getElementById('f'+f);if(row)row.classList.add('hit');
 }
-const list=document.getElementById('list'),rows=document.getElementById('rows');
-let rowsBuilt=false;
-function buildRows(){
- if(rowsBuilt)return;
- const frag=document.createDocumentFragment();
- for(let f=500;f<=3000;f++){
-  const [p,a]=req(f),tr=document.createElement('tr');
-  tr.id='f'+f;tr.innerHTML='<td>'+f+'</td><td>'+fmt(p)+'</td><td>'+fmt(a)+'</td>';frag.appendChild(tr);
- }
- rows.appendChild(frag);rowsBuilt=true;updateLookup();
+
+function updateFloorCheck(){
+ const field=document.getElementById('floorCheck'),out=document.getElementById('floorCheckResult');
+ const raw=String(field.value).trim();
+ const n=Number(raw);
+ const valid=/^\d+$/.test(raw)&&Number.isSafeInteger(n)&&n>=500&&n<=11000;
+ field.setAttribute('aria-invalid',valid?'false':'true');
+ if(!valid){out.textContent='500~11,000층 정수를 입력해 주세요.';return;}
+ const [block,evasion]=req(n);
+ out.textContent=fmt(n)+'층 · 필요 관통 '+fmt(block)+' / 필요 명중 '+fmt(evasion)+(n===11000?' · APK MAX':'');
 }
+document.getElementById('floorCheck').addEventListener('input',updateFloorCheck);
+updateFloorCheck();
+
 myPen.addEventListener('input',updateLookup);
-myPen.addEventListener('keydown',e=>{
- if(e.key!=='Enter')return;
- e.preventDefault();
- updateLookup();
- const pen=penNum(myPen.value),f=Number.isFinite(pen)?maxFloorByPen(pen):null;
- if(f===null)return;
- list.open=true;buildRows();
- const row=document.getElementById('f'+f);
- if(row)row.scrollIntoView({behavior:'smooth',block:'center'});
-});
-list.addEventListener('toggle',()=>{if(list.open)buildRows()});
+myPen.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();updateLookup();}});
 // 관통 Total에서 전달된 최종 관통을 받아 기존 초월의 탑 계산을 실행합니다.
 function applyPenetrationHandoff(value){
  const n=Number(value);

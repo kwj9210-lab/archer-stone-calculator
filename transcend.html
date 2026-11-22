@@ -440,37 +440,34 @@ td{color:#62776e;background:#fff}
 @media(max-width:470px){.power-verify-grid{grid-template-columns:1fr}}
 .power-box .v{font-size:clamp(15px,2vw,22px)}
 @media(max-width:760px){.comparison-row{font-size:11px}.power-box .v{font-size:17px}}
+#towerPane{width:100%;min-width:0;margin-top:15px}
+#towerInside{max-width:100%;overflow:hidden;display:block}
 </style>
+<link rel="stylesheet" href="./clarity-ui.css?v=2">
 </head>
 <body>
 <main>
 <section class="page-hero">
 <header class="site-head">
   <div class="site-title-row usage-title">
-    <h1>궁수키우기 RPG 초월석 시뮬레이터</h1>
+    <h1>초월석 최적 배분 · 초월의 탑</h1>
     <details class="usage-guide">
 <summary>사용방법 <span aria-hidden="true">▾</span></summary>
 <div class="usage-panel">
-<p><b>① 현재 상태</b> · 전투력, 4종 현재 레벨, 미사용 초월석만 입력하세요.</p>
-<p><b>② 자동 합산</b> · 현재 강화에 쓴 초월석과 미사용 초월석을 합쳐 전체 재투자 수량을 계산합니다.</p>
-<p><b>③ 결과 확인</b> · 재배분 추천과 공격력 효과지수를 비교합니다. 초기화 후 실측 전투력이 있어야 예상 전투력을 계산합니다.</p>
-<p><b>④ 실측 검증</b> · 재투자 후 실제 전투력을 입력하면 상승률과 예상 오차가 나옵니다.</p>
-<p class="example"><b>예시</b> · 10만 개 투자 + 미사용 2만 개라면 12만 개로 재투자합니다. 초기화 후 실측값 없이 79% 효과지수가 증가해도 전투력 79% 상승이라고 표시하지 않습니다.</p>
+<p><b>① 초월석 최적 배분</b> · 보유 초월석을 입력하고 계산 버튼을 누르면 강화 4종의 추천 레벨을 확인할 수 있습니다.</p>
+<p><b>② 내 관통으로 가능한 최고층</b> · 현재 관통으로 가능한 최고층과 다음 층의 요구 수치를 계산합니다.</p>
+<p><b>③ 지정 층 조회</b> · 500~11,000층 중 원하는 층을 입력해 필요 관통과 명중을 확인합니다.</p>
+<p><b>초월석 누적 보상</b>은 아래 접이식 항목에서 확인할 수 있습니다.</p>
 </div>
 </details>
   </div>
-  <div class="submark">Lv.0–4500</div>
+  <div class="submark">탑 11,000층 · 초월 Lv.20,000</div>
 </header>
-<div class="hero-sub">초기화 없이 현재 초월 레벨·미사용 초월석·전투력으로 재배분 결과를 비교합니다.</div>
-<div class="hero-actions">
-<nav class="mode-tabs" aria-label="초월석 계산 모드">
-  <button type="button" class="mode-tab active" data-mode="power">초기화 전 재분배</button>
-  <button type="button" class="mode-tab" data-mode="allocation">초월석 최적 배분</button>
-</nav>
-</div>
+<div class="hero-sub">초월석 4종의 계산 범위를 Lv.20,000까지 확장했습니다. 기존 APK에서 대조한 구간 이후는 동일 비용·효과 확장식을 적용한 계산 구간입니다. 초월의 탑은 11,000층 기준입니다.</div>
+
 </section>
 
-<div id="allocationPane" class="mode-pane">
+<div id="allocationPane" class="mode-pane active">
 <div class="workspace">
   <section class="panel input-panel">
     <div class="input-head">
@@ -503,7 +500,7 @@ td{color:#62776e;background:#fff}
   <div class="cost-head">
     <h2>비용 기준</h2>
   </div>
-  <div class="cost-summary">Lv.4500 MAX · 청람 297,051 / 성해 372,562 / 차원 560,096 / 영겁 636,101<br>최근 실측 검산 · 청람 4495→4500 676 / 성해 200→300 2,500 / 차원 197→297 3,955 / 영겁 200→300 5,000</div>
+  <div class="cost-summary">Lv.20,000 MAX · 기존 APK 대조 구간 이후는 동일 비용식을 연장 적용.<br>이전 구간 실측 검산 · 청람 4495→4500 676 / 성해 200→300 2,500 / 차원 197→297 3,955 / 영겁 200→300 5,000</div>
   <details class="cost-details">
     <summary>100레벨 구간별 비용</summary>
     <div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>청람</th><th>성해</th><th>차원</th><th>영겁</th></tr></thead><tbody></tbody></table></div>
@@ -511,68 +508,8 @@ td{color:#62776e;background:#fff}
 </section>
 </div>
 
-<section id="powerPane" class="mode-pane active">
-  <div class="workspace">
-    <section class="panel input-panel">
-      <div class="input-head"><h2>전투력 기준</h2></div>
-      <div class="power-grid">
-        <div class="field">
-          <label for="currentPower">초기화 전 전투력</label>
-          <input id="currentPower" type="text" inputmode="text" autocomplete="off" placeholder="예: 24억 6852만 7875 / 719AYXLEBX">
-          <div id="currentPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
-        </div>
-        <div class="field">
-          <label for="powerStones">현재 미사용 초월석</label>
-          <input id="powerStones" type="text" inputmode="numeric" autocomplete="off" value="0" placeholder="아직 투자하지 않은 초월석">
-          <div class="input-note" style="margin-top:5px">현재 레벨에 이미 투자한 초월석은 아래에서 자동 합산합니다.</div>
-        </div>
-      </div>
-      <div class="input-head" style="margin-top:17px;margin-bottom:10px"><h2>현재 초월 레벨</h2></div>
-      <div class="power-levels">
-        <div class="field"><label for="plv0">청람결정</label><input id="plv0" type="number" min="0" max="4500" step="1" value="0"></div>
-        <div class="field"><label for="plv1">성해공명</label><input id="plv1" type="number" min="0" max="4500" step="1" value="0"></div>
-        <div class="field"><label for="plv2">차원각인</label><input id="plv2" type="number" min="0" max="4500" step="1" value="0"></div>
-        <div class="field"><label for="plv3">영겁성핵</label><input id="plv3" type="number" min="0" max="4500" step="1" value="0"></div>
-      </div>
-      <div class="reinvest-total" aria-live="polite">
-        <div id="currentStoneSpent">현재 레벨 투자 초월석 · 0개</div>
-        <div id="powerPoolBreakdown">미사용 초월석 · 0개</div>
-        <strong id="reinvestPool">재투자 가능한 총 초월석 · 0개</strong>
-        <div id="perStoneSpent" class="input-note" style="margin-top:5px"></div>
-      </div>
-      <details class="reset-calibration">
-        <summary>초기화 후 실측 전투력 입력 (예상 전투력 계산)</summary>
-        <div class="field" style="margin-top:12px">
-          <label for="resetPower">초월석 초기화 후 전투력</label>
-          <input id="resetPower" type="text" inputmode="text" autocomplete="off" placeholder="알고 있을 때만 입력하세요">
-          <div id="resetPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
-        </div>
-        <div class="input-note">초기화 후 전투력을 입력해야 계정별 실측 차이를 반영한 재투자 예상 전투력과 상승률을 계산합니다. 입력하지 않으면 추천 레벨과 효과지수만 표시합니다.</div>
-      </details>
-      <div class="field measured-power-field">
-        <label for="actualPower">재투자 후 실제 전투력 (선택 · 검증용)</label>
-        <input id="actualPower" type="text" inputmode="text" autocomplete="off" placeholder="예: 91억 7805만 7370">
-        <div id="actualPowerPreview" class="input-note" style="margin-top:5px">인식값 · -</div>
-        <div class="input-note" style="margin-top:5px">실제 게임에서 확인한 값을 입력하면 전투력 실제 상승률과 예상값 대비 오차를 비교합니다.</div>
-      </div>
-      <button id="runPower" type="button">전체 초월석 최적 재분배 계산</button>
-      <div class="power-session-actions">
-        <span id="powerSessionHint" class="input-note">계산 후 입력값이 이 브라우저에 저장됩니다.</span>
-        <button id="clearPowerSession" class="session-clear" type="button">저장된 입력 삭제</button>
-      </div>
-      <div id="powerStatus" class="status" aria-live="polite"></div>
-      <p class="input-note">전투력은 <b>24억 6852만 7875</b> 또는 <b>719AYXLEBX 9116AYXLEBW</b>처럼 입력할 수 있습니다. 강화 비용·공격력 효과·최적 배분은 APK 복원식을 유지합니다.<br><b>주의:</b> 초기화 후 실측 전투력 없이는 최종 전투력을 추정하지 않습니다. 실측 보정 예상도 실제 재투자 결과와 차이가 날 수 있으며, 정확도는 실제 전투력을 입력해 확인하세요.</p>
-    </section>
-
-    <section class="panel result-panel">
-      <h2>현재 배분 ↔ 최적 재분배 결과</h2>
-      <div id="powerResult" class="result-main">
-        <div class="result-empty">전투력·초월석·현재 초월 레벨을 입력하면 결과가 표시됩니다.</div>
-      </div>
-      <div id="powerVerification"></div>
-      <div id="powerFinalLevels"></div>
-    </section>
-  </div>
+<section id="towerPane" class="mode-pane active" aria-label="초월의 탑 관통·명중 조회">
+  <iframe id="towerInside" src="tower.html" title="최고층 및 지정 층 필요 관통·명중 계산" loading="eager" scrolling="no" style="width:100%;display:block;border:0;background:transparent;height:600px;min-height:1px"></iframe>
 </section>
 </main>
 
@@ -587,14 +524,14 @@ td{color:#62776e;background:#fff}
     [1500,2500,4000,6000,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500,7500,7855,8069,8494,8932,9389,9855,10334,10837,11349,11869,12400,12943,13499,14070,14656],
     [2000,3000,5000,7000,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8500,8685,9150,9633,10132,10646,11173,11720,12277,12852,13442,14047,14669,15300,15952,16616]
   ];
-  // Lv.3001~4500 구간은 아래 APK BuildExpandedCosts 식으로 생성하므로 빈 구간을 확장한다.
-  costs=costs.map(row=>row.concat(Array(15).fill(0)));
+  // Lv.3001~20000 구간은 아래 APK BuildExpandedCosts 식으로 생성하므로 빈 구간을 확장한다.
+  costs=costs.map(row=>row.concat(Array(170).fill(0)));
 
   // APK 비용표 구성: Lv.1~1500은 100레벨 구간 내 고정 x1 비용,
-  // Lv.1501~4500은 BuildExpandedCosts 정수식.
+  // Lv.1501~20000은 BuildExpandedCosts 정수식.
   const baseCost=[40,50,75,85];
   const levelCost=costs.map((row,stoneIndex)=>{
-    const a=new Int32Array(4501);
+    const a=new Int32Array(20001);
     let sum=0; a[0]=0;
     for(let lv=1;lv<=1500;lv++){
       const block=Math.floor((lv-1)/100);
@@ -602,7 +539,7 @@ td{color:#62776e;background:#fff}
       a[lv]=sum;
     }
     const B=baseCost[stoneIndex];
-    for(let lv=1501;lv<=4500;lv++){
+    for(let lv=1501;lv<=20000;lv++){
       const n=lv-1500;
       sum+=B+Math.floor(B*n*(n+6000)/11250000);
       a[lv]=sum;
@@ -610,17 +547,17 @@ td{color:#62776e;background:#fff}
     return a;
   });
   for(let i=0;i<4;i++){
-    for(let b=15;b<45;b++) costs[i][b]=levelCost[i][(b+1)*100]-levelCost[i][b*100];
+    for(let b=15;b<200;b++) costs[i][b]=levelCost[i][Math.min(20000,(b+1)*100)]-levelCost[i][b*100];
   }
 
-  // APK CalculateStoneTranscendMultiplierAtLevel 복원값. Lv.1501 이후 동일 확장식을 Lv.4500까지 적용.
+  // APK CalculateStoneTranscendMultiplierAtLevel 복원값. Lv.1501 이후 동일 확장식을 Lv.20000까지 적용.
   // 비교에는 최종 BigNumber 변환 전의 d8 값만 쓰면 된다. 최종 변환은 단조증가라 최적 조합 순서는 동일하다.
   function oneCost(stone,level){
-    if(level<1||level>4500)return 0;
+    if(level<1||level>20000)return 0;
     return levelCost[stone][level]-levelCost[stone][level-1];
   }
   function apkEffect(stone,level){
-    level=Math.max(0,Math.min(4500,Math.floor(level)));
+    level=Math.max(0,Math.min(20000,Math.floor(level)));
     let v=0;
     const upto=Math.min(level,1500);
     const seg=[[0,100],[100,200],[200,300],[300,400],[400,600],[600,1200],[1200,1500]];
@@ -638,16 +575,17 @@ td{color:#62776e;background:#fff}
       const t2=m*(m+1)*(2*m+1)/6;
       const ref=oneCost(stone,1500);
       v+=(m+(6000*t1+t2)/11250000)*(ref/320);
+      if(m>3000)v+=19*((m-3000)+(6000*(t1-4501500)+(t2-9004500500))/11250000)*(ref/320);
     }
-    return v;
+    return 2*v;
   }
   const levelEffect=Array.from({length:4},(_,i)=>{
-    const a=new Float64Array(4501);
-    for(let lv=0;lv<=4500;lv++)a[lv]=apkEffect(i,lv);
+    const a=new Float64Array(20001);
+    for(let lv=0;lv<=20000;lv++)a[lv]=apkEffect(i,lv);
     return a;
   });
 
-  const TOTAL_MAX=levelCost.reduce((s,a)=>s+a[4500],0);
+  const TOTAL_MAX=levelCost.reduce((s,a)=>s+a[20000],0);
   const EPS=1e-9;
   const fmt=n=>Math.round(n).toLocaleString("ko-KR");
 
@@ -659,25 +597,43 @@ td{color:#62776e;background:#fff}
     for(let i=0;i<arguments.length;i++)v+=arguments[i];
     return v;
   }
-  const clampLv=v=>Math.max(0,Math.min(4500,Math.floor(Number(v)||0)));
+  const clampLv=v=>Math.max(0,Math.min(20000,Math.floor(Number(v)||0)));
+  // 동률이면 끝자리가 0인 강화 레벨이 많은 조합을 우선한다.
+  // 10단위 개수 → 100단위 개수 → 1,000단위 개수 → 사용 초월석 순서.
+  const zeroEndingRank=levels=>{
+    let tens=0,hundreds=0,thousands=0;
+    for(const lv of levels){
+      if(lv%10===0)tens++;
+      if(lv%100===0)hundreds++;
+      if(lv%1000===0)thousands++;
+    }
+    return [tens,hundreds,thousands];
+  };
+  const easier=(a,b)=>{
+    const x=zeroEndingRank(a.levels),y=zeroEndingRank(b.levels);
+    for(let i=0;i<x.length;i++)if(x[i]!==y[i])return x[i]>y[i];
+    return false;
+  };
   const better=(a,b)=>{
     if(!b)return true;
     const d=a.score-b.score;
     if(Math.abs(d)>EPS)return d>0;
+    if(easier(a,b))return true;
+    if(easier(b,a))return false;
     if(a.used!==b.used)return a.used>b.used;
     for(let i=0;i<4;i++)if(a.levels[i]!==b.levels[i])return a.levels[i]>b.levels[i];
     return false;
   };
   const levelsFor=(fixed,step)=>{
-    if(fixed)return [4500];
-    const a=[]; for(let x=0;x<=4500;x+=step)a.push(x); return a;
+    if(fixed)return [20000];
+    const a=[]; for(let x=0;x<=20000;x+=step)a.push(x); return a;
   };
 
   // 단계별 누적 비용·공격력 효과를 그대로 사용. 다중 시작+2항목 전수탐색.
   // 예산별 빠른 추천 조합이며, 모든 4항목 조합의 전수 증명은 아니다.
   function optimizeRecommended(budget,currentLevels){
     budget=Math.max(0,Math.min(TOTAL_MAX,Math.floor(budget)));
-    const L=4500,c=levelCost,e=levelEffect;
+    const L=20000,c=levelCost,e=levelEffect;
     if(budget>=TOTAL_MAX){
       const levels=[L,L,L,L];
       const best={levels,used:TOTAL_MAX,left:0,score:levels.reduce((x,lv,i)=>x+e[i][lv],0)};
@@ -744,7 +700,7 @@ td{color:#62776e;background:#fff}
     ];
     const seeds=starts.map(f=>f.map((v,i)=>maxLevel(i,Math.floor(budget*v))));
     if(currentLevels && currentLevels.length===4){
-      const clean=currentLevels.map((v,i)=>Math.max(0,Math.min(4500,Math.floor(v))));
+      const clean=currentLevels.map((v,i)=>Math.max(0,Math.min(20000,Math.floor(v))));
       if(state(clean).used<=budget)seeds.push(clean);
     }
     const results=[];
@@ -756,25 +712,26 @@ td{color:#62776e;background:#fff}
     return {best:results[0],top:results.slice(0,12),base100:null};
   }
   function getPool(){
-    const n=Number(document.getElementById("stones").value);
-    if(!Number.isFinite(n) || n<0 || !Number.isSafeInteger(Math.floor(n))) return NaN;
-    return Math.floor(n);
+    const raw=String(document.getElementById("stones").value).trim();
+    if(!/^\d+$/.test(raw))return NaN;
+    const n=Number(raw);
+    return Number.isSafeInteger(n)?n:NaN;
   }
 
 
-  const estimatedCostBlocks=new Set();
+  // Lv.10001~20000 costs are confirmed from v0.2.6 BuildExpandedCosts.
 
   function renderCostTable(){
     let h="<thead><tr><th>구간</th>";
     for(const n of shortNames)h+="<th>"+n+"</th>";
     h+="</tr></thead><tbody>";
-    for(let b=0;b<45;b++){
-      h+="<tr><td>Lv."+(b*100)+"→"+((b+1)*100)+"</td>";
-      for(let i=0;i<4;i++){const est=estimatedCostBlocks.has(i+"-"+b);h+="<td>"+(est?"≈":"")+fmt(costs[i][b])+"</td>";}
+    for(let b=0;b<200;b++){
+      h+="<tr><td>Lv."+(b*100)+"→"+Math.min(20000,(b+1)*100)+"</td>";
+      for(let i=0;i<4;i++)h+="<td>"+fmt(costs[i][b])+"</td>";
       h+="</tr>";
     }
     h+="<tr><td><b>MAX</b></td>";
-    for(let i=0;i<4;i++)h+="<td><b>"+fmt(levelCost[i][4500])+"</b></td>";
+    for(let i=0;i<4;i++)h+="<td><b>"+fmt(levelCost[i][20000])+"</b></td>";
     h+="</tr></tbody>";
     document.getElementById("costTable").innerHTML=h;
   }
@@ -789,31 +746,27 @@ td{color:#62776e;background:#fff}
 
     const rawMax=Math.max(...exact.top.map(r=>r.score),b.score);
     const joint=exact.top.filter(r=>rawMax-r.score<=EPS);
-    const ordered=joint.slice().sort((x,y)=>{
-      if(x.left!==y.left)return x.left-y.left;
-      for(let i=0;i<4;i++)if(y.levels[i]!==x.levels[i])return y.levels[i]-x.levels[i];
-      return 0;
-    });
+    const ordered=joint.slice().sort((x,y)=>better(x,y)?-1:better(y,x)?1:0);
     const shown=ordered[0]||b;
     const base100=exact.base100||null;
     let minNext=Infinity;
     for(let i=0;i<4;i++){
       const lv=shown.levels[i];
-      if(lv<4500){
+      if(lv<20000){
         const c=levelCost[i][lv+1]-levelCost[i][lv];
         if(c>0)minNext=Math.min(minNext,c);
       }
     }
 
     document.getElementById("best").innerHTML=
-      '<div class="bestline">'+(ordered.length>1?'같은 효과의 추천 '+ordered.length+'개':'추천 전투력 배분')+'</div>'+
+      '<div class="bestline">'+(ordered.length>1?'같은 효과의 추천 '+ordered.length+'개 · 끝자리 0 우선':'추천 전투력 배분')+'</div>'+
       '<div class="numbers"><span>총 초월석 <b>'+fmt(pool)+'</b></span><span>예상 사용 <b>'+fmt(shown.used)+'</b></span><span>예상 잔여 <b>'+fmt(shown.left)+'</b></span></div>'+
       (base100?'<div class="small">100단위 확정: '+base100.levels.map((lv,i)=>shortNames[i]+' Lv.'+lv).join(' · ')+' / 사용 '+fmt(base100.used)+' / 잔여 '+fmt(base100.left)+'</div>':'')+
       (shown.left>0 && minNext<Infinity && shown.left<minNext?'<div class="small">잔여 '+fmt(shown.left)+'개는 다음 1레벨 최소 비용 '+fmt(minNext)+'개보다 적어 사용 불가</div>':'');
 
     document.getElementById("targets").innerHTML=ordered.map((r,idx)=>
       '<div class="joint-card">'+
-        '<div class="joint-rank'+(idx===0?' featured':'')+'">'+(ordered.length>1?'공동 최고':'최고 전투력 배분')+(idx===0&&ordered.length>1?' · 잔여 최소':'')+'</div>'+
+        '<div class="joint-rank'+(idx===0?' featured':'')+'">'+(ordered.length>1?'공동 최고':'최고 전투력 배분')+(idx===0&&ordered.length>1?' · 입력 간편 추천':'')+'</div>'+
         '<div class="joint-levels">'+r.levels.map((lv,i)=>
           '<div class="target"><div class="name">'+names[i]+'</div><div class="lv">Lv.'+lv+'</div><div class="small">사용 '+fmt(levelCost[i][lv])+'</div></div>'
         ).join("")+'</div>'+
@@ -904,7 +857,7 @@ td{color:#62776e;background:#fff}
       const raw=String(document.getElementById("plv"+i).value).trim();
       if(!/^\d+$/.test(raw))return null;
       const n=Number(raw);
-      if(!Number.isSafeInteger(n)||n<0||n>4500)return null;
+      if(!Number.isSafeInteger(n)||n<0||n>20000)return null;
       levels.push(n);
     }
     return levels;
@@ -921,7 +874,7 @@ td{color:#62776e;background:#fff}
       document.getElementById("currentStoneSpent").textContent="현재 투자량 · 입력 확인";
       document.getElementById("powerPoolBreakdown").textContent="미사용 초월석 · 입력 확인";
       document.getElementById("reinvestPool").textContent="재투자 가능 수량 · 입력값 확인";
-      document.getElementById("perStoneSpent").textContent="레벨은 0~4500, 미사용 초월석은 0 이상 정수로 입력하세요.";
+      document.getElementById("perStoneSpent").textContent="레벨은 0~20000, 미사용 초월석은 0 이상 정수로 입력하세요.";
       return;
     }
     document.getElementById("currentStoneSpent").textContent="현재 레벨 투자 초월석 · "+fmt(data.invested)+"개";
@@ -1137,7 +1090,7 @@ td{color:#62776e;background:#fff}
     const raw=document.getElementById("stones").value.trim();
     if(raw===""){status.innerHTML='<span class="bad">보유 초월석을 입력해 주세요.</span>';return;}
     let pool=getPool();
-    if(!Number.isFinite(pool)||pool<0){status.innerHTML='<span class="bad">초월석 값을 확인해 주세요.</span>';return;}
+    if(!Number.isFinite(pool)||pool<0){status.innerHTML='<span class="bad">초월석은 0 이상의 정수로 입력해 주세요.</span>';return;}
     const fixed=[false,false,false,false];
     const calcPool=Math.min(pool,TOTAL_MAX);
     button.disabled=true; status.textContent="최적 배분 계산 중...";
@@ -1151,7 +1104,7 @@ td{color:#62776e;background:#fff}
           if(!exact.top.includes(exact.best)) exact.best.left+=extra;
         }
         renderResult(pool,exact);
-        status.innerHTML='<span class="ok">계산 완료. APK 비용·효과식으로 빠르게 탐색한 추천 배분입니다.</span>';
+        status.innerHTML='<span class="ok">계산 완료. Lv.20,000까지의 비용은 0.2.6 APK BuildExpandedCosts를 대조한 값입니다.</span>';
       }catch(err){
         console.error(err);
         status.innerHTML='<span class="bad">계산 중 오류가 발생했습니다. 다시 시도해 주세요.</span>';
@@ -1161,40 +1114,51 @@ td{color:#62776e;background:#fff}
   }
   document.getElementById("run").addEventListener("click",run);
   document.getElementById("stones").addEventListener("keydown",e=>{if(e.key==="Enter")run();});
-  document.getElementById("runPower").addEventListener("click",runPowerCalc);
-  restorePowerRecord();
-  ["currentPower","resetPower","actualPower"].forEach(id=>{
-    document.getElementById(id).addEventListener("input",()=>{
-      updatePowerPreview(id,id+"Preview");
-      invalidatePowerResult();
-    });
-    updatePowerPreview(id,id+"Preview");
+  const towerInside=document.getElementById("towerInside");
+  let towerResizeObserver=null;
+  function syncTowerHeight(){
+    try{
+      const doc=towerInside.contentDocument;
+      if(!doc||!doc.body)return;
+      const height=Math.max(150,doc.body.scrollHeight);
+      const value=height+5+"px";
+      if(towerInside.style.height!==value)towerInside.style.height=value;
+    }catch(_){}
+  }
+  function decorateTower(){
+    try{
+      const doc=towerInside.contentDocument;
+      if(!doc||!doc.head)return;
+      if(!doc.getElementById("archer-embedded-layout")){
+        const st=doc.createElement("style");
+        st.id="archer-embedded-layout";
+        st.textContent="html,body{background:transparent!important;margin:0!important;overflow-x:hidden!important;}main{width:100%!important;max-width:none!important;padding:0 0 4px!important;} .page-hero{display:none!important;} .card{margin-bottom:14px!important;box-shadow:0 8px 22px rgba(69,126,98,.09)}";
+        doc.head.appendChild(st);
+      }
+      syncTowerHeight();
+    }catch(_){}
+  }
+  towerInside.addEventListener("load",()=>{
+    if(towerResizeObserver)towerResizeObserver.disconnect();
+    decorateTower();
+    if(typeof ResizeObserver!=="undefined"){
+      towerResizeObserver=new ResizeObserver(syncTowerHeight);
+      const doc=towerInside.contentDocument;
+      if(doc?.body)towerResizeObserver.observe(doc.body);
+    }
+    try{
+      const pending=localStorage.getItem("archer:tower:handoff");
+      if(pending!==null&&/^\d+$/.test(pending)){
+        towerInside.contentWindow.postMessage({type:"archer:set-tower-penetration",penetration:Number(pending)},location.origin);
+      }
+    }catch(_){}
   });
-  ["plv0","plv1","plv2","plv3","powerStones"].forEach(id=>{
-    document.getElementById(id).addEventListener("input",()=>{
-      updateCurrentStoneSpent();
-      invalidatePowerResult();
-    });
-  });
-  document.getElementById("clearPowerSession").addEventListener("click",()=>{
-    try{localStorage.removeItem(POWER_RECORD_KEY);}catch(_){}
-    document.getElementById("resetPower").value="";
-    document.getElementById("actualPower").value="";
-    updatePowerPreview("resetPower","resetPowerPreview");
-    updatePowerPreview("actualPower","actualPowerPreview");
-    invalidatePowerResult();
-    document.getElementById("powerSessionHint").textContent="저장 기록을 지웠습니다. 초기화 후·재투자 후 실측값 입력도 비웠습니다.";
-  });
-  updateCurrentStoneSpent();
-  POWER_RECORD_IDS.forEach(id=>{
-    document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")runPowerCalc();});
-  });
-  document.querySelectorAll(".mode-tab").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      document.querySelectorAll(".mode-tab").forEach(x=>x.classList.toggle("active",x===btn));
-      document.getElementById("allocationPane").classList.toggle("active",btn.dataset.mode==="allocation");
-      document.getElementById("powerPane").classList.toggle("active",btn.dataset.mode==="power");
-    });
+  window.addEventListener("resize",syncTowerHeight);
+  window.addEventListener("message",event=>{
+    if(event.origin!==location.origin||event.source!==window.parent)return;
+    if(!event.data||event.data.type!=="archer:set-tower-penetration")return;
+    if(towerInside.contentWindow)towerInside.contentWindow.postMessage(event.data,location.origin);
+    document.getElementById("towerPane").scrollIntoView({behavior:"smooth",block:"start"});
   });
   renderCostTable(); document.getElementById("status").textContent="";
 })();
