@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>회원 승인 관리 | 궁수키우기</title>
+<style>
+:root{font-family:system-ui,-apple-system,'Noto Sans KR','Malgun Gothic',sans-serif;color-scheme:light;--bg:#faf8f3;--card:#fffefa;--line:#e7dfd3;--text:#43392f;--muted:#71665b;--accent:#a95a2d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}main{width:min(1100px,100%);padding:25px 15px 50px;margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-size:23px;margin:0;color:#854119}h2{font-size:17px;margin:0 0 9px}.muted{font-size:13px;color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}a,button{font:inherit}a{color:#854119;font-weight:700}
+button{cursor:pointer;border:1px solid #decbb4;border-radius:9px;padding:8px 12px;background:#fff;color:#75421f;font-size:12px;font-weight:700}
+button:disabled{opacity:.55;cursor:wait}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:15px;box-shadow:0 4px 14px rgba(98,67,37,.05)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:800px}td,th{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line);font-size:12px}
+th{background:#fff1de}td.actions{min-width:245px}.actions button{margin:2px}
+strong.pending{color:#ad6e11}strong.approved{color:#17734c}strong.blocked,strong.rejected{color:#a54236}
+#message{min-height:20px;font-size:13px;color:#854119}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div><h1>궁수키우기 회원 승인 관리</h1><p class="muted">가입자 닉네임을 확인하고 승인·거절·차단할 수 있습니다.</p></div>
+  <nav><a href="/calculator.html">통합계산기로 이동</a><button id="logout" type="button">로그아웃</button></nav>
+</header>
+<section class="card"><div class="row"><div><h2>가입 신청 및 회원 목록</h2><p class="muted">최근 가입순 · 최대 500명까지 표시</p></div><button id="refresh" class="primary" type="button">목록 새로고침</button></div><div id="message" role="status" aria-live="polite"></div></section>
+<section class="card"><div class="scroll"><table><thead><tr><th>닉네임</th><th>가입일</th><th>상태</th><th>최근 로그인</th><th>로그인 횟수</th><th>관리</th></tr></thead><tbody id="members"></tbody></table></div></section>
+</main>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const names={pending:'승인 대기',approved:'승인',rejected:'거절',blocked:'차단'};
+const fmtDate=x=>x?new Date(x).toLocaleString('ko-KR'):'-';
+async function readJSON(path,options){
+ const response=await fetch(path,{credentials:'same-origin',cache:'no-store',...options});
+ const data=await response.json();
+ if(!response.ok)throw new Error(data.message||'요청 실패');
+ return data;
+}
+function textElement(tag,value){const node=document.createElement(tag);node.textContent=value;return node}
+function actionButton(label,status,user){
+ const b=textElement('button',label);b.type='button';b.dataset.id=user.id;
+ b.addEventListener('click',async()=>{
+  const old=b.textContent;b.disabled=true;b.textContent='처리 중';
+  try{
+   await readJSON('/api/access',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:user.id,status})});
+   $('message').textContent=user.nickname+' : '+names[status]+' 처리했습니다.';
+   await load();
+  }catch(error){$('message').textContent=error.message;b.disabled=false;b.textContent=old}
+ });
+ return b;
+}
+async function load(){
+ $('message').textContent='회원 목록을 불러오는 중입니다.';
+ try{
+  const data=await readJSON('/api/access?view=users');
+  const tbody=$('members');tbody.replaceChildren();
+  for(const member of data.users){
+   const row=document.createElement('tr');
+   row.append(textElement('td',member.nickname),textElement('td',fmtDate(member.created_at)));
+   const status=document.createElement('td');const badge=textElement('strong',names[member.status]||member.status);badge.className=member.status;status.append(badge);row.append(status);
+   row.append(textElement('td',fmtDate(member.last_login_at)),textElement('td',String(member.login_count||0)));
+   const actions=document.createElement('td');actions.className='actions';
+   if(member.role==='admin')actions.textContent='관리자 계정';
+   else{
+    for(const [label,state] of [['승인','approved'],['거절','rejected'],['차단','blocked'],['대기로 변경','pending']]){
+     if(state!==member.status)actions.append(actionButton(label,state,member));
+    }
+   }
+   row.append(actions);tbody.append(row);
+  }
+  $('message').textContent='총 '+data.users.length+'명 · 승인 대기 '+data.users.filter(m=>m.status==='pending').length+'명';
+ }catch(error){$('message').textContent=error.message}
+}
+$('refresh').addEventListener('click',load);
+$('logout').addEventListener('click',async()=>{
+ try{await readJSON('/api/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})});
+ window.location.replace('/login.html');
+ }catch(error){$('message').textContent=error.message}
+});
+load();
+})();
+</script>
+</body></html>
