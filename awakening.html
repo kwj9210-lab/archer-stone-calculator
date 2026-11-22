@@ -76,7 +76,9 @@ by('targets').innerHTML='<div class="joint-card"><div class="joint-rank">추천 
 try{localStorage.setItem(KEY,String(pool))}catch(_){}
 }catch(e){by('status').textContent=e.message;showEmpty()}finally{button.disabled=false}}
 function costTable(){const tbody=by('costTable').querySelector('tbody');if(tbody.children.length)return;const h=[];for(let start=0;start<E.MAX;start+=100){h.push('<tr><td>Lv.'+fmt(start)+'→'+fmt(start+100)+'</td>'+E.NAMES.map((_,i)=>'<td>'+fmt(E.costs[i][start+100]-E.costs[i][start])+'</td>').join('')+'</tr>')}h.push('<tr><td><b>MAX 전체</b></td>'+E.NAMES.map((_,i)=>'<td><b>'+fmt(E.costs[i][E.MAX])+'</b></td>').join('')+'</tr>');tbody.innerHTML=h.join('')}
+// Save raw entry immediately, even when the calculator is not run.
+by('stones').addEventListener('input',()=>{try{localStorage.setItem(KEY,by('stones').value)}catch(_){}});
 by('run').addEventListener('click',run);by('stones').addEventListener('keydown',e=>{if(e.key==='Enter')run()});by('clear').addEventListener('click',()=>{by('stones').value='';by('status').textContent='';showEmpty();try{localStorage.removeItem(KEY)}catch(_){}});by('details').addEventListener('toggle',e=>{if(e.target.open)costTable()});
-try{const saved=localStorage.getItem(KEY);if(saved&&/^\d+$/.test(saved)){by('stones').value=saved;run()}}catch(_){}
+try{const saved=localStorage.getItem(KEY);if(saved!==null){by('stones').value=saved;if(/^\d+$/.test(saved))run()}}catch(_){}
 })();
 </script></body></html>

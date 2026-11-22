@@ -158,6 +158,7 @@ const tabs=[
  ["stone","tabStone"],["core","tabCore"],["awakening","tabAwakening"],["penetration","tabPenetration"],
  ["sanctuary","tabSanctuary"],["opening","tabOpening"],["weekday","tabWeekday"]
 ];
+const LAST_TAB_KEY="archer:calculator:last-tab:v1";
 const frames=Object.fromEntries(tabs.map(([id])=>[id,document.getElementById(id)]));
 const buttons=Object.fromEntries(tabs.map(([id,button])=>[id,document.getElementById(button)]));
 const calculatorHeader=document.getElementById("calculatorHeader");
@@ -196,6 +197,7 @@ function show(which){
  mobileMenuCurrent.textContent=buttons[which].querySelector(".full").textContent.trim();
  setMobileMenuExpanded(false);
  if(history.replaceState)history.replaceState(null,"","#"+which);
+  try{localStorage.setItem(LAST_TAB_KEY,which)}catch(_){}
  if(which==="stone"&&pendingTowerPen!==null)handoffToTower(pendingTowerPen);
 }
 for(const [id] of tabs)buttons[id].onclick=()=>show(id);
@@ -215,6 +217,9 @@ const standaloneRoutes={training:"training.html",craft:"crafttime.html",crafttim
 if(Object.prototype.hasOwnProperty.call(standaloneRoutes,init))location.replace(standaloneRoutes[init]);
 else if(init==="tower")show("stone");
 else if(frames[init])show(init);
+else {
+  try{const last=localStorage.getItem(LAST_TAB_KEY);if(last&&frames[last])show(last)}catch(_){}
+}
 </script>
 <!-- development integration: core calculator added without deploying -->
 </body></html>
