@@ -139,6 +139,30 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
 </section>
 
 <section class="panel" id="panel-craft">
+<section class="card" id="verifiedCoreRecipeCard">
+ <h2>초월핵 제작 재료 계산</h2>
+ <p class="note">APK v0.2.10의 TranscendentCore243 네이티브 초기화 코드에서 추출한 재료 ID·소모량입니다. 아래 수량은 <b>초월핵 1개 제작 기준</b>이며, 천명의 핵 20조각 제작식과는 별개입니다.</p>
+ <div class="grid two">
+  <div class="field"><label for="verifiedCoreTarget">필요한 초월핵 총개수</label><input id="verifiedCoreTarget" type="number" min="0" step="1" value="1"></div>
+  <div class="field"><label for="verifiedCoreOwned">초월핵 보유 개수</label><input id="verifiedCoreOwned" type="number" min="0" step="1" value="0"></div>
+ </div>
+ <div class="summary" style="margin-top:12px">
+  <div class="metric"><span>추가 제작할 초월핵</span><b id="verifiedCoreMake">-</b></div>
+  <div class="metric"><span>총 제작 재료 비용</span><b id="verifiedMaterialSummary" style="font-size:13px">-</b></div>
+  <div class="metric"><span>제작 수량 검증</span><b style="font-size:13px">APK v0.2.10</b></div>
+ </div>
+ <div class="table-wrap" style="margin-top:12px">
+  <table style="min-width:690px"><thead><tr><th>재료</th><th>1개당</th><th>총 필요량</th><th>재료 보유량</th><th>부족량</th></tr></thead><tbody><tr><td>백금괴</td><td>1,000,000,000,000</td><td id="verifiedNeed9701">-</td><td><input id="verifiedHave9701" aria-label="백금괴 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9701">-</td></tr>
+<tr><td>성철괴</td><td>1,000,000,000,000</td><td id="verifiedNeed9702">-</td><td><input id="verifiedHave9702" aria-label="성철괴 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9702">-</td></tr>
+<tr><td>월광수</td><td>10,000,000,000</td><td id="verifiedNeed9703">-</td><td><input id="verifiedHave9703" aria-label="월광수 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9703">-</td></tr>
+<tr><td>별의 핵</td><td>10,000,000,000</td><td id="verifiedNeed9704">-</td><td><input id="verifiedHave9704" aria-label="별의 핵 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9704">-</td></tr></tbody></table>
+ </div>
+ <div id="verifiedCoreStatus" class="status">보유 수량을 입력하면 추가 제작량과 부족 재료가 자동 계산됩니다.</div>
+ <p class="note">수량은 원본 정수 배열을 기준으로 합니다. 실제 제작 성공·서버 상태를 조회하는 기능은 아닙니다.</p>
+</section>
+
+<details class="card" id="legacyPieceEditor"><summary style="cursor:pointer;font-weight:800;color:#47725b">천명의 핵 20조각 별도 제작식 (아직 미확인, 펼쳐보기)</summary>
+<p class="note">이 아래는 천명의 핵 20조각의 별도 계획용 도구입니다. 위에서 확인한 초월핵 1개 제작 재료와 혼동하지 마세요.</p>
  <section class="card">
   <h2>초월핵 20조각 제작 계산기</h2>
   <p class="note">각 조각의 제작식이 다를 수 있어 20조각을 따로 관리합니다. 실제 조각별 레시피는 아직 미확인입니다. 빈칸을 0으로 처리하지 않습니다.</p>
@@ -187,6 +211,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
   <div id="realRecipeStock" class="recipe" style="margin-top:12px"></div>
   <div id="realRecipeResult" class="status warn" style="white-space:pre-line;margin-top:12px"></div>
  </section>
+</details>
 </section>
 <div class="note">입력한 단계 데이터와 보유량은 이 브라우저에 자동 저장됩니다. 다른 브라우저·기기와 공유되지는 않습니다.</div>
 </main>
@@ -195,7 +220,7 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
 "use strict";
 const $=id=>document.getElementById(id);
 const fmt=n=>Math.trunc(n).toLocaleString("ko-KR");
-const ids=["opening60","chaos11","currentStage","targetStage","haveHeaven","haveNebula","haveCore","craftCount","ownCore","craftMode","platinumHave","steelHave","moonHave","starHave"];
+const ids=["opening60","chaos11","currentStage","targetStage","haveHeaven","haveNebula","haveCore","craftCount","ownCore","craftMode","verifiedCoreTarget","verifiedCoreOwned","verifiedHave9701","verifiedHave9702","verifiedHave9703","verifiedHave9704","platinumHave","steelHave","moonHave","starHave"];
 const stageData=[
  {heaven:"1000000000",nebula:"500000000",core:"12",attack:"3999999983616"},
  {heaven:"1000000000",nebula:"500000000",core:"13",attack:"3999999983616"},
@@ -293,6 +318,40 @@ function render(){
  else if(!complete){$("gateStatus").textContent="선행 조건은 충족했습니다. 단계별 실제 소모량 데이터가 입력되지 않은 항목이 "+materialMissing.length+"개 있습니다.";$("gateStatus").className="status warn";}
  else{$("gateStatus").textContent="초월 조건 충족. 목표 단계까지 필요한 재료를 계산했습니다.";$("gateStatus").className="status";}
  rows.forEach((tr,i)=>tr.classList.toggle("selected",i>=current&&i<target));
+}
+const verifiedCoreMaterials=[
+ {id:9701,name:"백금괴",qty:1000000000000},
+ {id:9702,name:"성철괴",qty:1000000000000},
+ {id:9703,name:"월광수",qty:10000000000},
+ {id:9704,name:"별의 핵",qty:10000000000}
+];
+function renderVerifiedCoreCraft(){
+ const target=number("verifiedCoreTarget"),owned=number("verifiedCoreOwned");
+ const result=$("verifiedCoreStatus");
+ if(!Number.isSafeInteger(target)||!Number.isSafeInteger(owned)){
+  $("verifiedCoreMake").textContent="입력 오류";$("verifiedMaterialSummary").textContent="-";
+  result.textContent="필요한 초월핵과 보유 개수는 0 이상의 안전 정수로 입력해야 합니다.";
+  result.className="status warn";return;
+ }
+ const toMake=Math.max(0,target-owned);
+ $("verifiedCoreMake").textContent=fmt(toMake)+"개";
+ let good=true,totalNeed=0,totalShort=0;
+ for(const item of verifiedCoreMaterials){
+  const amount=item.qty*toMake;
+  const have=number("verifiedHave"+item.id);
+  const valid=Number.isSafeInteger(amount)&&Number.isSafeInteger(have);
+  const needCell=$("verifiedNeed"+item.id),shortCell=$("verifiedShort"+item.id);
+  needCell.textContent=valid?fmt(amount):"범위 초과";
+  shortCell.textContent=valid?fmt(Math.max(0,amount-have)):"입력 오류";
+  if(valid){
+   const short=Math.max(0,amount-have);
+   totalNeed+=amount;totalShort+=short;
+  }else good=false;
+ }
+ if(!Number.isSafeInteger(totalNeed)||!Number.isSafeInteger(totalShort))good=false;
+ $("verifiedMaterialSummary").textContent=good?"4종 재료 계산 완료":"계산 범위 초과";
+ result.textContent=good?"초월핵 "+fmt(toMake)+"개 제작에 필요한 각 재료의 수량과 보유량 대비 부족분을 계산했습니다.":"입력된 수량이 정확한 정수 계산 범위를 초과했습니다. 목표량이나 보유량을 줄여 주세요.";
+ result.className=good?"status":"status warn";
 }
 const pieceKeys=["platinum","steel","moon","star"];
 const pieceLabels=["백금괴","성철괴","월광수","별의 핵"];
@@ -531,7 +590,7 @@ function applySource(){
  buildRows();update();$("importStatus").className="status";$("importStatus").textContent="적용 완료: "+selected.map(x=>x.key+" → "+({heaven:"천명석",nebula:"성운석",core:"초월핵",attack:"공격력"}[x.kind])).join(" · ")+". 배열 시작 위치 "+(offset+1)+"번째 값부터 적용했습니다. 브라우저에 저장했습니다." ;
 }
 
-function update(){render();renderCraft();renderRealRecipe();save();}
+function update(){render();renderVerifiedCoreCraft();renderCraft();renderRealRecipe();save();}
 restorePieces();buildRows();restore();buildRows();buildPieceRows();loadRealRecipe();
 document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",update);e.addEventListener("change",update);});
 $("stageRows").addEventListener("input",e=>{
@@ -564,11 +623,11 @@ $("handoffCraft").addEventListener("click",()=>{
   if(!Number.isSafeInteger(required))return;
  }
  const short=Math.max(0,required-have);
- $("craftCount").value=String(short);$("ownCore").value="0";
+ $("verifiedCoreTarget").value=String(short);$("verifiedCoreOwned").value="0";
  document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab==="craft"));
  document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id==="panel-craft"));
- $("pieceStatus").textContent="초월 목표에서 부족한 초월핵 "+fmt(short)+"개를 제작 목표로 가져왔습니다. 이미 보유한 조각은 별도로 차감됩니다.";
- $("pieceStatus").className="status";update();
+ $("verifiedCoreStatus").textContent="초월 목표에서 부족한 초월핵 "+fmt(short)+"개를 제작 목표로 가져왔습니다.";
+ $("verifiedCoreStatus").className="status";update();
 });
 $("realRecipeFile").addEventListener("change",async e=>{
  const file=e.target.files&&e.target.files[0];if(!file)return;
