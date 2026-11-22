@@ -53,6 +53,31 @@ button.action.secondary{background:#eaf7ef;color:#227a59;border:1px solid #c9e5d
 @media(max-width:700px){main{padding:12px 9px 36px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.recipe{grid-template-columns:repeat(2,minmax(0,1fr))}.summary{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:1/-1}.card{padding:12px}h1{font-size:21px}}
 @media(max-width:390px){.grid,.grid.two{grid-template-columns:1fr}.tabs{gap:5px}.tabs button{font-size:12px;padding:5px}.summary{grid-template-columns:1fr 1fr}}
 </style>
+<link rel="stylesheet" href="./clarity-ui.css?v=2">
+<style>
+/* Match the existing calculator's warm ivory-and-sand theme. */
+.hero .tabs button{
+ background:#fffefa!important;color:#71665b!important;
+ border:1px solid #e2d6c5!important;box-shadow:none!important
+}
+.hero .tabs button.active{
+ background:#fce6c9!important;color:#75421f!important;
+ border:1px solid #a95a2d!important;box-shadow:none!important
+}
+.summary .metric{background:#fdf3e6!important;border-color:#e7dfd3!important}
+.summary .metric span{color:#71665b!important}
+.summary .metric b{color:#854119!important}
+.summary .metric.warn b{color:#a95a2d!important}
+.status{background:#fff8ee!important;border-color:#e7dfd3!important;color:#75421f!important}
+.status.warn{background:#fff3e2!important;border-color:#e2d6c5!important;color:#854119!important}
+.table-wrap{border-color:#e7dfd3!important}
+tr.selected td{background:#fff1de!important}
+button.action.secondary{
+ background:#fff1de!important;color:#854119!important;
+ border:1px solid #e2d6c5!important
+}
+.prereq input{accent-color:#a95a2d!important}
+</style>
 </head>
 <body>
 <main>
