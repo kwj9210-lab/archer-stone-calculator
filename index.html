@@ -314,6 +314,7 @@ th:first-child,td:first-child{text-align:left}
  };
 })();
 </script><link rel="stylesheet" href="./clarity-ui.css?v=2">
+<script src="./korean-amount.js?v=1"></script>
 </head>
 <body>
 <main class="wrap">
@@ -344,7 +345,7 @@ th:first-child,td:first-child{text-align:left}
 <h2>1. 목표</h2>
 <div class="grid2">
 <label>목표 등급<select id="targetGrade"></select></label>
-<label>제작 수량<input id="targetCount" type="number" min="1" step="1" value="1"></label>
+<label>제작 수량<input id="targetCount" type="text" inputmode="text" autocomplete="off" data-game-amount value="1"></label>
 </div>
 </section>
 
@@ -357,10 +358,11 @@ th:first-child,td:first-child{text-align:left}
 <section class="card">
 <h2>3. 현재 보유 재료 / 입장권</h2>
 <div id="rawGrid" class="grid4"></div>
+<div class="note">게임 표기 그대로 입력할 수 있습니다. 예: <b>1조 2211억</b>, <b>8389억 1745만</b>, <b>123,456,789</b>. 기존 숫자도 사용할 수 있습니다.</div>
 <div class="grid2" style="margin-top:10px">
-<label>던전 티켓 보유량<input id="ticketsNow" type="number" min="0" value="0"></label>
-<label>사냥터 티켓 보유량<input id="huntingTicketsNow" type="number" min="0" value="0"></label>
-<label>티켓 1장 가격(다이아)<input id="ticketPrice" type="number" min="0" value="20"></label>
+<label>던전 티켓 보유량<input id="ticketsNow" type="text" inputmode="text" autocomplete="off" data-game-amount value="0"></label>
+<label>사냥터 티켓 보유량<input id="huntingTicketsNow" type="text" inputmode="text" autocomplete="off" data-game-amount value="0"></label>
+<label>티켓 1장 가격(다이아)<input id="ticketPrice" type="text" inputmode="text" autocomplete="off" data-game-amount value="20"></label>
 </div>
 </section>
 
@@ -455,11 +457,12 @@ function restoreBrowserState(){
       var v=saved.state&&saved.state[t],cfg=configs[t];
       if(!v||typeof v!=='object')return;
       var num=function(x){return Number.isSafeInteger(x)&&x>=0?x:0};
+       var rawText=window.ArcherKoreanAmount.storedText;
       state[t]={
-        stones:Array.from({length:G.length},function(_,i){return num(v.stones&&v.stones[i])}),
-        raw:Array.from({length:cfg.resources.length},function(_,i){return num(v.raw&&v.raw[i])}),
+        stones:Array.from({length:G.length},function(_,i){return rawText(v.stones&&v.stones[i])}),
+        raw:Array.from({length:cfg.resources.length},function(_,i){return rawText(v.raw&&v.raw[i])}),
         target:Number.isInteger(v.target)&&v.target>=0&&v.target<G.length?v.target:G.length-1,
-        count:num(v.count)||1
+        count:rawText(v.count,"1")
       };
     });
     otherFields.forEach(function(id){
@@ -469,7 +472,7 @@ function restoreBrowserState(){
   }catch(_){}
 }
 function el(id){return document.getElementById(id)}
-function val(id){return Math.max(0,Number(el(id).value)||0)}
+function val(id){return window.ArcherKoreanAmount.parse(el(id).value)}
 function fmt(v){
  v=Math.max(0,Math.round(v));
  if(v<10000)return v.toLocaleString('ko-KR');
@@ -515,9 +518,9 @@ function initState(t){
 }
 function saveCurrent(){
  initState(type);var s=state[type];
- s.target=Number(el('targetGrade').value);s.count=val('targetCount');
- s.stones=G.map(function(_,i){return Math.floor(val('stone'+i))});
- s.raw=configs[type].resources.map(function(_,i){return val('raw'+i)});
+ s.target=Number(el('targetGrade').value);s.count=window.ArcherKoreanAmount.storedText(el('targetCount').value,'1');
+ s.stones=G.map(function(_,i){return window.ArcherKoreanAmount.storedText(el('stone'+i).value)});
+ s.raw=configs[type].resources.map(function(_,i){return window.ArcherKoreanAmount.storedText(el('raw'+i).value)});
   saveBrowserState();
 }
 function render(){
@@ -526,9 +529,9 @@ function render(){
  el('resultTitle').textContent=c.name+' 제작 계산';
  el('targetGrade').innerHTML=G.map(function(x,i){return '<option value="'+i+'" '+(i===s.target?'selected':'')+'>'+x+' '+c.name+'</option>'}).join('');
  el('targetCount').value=s.count;
- el('stoneGrid').innerHTML=G.map(function(x,i){return '<label>'+x+'<input id="stone'+i+'" type="number" min="0" step="1" value="'+s.stones[i]+'"></label>'}).join('');
+ el('stoneGrid').innerHTML=G.map(function(x,i){return '<label>'+x+'<input id="stone'+i+'" type="text" inputmode="text" autocomplete="off" data-game-amount value="'+s.stones[i]+'"></label>'}).join('');
  el('rawGrid').className=c.resources.length===4?'grid4':'grid3';
- el('rawGrid').innerHTML=c.resources.map(function(r,i){return '<label>'+r.name+'<input id="raw'+i+'" type="number" min="0" value="'+(s.raw[i]||0)+'"></label>'}).join('');
+ el('rawGrid').innerHTML=c.resources.map(function(r,i){return '<label>'+r.name+'<input id="raw'+i+'" type="text" inputmode="text" autocomplete="off" data-game-amount value="'+(s.raw[i]||0)+'"></label>'}).join('');
  el('coverageNote').textContent=c.coverage;
  document.querySelectorAll('#stoneGrid input,#rawGrid input,#targetGrade,#targetCount').forEach(function(x){x.addEventListener('input',function(){saveCurrent();calc()})});
  buildRecipeTable();calc();
@@ -539,6 +542,16 @@ function buildRecipeTable(){
  el('recipeTable').innerHTML=head+body;
 }
 function calc(){
+ var amountFields=Array.from(document.querySelectorAll('[data-game-amount]'));
+ var bad=amountFields.find(function(field){return !Number.isSafeInteger(window.ArcherKoreanAmount.parse(field.value));});
+ amountFields.forEach(function(field){if(field===bad)field.setAttribute('aria-invalid','true');else field.removeAttribute('aria-invalid');});
+ if(bad){
+  var label=bad.closest('label');
+  el('resourceResults').textContent=(label?label.textContent.trim():'수량')+' 입력을 확인해 주세요. 예: 1조 2211억, 8389억 1745만, 123456789';
+  ['ticketsTotal','ticketsByType','totalRuns','ticketShort','diamondNeed','dungeonDiamond','huntingDiamond','dungeonRuns','huntingRuns','dungeonShort','huntingShort'].forEach(function(id){el(id).textContent='—';});
+  el('summary').textContent='수량이 올바르지 않거나 정확히 계산할 수 있는 범위를 넘었습니다.';
+  return;
+ }
  var c=configs[type],tg=Math.max(0,Math.min(G.length-1,Number(el('targetGrade').value))),count=Math.max(1,Math.floor(val('targetCount')));
  var inv=G.map(function(_,i){return Math.floor(val('stone'+i))}),crafted=Array(G.length).fill(0),needRes=Array(c.resources.length).fill(0);
  function need(g,q){
