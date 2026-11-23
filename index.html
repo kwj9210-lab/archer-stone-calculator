@@ -136,6 +136,14 @@ button{cursor:pointer}
 .results .box,.stats .box{min-width:0;overflow-wrap:anywhere;word-break:keep-all}
 .stats .strong,.head .big{white-space:normal;overflow-wrap:anywhere;word-break:keep-all}
 .sweep-breakdown,.resource-ticket{display:block;margin-top:4px}
+.results .box.shared-bear-box{grid-column:1/-1;display:block}
+.shared-bear-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:11px 0}
+.shared-bear-item{border:1px solid #d9e7d9;border-radius:10px;padding:10px;background:#fffefa;min-width:0}
+.shared-bear-item b{display:block;margin-bottom:5px;color:#75421f}
+.shared-bear-item .line{font-size:12px}
+.shared-bear-result{padding-top:9px;border-top:1px solid #e7dfd3}
+@media(max-width:600px){.shared-bear-grid{grid-template-columns:1fr}}
+
 .warn{color:var(--warn)}
 .results,.stats{margin-top:12px}
 .stats .box{
@@ -568,26 +576,37 @@ function calc(){
    el('summary').textContent='숙련도를 입력해 주세요.';
    return;
   }
- var mult=window.archerMasteryMultiplier(masteryLv),dungeonRuns=0,huntingRuns=0,html='',sharedBearRuns=0;
+ var mult=window.archerMasteryMultiplier(masteryLv),dungeonRuns=0,huntingRuns=0,html='',sharedBearRuns=0,bearDetails=[];
  c.resources.forEach(function(r,i){
   var have=val('raw'+i),shortage=Math.max(0,needRes[i]-have);
   if(r.base){
    var per100k=r.fixed?r.base:r.base*(mult/5),per10k=per100k/10,exact=shortage?shortage/per100k*100000:0,runs=exact?Math.ceil(exact/10000)*10000:0;
+    var isBear=type==='hard'&&(r.name==='곰뼈'||r.name==='곰가죽');
    if(r.fixed){
-     if(type==='hard'&&(r.name==='곰뼈'||r.name==='곰가죽'))sharedBearRuns=Math.max(sharedBearRuns,runs);
+     if(isBear)sharedBearRuns=Math.max(sharedBearRuns,runs);
      else huntingRuns+=runs;
    }else dungeonRuns+=runs;
    // Group the rounded sweep total by the actual in-game button sizes.
     var sweepText=fmtSweepBreakdown(runs,r.fixed);
     var approx100k=Math.round(per100k/10000);
-   html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong"><span class="sweep-breakdown">'+sweepText+'</span><span class="resource-ticket">'+(type==='hard'&&(r.name==='곰뼈'||r.name==='곰가죽')?'곰굴 공동 소탕 · 아래 공동 소탕 티켓에 합산':'필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(ticketsForRuns(runs,r.fixed))+'장')+'</span></div></div>';
+   if(isBear){
+      // Both materials drop together; these are demand estimates, not separate sweeps.
+      bearDetails.push({name:r.name,required:needRes[i],have:have,shortage:shortage,per100k:per100k,runs:runs});
+    }else{
+      html+='<div class="box"><h3>'+r.name+' ('+(r.fixed?'사냥터':'던전')+')</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div><div class="line">10만회 예상: '+fmt(per100k)+' <span class="k">(약 '+fmtPlain(approx100k)+'만)</span></div><div class="strong"><span class="sweep-breakdown">'+sweepText+'</span><span class="resource-ticket">필요 '+(r.fixed?'사냥터':'던전')+' 티켓 '+fmt(ticketsForRuns(runs,r.fixed))+'장</span></div></div>';
+    }
   }else{
    html+='<div class="box"><h3>'+r.name+'</h3><div class="line">제작 필요: '+fmt(needRes[i])+'</div><div class="line">현재 보유: '+fmt(have)+'</div><div class="line">부족: '+fmt(shortage)+'</div></div>';
   }
  });
  if(type==='hard'){
    huntingRuns+=sharedBearRuns;
-   html+='<div class="box"><h3>곰굴 공동 소탕 · 곰뼈 + 곰가죽</h3><div class="line">두 재료는 같은 소탕에서 함께 나오므로 각각 필요한 소탕 횟수 중 큰 값만 한 번 계산합니다.</div><div class="strong">'+fmtSweepBreakdown(sharedBearRuns,true)+'</div><div class="line">총 '+fmtSweepRuns(sharedBearRuns)+' · 공동 사냥터 티켓 '+fmtKoreanUnit(ticketsForRuns(sharedBearRuns,true))+'장</div></div>';
+   var bearHtml='<div class="box shared-bear-box" id="sharedBearSummary"><h3>곰굴 공동 소탕 · 곰뼈 + 곰가죽</h3><div class="line">곰뼈와 곰가죽은 한 번의 소탕에서 함께 드랍됩니다. 아래 두 재료 중 <b>더 많이 필요한 횟수만 한 번 소탕</b>합니다.</div><div class="shared-bear-grid">';
+   bearDetails.forEach(function(d){
+     bearHtml+='<div class="shared-bear-item"><b>'+d.name+'</b><div class="line">제작 필요 '+fmt(d.required)+' · 보유 '+fmt(d.have)+'</div><div class="line">부족 '+fmt(d.shortage)+'</div><div class="line">10만 회 예상 드랍 '+fmt(d.per100k)+'</div><div class="line">이 재료 기준 소탕 '+fmtSweepRuns(d.runs)+'</div></div>';
+   });
+   bearHtml+='</div><div class="shared-bear-result"><div class="strong">실제 곰굴 소탕: '+fmtSweepBreakdown(sharedBearRuns,true)+'</div><div class="line">총 '+fmtSweepRuns(sharedBearRuns)+' · <b>공동 사냥터 티켓 '+fmtKoreanUnit(ticketsForRuns(sharedBearRuns,true))+'장 (한 번만 합산)</b></div></div></div>';
+   html=bearHtml+html;
  }
  el('resourceResults').innerHTML=html;
  var totalRuns=dungeonRuns+huntingRuns;
