@@ -224,7 +224,7 @@ button.action.secondary{
 (function(){
 "use strict";
 const $=id=>document.getElementById(id);
-const fmt=n=>Math.trunc(n).toLocaleString("ko-KR");
+const fmt=n=>(typeof n==="bigint"?n:Math.trunc(n)).toLocaleString("ko-KR");
 const ids=["opening60","chaos11","currentStage","targetStage","haveHeaven","haveNebula","haveCore","craftCount","ownCore","craftMode","verifiedCoreTarget","verifiedCoreOwned","verifiedHave9701","verifiedHave9702","verifiedHave9703","verifiedHave9704","platinumHave","steelHave","moonHave","starHave"];
 const MAX_TRANSCEND=100;
 const FIXED_FROM_LEVEL=35;
@@ -345,32 +345,36 @@ const verifiedCoreMaterials=[
  {id:9703,name:"월광수",qty:10000000000},
  {id:9704,name:"별의 핵",qty:10000000000}
 ];
+function nonnegativeBigInt(id){
+ const raw=$(id).value.trim();
+ if(raw==="")return 0n;
+ if(!/^\d+$/.test(raw))return null;
+ try{return BigInt(raw);}catch(_){return null;}
+}
 function renderVerifiedCoreCraft(){
- const target=number("verifiedCoreTarget"),owned=number("verifiedCoreOwned");
+ const target=nonnegativeBigInt("verifiedCoreTarget"),owned=nonnegativeBigInt("verifiedCoreOwned");
  const result=$("verifiedCoreStatus");
- if(!Number.isSafeInteger(target)||!Number.isSafeInteger(owned)){
+ if(target===null||owned===null){
   $("verifiedCoreMake").textContent="입력 오류";$("verifiedMaterialSummary").textContent="-";
-  result.textContent="필요한 초월핵과 보유 개수는 0 이상의 안전 정수로 입력해야 합니다.";
+  for(const item of verifiedCoreMaterials){
+   $("verifiedNeed"+item.id).textContent="-";
+   $("verifiedShort"+item.id).textContent="-";
+  }
+  result.textContent="필요한 초월핵과 보유 개수는 0 이상의 정수로 입력해야 합니다.";
   result.className="status warn";return;
  }
- const toMake=Math.max(0,target-owned);
+ const toMake=target>owned?target-owned:0n;
  $("verifiedCoreMake").textContent=fmt(toMake)+"개";
- let good=true,totalNeed=0,totalShort=0;
+ let good=true;
  for(const item of verifiedCoreMaterials){
-  const amount=item.qty*toMake;
-  const have=number("verifiedHave"+item.id);
-  const valid=Number.isSafeInteger(amount)&&Number.isSafeInteger(have);
-  const needCell=$("verifiedNeed"+item.id),shortCell=$("verifiedShort"+item.id);
-  needCell.textContent=valid?fmt(amount):"범위 초과";
-  shortCell.textContent=valid?fmt(Math.max(0,amount-have)):"입력 오류";
-  if(valid){
-   const short=Math.max(0,amount-have);
-   totalNeed+=amount;totalShort+=short;
-  }else good=false;
+  const amount=BigInt(item.qty)*toMake;
+  const have=nonnegativeBigInt("verifiedHave"+item.id);
+  $("verifiedNeed"+item.id).textContent=fmt(amount);
+  $("verifiedShort"+item.id).textContent=have===null?"입력 오류":fmt(amount>have?amount-have:0n);
+  if(have===null)good=false;
  }
- if(!Number.isSafeInteger(totalNeed)||!Number.isSafeInteger(totalShort))good=false;
- $("verifiedMaterialSummary").textContent=good?"4종 재료 계산 완료":"계산 범위 초과";
- result.textContent=good?"초월핵 "+fmt(toMake)+"개 제작에 필요한 각 재료의 수량과 보유량 대비 부족분을 계산했습니다.":"입력된 수량이 정확한 정수 계산 범위를 초과했습니다. 목표량이나 보유량을 줄여 주세요.";
+ $("verifiedMaterialSummary").textContent=good?"4종 재료 계산 완료":"보유 재료 입력 오류";
+ result.textContent=good?"초월핵 "+fmt(toMake)+"개 제작에 필요한 각 재료의 수량과 보유량 대비 부족분을 계산했습니다.":"보유 재료는 0 이상의 정수로 입력해야 합니다.";
  result.className=good?"status":"status warn";
 }
 const pieceKeys=["platinum","steel","moon","star"];
