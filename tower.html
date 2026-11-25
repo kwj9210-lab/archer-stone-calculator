@@ -105,14 +105,14 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <details class="usage-guide">
 <summary>사용방법 <span aria-hidden="true">▾</span></summary>
 <div class="usage-panel">
-<p><b>① 관통 입력</b> · 현재 내 관통을 입력하면 500~11,000층에서 관통 기준 가능 최고층을 계산합니다.</p>
+<p><b>① 관통 입력</b> · 현재 내 관통을 입력하면 500~20,000층에서 관통 기준 가능 최고층을 계산합니다.</p>
 <p><b>② 결과 확인</b> · 해당 층의 필요 명중과 다음 층의 조건을 확인합니다. 실제 클리어에는 전투력 등 다른 조건도 필요합니다.</p>
 <p><b>③ 보상 확인</b> · ‘초월석 총합 보기’를 열면 누적 보상이 나옵니다. 초월석 보상은 APK 0.2.7에서 확인한 11,000층까지의 지급식을 적용합니다.</p>
-<p class="example"><b>예시</b> · 내 관통 <b>179,000</b>이면 관통 기준 <b>11,000층</b>, 필요 명중은 <b>118,800</b>입니다.</p>
+<p class="example"><b>예시</b> · 내 관통 <b>359,000</b>이면 관통 기준 <b>20,000층</b>, 필요 명중은 <b>163,800</b>입니다.</p>
 </div>
 </details>
 </div>
-<div class="hero-sub sub">내 관통 기준으로 500~11,000층에서 가능한 최고층과 필요 관통·명중을 계산합니다. APK 0.2.7에서 8,001~11,000층의 확장 분기와 관통·명중·초월석 지급식을 확인했습니다.</div>
+<div class="hero-sub sub">내 관통 기준으로 500~20,000층에서 가능한 최고층과 필요 관통·명중을 계산합니다. 11,001~20,000층은 기존 관통·명중 증가 규칙을 연장 적용합니다.</div>
 </section>
 <section class="card" id="lookupCard"><h2 style="font-size:17px;margin:0 0 10px">내 관통으로 가능한 최고층</h2><div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0"><label>내 관통<input id="myPen" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="go" value="8508" placeholder="예: 8508"></label><div id="lookupResult" class="lookupResult">관통을 입력하면 가능한 최고층과 필요 명중을 표시합니다.</div></div></section>
 
@@ -120,19 +120,19 @@ details{background:#fff;border:1px solid var(--line);border-radius:18px;overflow
 <section class="card" id="floorCheckCard">
   <h2 style="font-size:17px;margin:0 0 10px">지정 층 필요 관통·명중 조회</h2>
   <div class="floorLookup" style="margin-top:0;padding-top:0;border-top:0">
-    <label>조회할 층수 (500~11,000)
-      <input id="floorCheck" type="number" inputmode="numeric" min="500" max="11000" step="1" value="11000" autocomplete="off">
+    <label>조회할 층수 (500~20,000)
+      <input id="floorCheck" type="number" inputmode="numeric" min="500" max="20000" step="1" value="20000" autocomplete="off">
     </label>
     <div id="floorCheckResult" class="lookupResult" aria-live="polite"></div>
   </div>
-  <div class="note">APK 0.2.7 확인: 11,000층 필요 관통 179,000 · 필요 명중 118,800. 8,001~11,000층은 관통 20/층, 명중 5/층 증가합니다.</div>
+  <div class="note">20,000층 기준 필요 관통 359,000 · 필요 명중 163,800. 8,001층 이후 관통 20/층, 명중 5/층 증가 규칙을 연장 적용합니다.</div>
 </section>
 
 <details id="rewardTab" style="margin-top:14px">
 <summary>가능 최고층까지 초월석 총합 보기</summary>
 <div style="border-top:1px solid var(--line);padding:14px 16px">
   <div id="rewardResult" class="lookupResult" style="display:block;min-height:0;line-height:1.65">관통을 입력하면 초월석 누적 보상을 계산합니다.</div>
-  <div class="note" style="margin-top:9px">1~11,000층 최초 클리어 보상을 합산합니다. APK 0.2.7에서 8,001~11,000층 보상도 층당 초월석 1,280개임을 확인했습니다.</div>
+  <div class="note" style="margin-top:9px">초월석 보상은 확인된 1~11,000층까지만 합산합니다. 11,001층 이후 보상은 확인되지 않아 합계에 포함하지 않습니다.</div>
 </div>
 </details>
 
@@ -186,8 +186,8 @@ function tower8000Block(f){const lv=Math.max(7001,Math.min(8000,f));return 20*lv
 function tower8000Evasion(f){const lv=Math.max(7001,Math.min(8000,f));return 5*lv+63800;}
 // APK 0.2.7 TranscendenceTowerBalance.GetBossBlock/GetBossEvasion.
 // 8,001~11,000층 확장 플래그가 활성화되면 관통 20/층, 명중 5/층 증가.
-function tower11000Block(f){const lv=Math.max(8001,Math.min(11000,f));return 20*lv-41000;}
-function tower11000Evasion(f){const lv=Math.max(8001,Math.min(11000,f));return 5*lv+63800;}
+function tower20000Block(f){const lv=Math.max(8001,Math.min(20000,f));return 20*lv-41000;}
+function tower20000Evasion(f){const lv=Math.max(8001,Math.min(20000,f));return 5*lv+63800;}
 function req(f){
  if(f===500)return [B1[0],E1[0]];
  if(f<=1000)return [tower1000Value(f,B1),tower1000Value(f,E1)];
@@ -196,7 +196,7 @@ function req(f){
  if(f<=5000)return [tower5000Block(f),tower5000Evasion(f)];
  if(f<=7000)return [tower7000Block(f),tower7000Evasion(f)];
  if(f<=8000)return [tower8000Block(f),tower8000Evasion(f)];
- return [tower11000Block(f),tower11000Evasion(f)];
+ return [tower20000Block(f),tower20000Evasion(f)];
 }
 const myPen=document.getElementById('myPen'),lookupResult=document.getElementById('lookupResult');
 function penNum(v){
@@ -207,7 +207,7 @@ function penNum(v){
 }
 function maxFloorByPen(pen){
  if(pen<req(500)[0])return null;
- let lo=500,hi=11000,best=500;
+ let lo=500,hi=20000,best=500;
  while(lo<=hi){
   const mid=Math.floor((lo+hi)/2),need=req(mid)[0];
   if(need<=pen){best=mid;lo=mid+1}else hi=mid-1;
@@ -236,13 +236,14 @@ function updateReward(f){
   out.textContent='500층 관통 기준을 충족하면 초월석 누적 보상을 표시합니다.';
   return;
  }
- const all=totalStoneReward(f);
- const base=totalStoneReward(Math.min(f,8000));
- const extension=Math.max(0,f-8000)*1280;
+ const rewardFloor=Math.min(f,11000);
+ const all=totalStoneReward(rewardFloor);
+ const base=totalStoneReward(Math.min(rewardFloor,8000));
+ const extension=Math.max(0,rewardFloor-8000)*1280;
  const detail=f>8000
   ? '<div style="margin-top:6px;font-size:12px;color:#71867c">기존 1~8,000층 누적 '+fmt(base)+'개</div><div style="font-size:12px;color:#198b64">확장 8,001~'+fmt(f)+'층 추가 '+fmt(extension)+'개</div>'
   : '<div style="margin-top:6px;font-size:12px;color:#71867c">기존 구간 누적 '+fmt(base)+'개</div>';
- out.innerHTML='<b style="font-size:17px">'+fmt(f)+'층까지 전체 누적 '+fmt(all)+'개</b>'+detail;
+ out.innerHTML='<b style="font-size:17px">'+fmt(rewardFloor)+'층까지 확인된 누적 '+fmt(all)+'개</b>'+detail+(f>11000?'<div style="margin-top:6px;font-size:12px;color:#a46a22">11,001~'+fmt(f)+'층 초월석 보상은 미확인으로 제외했습니다.</div>':'');
 }
 function updateLookup(){
  const pen=penNum(myPen.value);
