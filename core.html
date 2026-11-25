@@ -83,7 +83,7 @@ button.action.secondary{
 <main>
 <section class="hero">
  <h1>천명의 핵 초월</h1>
- <div class="sub">초월핵 제작 및 천명의 핵 1~20단계 성장 계산기</div>
+ <div class="sub">초월핵 제작 및 천명의 핵 1~100단계 성장 계산기</div>
  <div class="tabs">
   <button type="button" class="active" data-tab="transcend">천명의 핵 초월</button>
   <button type="button" data-tab="craft">초월핵 제작</button>
@@ -99,7 +99,7 @@ button.action.secondary{
    <div class="field"><label for="currentStage">현재 초월 단계</label><select id="currentStage"></select></div>
    <div class="field"><label for="targetStage">목표 초월 단계</label><select id="targetStage"></select></div>
   </div>
-  <p class="note">APK 0.2.10의 안내 문구 기준: 개방 60단계 완료 및 혼돈급 마석 11개 장착 상태에서 최대 20단계까지 초월할 수 있습니다.</p>
+  <p class="note">APK 0.2.10의 안내 문구 기준: 개방 60단계 완료 및 혼돈급 마석 11개 장착 상태에서 최대 100단계까지 초월할 수 있습니다.</p>
  </section>
 
  <section class="card">
@@ -126,8 +126,8 @@ button.action.secondary{
  </section>
 
  <section class="card">
-  <h2>1~20단계 재료 및 공격력 데이터</h2>
-  <p class="note">APK v0.2.10의 ARM64 네이티브 코드에서 복원한 1~20단계 데이터를 미리 입력했습니다. 현재 단계부터 목표 단계까지 필요한 재료와 공격력 증가량을 합산합니다. 숫자는 원본 정수이며 반올림하지 않았습니다.</p>
+  <h2>1~100단계 재료 및 공격력 데이터</h2>
+  <p class="note">0.2.14에서 최대 100단계와 35단계 비용 고정 규칙을 확인했습니다. 1~20단계는 기존 0.2.10 복원값을 유지합니다. 21~35단계는 실제 수치를 확인해 입력해야 하며, 36~100단계는 35단계의 재료와 효과를 자동으로 반복 적용합니다.</p>
   <div class="table-wrap">
    <table>
     <thead><tr><th>단계</th><th>천명석 소모</th><th>성운석 소모</th><th>초월핵 소모</th><th>공격력 증가</th><th>누적 공격력</th></tr></thead>
@@ -139,7 +139,7 @@ button.action.secondary{
    <button class="action secondary" type="button" id="exportData">단계 데이터 CSV 내보내기</button>
    <button class="action secondary" type="button" id="exportJson">단계 데이터 JSON 내보내기</button>
   </div>
-  <div id="dataStatus" class="status">단계별 수량은 APK v0.2.10의 libil2cpp.so에서 TranscendGroup, TranscendHeaven, TranscendNebula, TranscendCores, TranscendStepDigits, TranscendDigits 메서드를 역어셈블해 복원했습니다. 서버 응답과의 별도 교차검증은 아직 하지 않았습니다. 표의 값을 수정하면 해당 브라우저에 저장됩니다.</div>
+  <div id="dataStatus" class="status">0.2.14 메타데이터에서 MaxTranscend=100, FixedTranscendPriceLevel=35를 확인했습니다. 21~35단계의 실제 수치는 아직 미확인입니다. 36~100단계는 35단계 값을 자동 상속합니다. 표의 입력값은 브라우저에 자동 저장됩니다.</div>
  </section>
 </section>
 
@@ -248,9 +248,17 @@ const stageData=[
  {heaven:"1600000000",nebula:"800000000",core:"38",attack:"6399999934464"},
  {heaven:"1600000000",nebula:"800000000",core:"40",attack:"6399999934464"}
 ];
+while(stageData.length<MAX_TRANSCEND)stageData.push({heaven:"",nebula:"",core:"",attack:""});
+function syncFixedStages(){
+ const source=stageData[FIXED_FROM_LEVEL-1];
+ for(let i=FIXED_FROM_LEVEL;i<MAX_TRANSCEND;i++)Object.assign(stageData[i],source);
+}
+syncFixedStages();
 const defaultStageData=stageData.map(d=>({...d}));
 const key="archer:heaven-core-transcend:v1";
-for(let i=0;i<=20;i++){
+const MAX_TRANSCEND=100;
+const FIXED_FROM_LEVEL=35;
+for(let i=0;i<=MAX_TRANSCEND;i++){
  const a=document.createElement("option"),b=document.createElement("option");
  a.value=b.value=String(i);a.textContent=b.textContent=i+"단계";
  $("currentStage").appendChild(a);$("targetStage").appendChild(b);
@@ -259,13 +267,17 @@ $("targetStage").value="20";
 function buildRows(){
  const body=$("stageRows");body.textContent="";
  stageData.forEach((d,i)=>{
-  const tr=document.createElement("tr");tr.dataset.stage=String(i+1);
-  tr.innerHTML='<td>'+(i+1)+'단계</td>'+
-   '<td><input data-kind="heaven" aria-label="'+(i+1)+'단계 천명석 소모" type="number" min="0" step="1" value="'+d.heaven+'"></td>'+
-   '<td><input data-kind="nebula" aria-label="'+(i+1)+'단계 성운석 소모" type="number" min="0" step="1" value="'+d.nebula+'"></td>'+
-   '<td><input data-kind="core" aria-label="'+(i+1)+'단계 초월핵 소모" type="number" min="0" step="1" value="'+d.core+'"></td>'+
-   '<td><input class="power" data-kind="attack" aria-label="'+(i+1)+'단계 공격력 증가" type="number" min="0" step="1" value="'+d.attack+'"></td>'+
-   '<td id="cumulative-'+(i+1)+'">미확인</td>';
+  const fixed=i>=FIXED_FROM_LEVEL;
+  const tr=document.createElement("tr");tr.dataset.stage=String(i+1);tr.dataset.fixed=fixed?"true":"false";
+  const first=document.createElement("td");first.textContent=(i+1)+"단계"+(fixed?" *":"");tr.appendChild(first);
+  [["heaven","천명석 소모",d.heaven],["nebula","성운석 소모",d.nebula],["core","초월핵 소모",d.core],["attack","공격력 증가",d.attack]].forEach(([kind,label,value])=>{
+   const td=document.createElement("td"),input=document.createElement("input");
+   input.type="number";input.min="0";input.step="1";input.value=value;input.dataset.kind=kind;
+   input.setAttribute("aria-label",(i+1)+"단계 "+label);
+   if(fixed){input.readOnly=true;input.title="35단계 값 자동 적용";}
+   td.appendChild(input);tr.appendChild(td);
+  });
+  const cumulative=document.createElement("td");cumulative.id="cumulative-"+(i+1);cumulative.textContent="미확인";tr.appendChild(cumulative);
   body.appendChild(tr);
  });
 }
@@ -281,14 +293,16 @@ function restore(){
  try{
   const s=JSON.parse(localStorage.getItem(key)||"null");if(!s||typeof s!=="object")return;
   ids.forEach(id=>{if(!(id in s))return;const e=$(id);if(e.type==="checkbox"&&typeof s[id]==="boolean")e.checked=s[id];else if(e.type!=="checkbox"&&typeof s[id]==="string")e.value=s[id];});
-  if(Array.isArray(s.stages)&&s.stages.length===20)s.stages.forEach((v,i)=>{["heaven","nebula","core","attack"].forEach(k=>{if(typeof v[k]==="string"&&v[k]!==""&&Number.isSafeInteger(Number(v[k]))&&Number(v[k])>=0)stageData[i][k]=v[k];});});
+  if(Array.isArray(s.stages)&&s.stages.length>=20&&s.stages.length<=MAX_TRANSCEND)s.stages.forEach((v,i)=>{["heaven","nebula","core","attack"].forEach(k=>{if(typeof v[k]==="string"&&v[k]!==""&&Number.isSafeInteger(Number(v[k]))&&Number(v[k])>=0)stageData[i][k]=v[k];});});
+  syncFixedStages();
  }catch(_){}
 }
 function render(){
+ syncFixedStages();
  const current=number("currentStage"),target=number("targetStage");
  const rows=[...$("stageRows").querySelectorAll("tr")];
  let cum=0,attackChainKnown=true;
- for(let i=0;i<20;i++){
+ for(let i=0;i<MAX_TRANSCEND;i++){
   const a=stageData[i].attack;
   if(a==="")attackChainKnown=false;else {const v=Number(a);if(Number.isSafeInteger(v)&&v>=0&&attackChainKnown){cum=safeAdd(cum,v);if(!Number.isSafeInteger(cum))attackChainKnown=false;}else attackChainKnown=false;}
   const cell=$("cumulative-"+(i+1));if(cell)cell.textContent=attackChainKnown?fmt(cum):"미확인";
@@ -305,11 +319,11 @@ function render(){
   }
  }
  const materialMissing=missing.filter(x=>!x.includes("공격력"));
- const complete=Number.isSafeInteger(current)&&Number.isSafeInteger(target)&&current>=0&&target<=20&&target>=current&&materialMissing.length===0&&["heaven","nebula","core"].every(k=>Number.isSafeInteger(totals[k]));
+ const complete=Number.isSafeInteger(current)&&Number.isSafeInteger(target)&&current>=0&&target<=MAX_TRANSCEND&&target>=current&&materialMissing.length===0&&["heaven","nebula","core"].every(k=>Number.isSafeInteger(totals[k]));
  $("needHeaven").textContent=complete?fmt(totals.heaven):"미확인";
  $("needNebula").textContent=complete?fmt(totals.nebula):"미확인";
  $("needCore").textContent=complete?fmt(totals.core):"미확인";
- $("attackGain").textContent=!Number.isSafeInteger(current)||!Number.isSafeInteger(target)||target<current||target>20||missing.some(x=>x.includes("공격력")||x.includes("범위 초과"))||!Number.isSafeInteger(totals.attack)?"미확인":"+"+fmt(totals.attack);
+ $("attackGain").textContent=!Number.isSafeInteger(current)||!Number.isSafeInteger(target)||target<current||target>MAX_TRANSCEND||missing.some(x=>x.includes("공격력")||x.includes("범위 초과"))||!Number.isSafeInteger(totals.attack)?"미확인":"+"+fmt(totals.attack);
  const h=number("haveHeaven"),n=number("haveNebula"),c=number("haveCore");
  const shortage=complete&&[h,n,c].every(Number.isFinite)?{heaven:Math.max(0,totals.heaven-h),nebula:Math.max(0,totals.nebula-n),core:Math.max(0,totals.core-c)}:null;
  $("shortageTotal").textContent=shortage===null?"-":"천명석 "+fmt(shortage.heaven)+" / 성운석 "+fmt(shortage.nebula)+" / 초월핵 "+fmt(shortage.core);
@@ -318,7 +332,7 @@ function render(){
  if(!$("opening60").checked)gates.push("천명 성물 개방 60단계 완료");
  if(!$("chaos11").checked)gates.push("혼돈급 마석 11개 장착");
  if(target<current)gates.push("목표 단계가 현재 단계보다 낮음");
- if(!Number.isSafeInteger(current)||current<0||current>20||!Number.isSafeInteger(target)||target<0||target>20)gates.push("단계 입력 오류");
+ if(!Number.isSafeInteger(current)||current<0||current>MAX_TRANSCEND||!Number.isSafeInteger(target)||target<0||target>MAX_TRANSCEND)gates.push("단계 입력 오류");
  if(gates.length){$("gateStatus").textContent="초월 조건 미충족: "+gates.join(" · ");$("gateStatus").className="status warn";}
  else if(!complete){$("gateStatus").textContent="선행 조건은 충족했습니다. 단계별 실제 소모량 데이터가 입력되지 않은 항목이 "+materialMissing.length+"개 있습니다.";$("gateStatus").className="status warn";}
  else{$("gateStatus").textContent="초월 조건 충족. 목표 단계까지 필요한 재료를 계산했습니다.";$("gateStatus").className="status";}
@@ -546,7 +560,7 @@ restorePieces();buildRows();restore();buildRows();buildPieceRows();loadRealRecip
 document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",update);e.addEventListener("change",update);});
 $("stageRows").addEventListener("input",e=>{
  const input=e.target.closest("input[data-kind]");if(!input)return;
- const i=Number(input.closest("tr").dataset.stage)-1;stageData[i][input.dataset.kind]=input.value;update();
+ const i=Number(input.closest("tr").dataset.stage)-1;if(i>=FIXED_FROM_LEVEL)return;stageData[i][input.dataset.kind]=input.value;syncFixedStages();update();
 });
 $("pieceRows").addEventListener("input",e=>{
  const el=e.target.closest("input[data-piece-field]");if(!el)return;
@@ -563,7 +577,7 @@ $("importPieceJson").addEventListener("click",()=>$("pieceJsonFile").click());
 $("pieceJsonFile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)importPieces(f);e.target.value="";});
 $("handoffCraft").addEventListener("click",()=>{
  const current=number("currentStage"),target=number("targetStage"),have=number("haveCore");
- if(!Number.isSafeInteger(current)||!Number.isSafeInteger(target)||target<current||target>20||!Number.isSafeInteger(have)){
+ if(!Number.isSafeInteger(current)||!Number.isSafeInteger(target)||target<current||target>MAX_TRANSCEND||!Number.isSafeInteger(have)){
   $("gateStatus").textContent="초월 단계 또는 초월핵 보유량을 확인해 주세요.";$("gateStatus").className="status warn";return;
  }
  let required=0;
@@ -598,20 +612,20 @@ $("realRecipeStock").addEventListener("input",e=>{
  renderRealRecipe();
 });
 $("exportJson").addEventListener("click",()=>{
- const payload={format:"archer-heaven-core-transcend-v1",exportedAt:new Date().toISOString(),stages:stageData.map((d,i)=>({stage:i+1,heaven:d.heaven===""?null:Number(d.heaven),nebula:d.nebula===""?null:Number(d.nebula),core:d.core===""?null:Number(d.core),attack:d.attack===""?null:Number(d.attack)}))};
+ const payload={format:"archer-heaven-core-transcend-v2",exportedAt:new Date().toISOString(),stages:stageData.map((d,i)=>({stage:i+1,heaven:d.heaven===""?null:Number(d.heaven),nebula:d.nebula===""?null:Number(d.nebula),core:d.core===""?null:Number(d.core),attack:d.attack===""?null:Number(d.attack)}))};
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
- const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cheonmyeong-core-transcend-20.json";a.click();URL.revokeObjectURL(url);
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cheonmyeong-core-transcend-100.json";a.click();URL.revokeObjectURL(url);
 });
 $("resetStageData").addEventListener("click",()=>{
- if(!confirm("수정한 20단계 데이터를 APK 기본값으로 되돌릴까요?"))return;
+ if(!confirm("수정한 100단계 데이터를 기본값으로 되돌릴까요?"))return;
  stageData.forEach((d,i)=>Object.assign(d,defaultStageData[i]));
  buildRows();update();
 });
 $("exportData").addEventListener("click",()=>{
- const lines=["stage,heaven,nebula,core,attack"];
- stageData.forEach((d,i)=>lines.push([i+1,d.heaven,d.nebula,d.core,d.attack].join(",")));
+ const lines=["stage,heaven,nebula,core,attack,fixedFrom35"];
+ stageData.forEach((d,i)=>lines.push([i+1,d.heaven,d.nebula,d.core,d.attack,i>=FIXED_FROM_LEVEL].join(",")));
  const blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
- const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cheonmyeong-core-transcend-20.csv";a.click();URL.revokeObjectURL(url);
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cheonmyeong-core-transcend-100.csv";a.click();URL.revokeObjectURL(url);
 });
 document.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{
  document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===btn));
