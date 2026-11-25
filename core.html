@@ -79,7 +79,14 @@ button.action.secondary{
 .prereq input{accent-color:#a95a2d!important}
 </style>
 <script src="./korean-amount.js?v=1"></script>
-</head>
+<style>
+.core-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.core-plan-box{padding:12px;border:1px solid #e2d6c5;border-radius:12px;background:#fffefa;min-width:0}
+.core-plan-box h3{margin:0 0 8px;color:#75421f}
+.core-plan-line{font-size:12px;line-height:1.8;color:#71665b;overflow-wrap:anywhere}
+.core-plan-strong{font-size:14px;line-height:1.65;font-weight:850;color:#198b64;margin-top:7px;overflow-wrap:anywhere}
+@media(max-width:480px){.core-plan-grid{grid-template-columns:1fr}}
+</style></head>
 <body>
 <main>
 <section class="hero">
@@ -189,9 +196,12 @@ button.action.secondary{
  </div>
  <div class="status" id="coreTicketResult"></div>
  <div class="status warn" id="coreTicketShortage"></div>
- <h3 style="margin-top:16px">소탕 단위별 실행 계획 (평균 기준)</h3>
- <p class="small">실제 게임의 12개 소탕 버튼을 큰 단위부터 사용하여 필요한 소탕 횟수를 초과하지 않고 나눕니다. 표의 횟수는 소탕 버튼을 실행할 횟수입니다.</p>
- <div class="table-wrap"><table style="min-width:300px"><thead><tr><th>소탕 단위</th><th>월신의 신전</th><th>천공의 용광로</th></tr></thead><tbody id="coreSweepPlanRows"></tbody></table></div>
+ <h3 style="margin-top:16px">재료별 소탕 계획 (평균 기준)</h3>
+ <div id="coreMaterialPlans" class="core-plan-grid"></div>
+ <h3 style="margin-top:16px">던전별 공동 소탕 계획</h3>
+ <div id="coreSharedPlans" class="core-plan-grid"></div>
+ <p class="small">재료별 입장권은 참고용입니다. 실제 소탕은 던전별 공동 소탕 계획을 따르세요. 기존처럼 12개 버튼으로 평균 기준 필요 횟수를 정확히 나눕니다.</p>
+ <details><summary style="cursor:pointer">소탕 단위별 상세표</summary><div class="table-wrap"><table style="min-width:300px"><thead><tr><th>소탕 단위</th><th>월신의 신전</th><th>천공의 용광로</th></tr></thead><tbody id="coreSweepPlanRows"></tbody></table></div></details>
  <div class="status" id="coreSweepPlanSummary"></div>
  <p class="small">제작식은 기존 0.2.10 기준입니다. 소탕 1회당 던전 입장권 2장 외에 별도 소탕권 1장 또는 게임에서 정한 대체 비용이 필요할 수 있습니다. 평균 소탕은 부족량 ÷ 평균 획득량의 계획값이며 확정 횟수나 정확한 평균 도달시간이 아닙니다.</p>
 </section>
@@ -381,9 +391,17 @@ function coreSweepPlan(n){
  let remaining=n;
  return coreSweepUnits.map(([unit,label])=>{const count=Math.floor(remaining/unit);remaining%=unit;return {unit,label,count};});
 }
+function coreSweepText(n){
+ const plan=coreSweepPlan(n);
+ return plan?plan.filter(p=>p.count).map(p=>p.label+"회 소탕 "+coreKoreanAmount(p.count)+"회").join(" · ")||"소탕 0회":"계산 대기";
+}
 function renderCoreSweepPlan(groups,ready){
  const rows=$("coreSweepPlanRows");
  const plans=groups.map((g,i)=>ready[i]?coreSweepPlan(g[1]):null);
+ $("coreSharedPlans").innerHTML=groups.map((g,i)=>{
+ const name=i?"천공의 용광로 · 성철괴 + 별의 핵":"월신의 신전 · 백금괴 + 월광수";
+ return '<div class="core-plan-box"><h3>'+name+'</h3><div class="core-plan-line">두 재료 중 더 많은 소탕 횟수만 적용</div><div class="core-plan-strong">'+(ready[i]?coreSweepText(g[1])+'<br>필요 던전 입장권 '+coreKoreanAmount(g[1]*2)+'장':'계산 대기')+'</div></div>';
+ }).join("");
  rows.innerHTML=coreSweepUnits.map(([unit,label],i)=>{
  const cells=plans.map(p=>p?coreKoreanAmount(p[i].count)+"회":"-");
  return "<tr><td>×"+label+"</td><td>"+cells[0]+"</td><td>"+cells[1]+"</td></tr>";
@@ -401,7 +419,7 @@ function renderCoreDungeonTickets(){
  const target=number("verifiedCoreTarget"),owned=number("verifiedCoreOwned");
  const info=$("coreMasteryInfo");
  for(const id of ["coreMoonRuns","coreStarRuns","coreTicketsNeed"])$(id).textContent="-";
- $("coreYieldRows").textContent="";$("coreProbabilityRows").textContent="";renderCoreSweepPlan([[0,0,0],[0,0,0]],[false,false]);
+ $("coreYieldRows").textContent="";$("coreProbabilityRows").textContent="";$("coreMaterialPlans").textContent="";renderCoreSweepPlan([[0,0,0],[0,0,0]],[false,false]);
  $("coreTicketResult").textContent="";$("coreTicketShortage").textContent="입장권 부족분: 계산 대기";
  if(!Number.isSafeInteger(mastery)||mastery<1||mastery>41507){info.textContent="숙련도는 1~41,507 사이의 정수로 입력하세요.";info.className="status warn";return;}
  const mult=coreMasteryMultiplier(mastery);
@@ -426,6 +444,9 @@ function renderCoreDungeonTickets(){
   const runs=short===0?[0,0,0]:valid&&r.y?r.y.slice().reverse().map(y=>Math.ceil(short/y)):null;
   if(!runs||!runs.every(Number.isSafeInteger))ready[r.group]=false;
   else groups[r.group]=groups[r.group].map((v,i)=>Math.max(v,runs[i]));
+  const name=r.name.split(" / ")[1];
+  const line=(label,v)=>'<div class="core-plan-line">'+label+': '+coreKoreanAmount(v)+'</div>';
+  $("coreMaterialPlans").insertAdjacentHTML("beforeend",'<div class="core-plan-box"><h3>'+name+' ('+r.name.split(" / ")[0]+')</h3>'+line("제작 필요",need)+line("현재 보유",have)+line("부족",short)+line("10만회 예상",r.y?Math.round(r.y[1]*100000):NaN)+'<div class="core-plan-strong">'+(runs?coreSweepText(runs[1])+'<br>재료 기준 필요 입장권 '+coreKoreanAmount(runs[1]*2)+'장':'입력 확인')+'</div></div>');
   $("coreYieldRows").insertAdjacentHTML("beforeend","<tr><td>"+r.name+"</td>"+(r.y?r.y.map(v=>"<td>"+fmtCoreAmount(v)+"</td>").join(""):"<td>입력 필요</td><td>-</td><td>-</td>")+"<td>"+(runs?fmtCoreAmount(runs[1])+"회":"입력 확인")+"</td></tr>");
  }
  renderCoreSweepPlan(groups,ready);
