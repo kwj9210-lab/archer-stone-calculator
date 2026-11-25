@@ -331,8 +331,16 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 <p class="codex-guide">등급별 5세트 중 완성한 항목만 체크하세요. 체크한 세트 1개당 9등급 +75, 8등급 +105, 7등급 +150, 6등급 +210, 5등급 +300, 4등급 +420, 3등급 +1,200, 2등급 +1,680, 1등급 +2,400 관통을 적용합니다. 전체 45세트 완성 시 +32,700입니다.</p>
 </details>
 </section>
+<section class="card">
+ <h2>07 · 오행 개방 누적 관통</h2>
+ <div class="grid2">
+  <label>오행 개방 완료 단계 (0~500)<input id="openingCompleted" type="number" min="0" max="500" step="1" value="0"></label>
+  <div class="field"><label>완료 단계 누적 관통</label><div class="result" id="openingGain">+0 관통 · +0 명중</div></div>
+ </div>
+ <div class="note">오행 개방 완료 보상만 합산합니다. 현재 강화 중인 단계가 완료되기 전에는 단계 완료 관통을 더하지 않습니다. 100단계 완료 관통 +15,000은 기존 확인값입니다. 101~500단계 추가 보너스는 확인되지 않아 현재 관통 Total에 임의 추가하지 않습니다.</div>
+</section>
 <section class="card summary" id="summary">
- <h2>07 · 관통 Total 계산 결과</h2>
+ <h2>08 · 관통 Total 계산 결과</h2>
  <div class="total-layout">
   <div class="total-box"><div class="headline">최종 관통</div><strong id="penetrationTotal" aria-live="polite">0</strong><div class="note">유효한 입력값일 때 자동 계산</div></div>
   <div class="mini-box"><span>기본 능력치 (갑파 포함)</span><b id="partBasic">0</b></div>
