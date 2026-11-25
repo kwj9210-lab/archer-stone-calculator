@@ -226,6 +226,8 @@ button.action.secondary{
 const $=id=>document.getElementById(id);
 const fmt=n=>Math.trunc(n).toLocaleString("ko-KR");
 const ids=["opening60","chaos11","currentStage","targetStage","haveHeaven","haveNebula","haveCore","craftCount","ownCore","craftMode","verifiedCoreTarget","verifiedCoreOwned","verifiedHave9701","verifiedHave9702","verifiedHave9703","verifiedHave9704","platinumHave","steelHave","moonHave","starHave"];
+const MAX_TRANSCEND=100;
+const FIXED_FROM_LEVEL=35;
 const stageData=[
  {heaven:"1000000000",nebula:"500000000",core:"12",attack:"3999999983616"},
  {heaven:"1000000000",nebula:"500000000",core:"13",attack:"3999999983616"},
@@ -256,8 +258,6 @@ function syncFixedStages(){
 syncFixedStages();
 const defaultStageData=stageData.map(d=>({...d}));
 const key="archer:heaven-core-transcend:v1";
-const MAX_TRANSCEND=100;
-const FIXED_FROM_LEVEL=35;
 for(let i=0;i<=MAX_TRANSCEND;i++){
  const a=document.createElement("option"),b=document.createElement("option");
  a.value=b.value=String(i);a.textContent=b.textContent=i+"단계";
@@ -301,6 +301,7 @@ function render(){
  syncFixedStages();
  const current=number("currentStage"),target=number("targetStage");
  const rows=[...$("stageRows").querySelectorAll("tr")];
+ rows.slice(FIXED_FROM_LEVEL).forEach((tr,j)=>tr.querySelectorAll("input[data-kind]").forEach(input=>{input.value=stageData[j+FIXED_FROM_LEVEL][input.dataset.kind];}));
  let cum=0,attackChainKnown=true;
  for(let i=0;i<MAX_TRANSCEND;i++){
   const a=stageData[i].attack;
