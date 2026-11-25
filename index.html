@@ -313,11 +313,11 @@ th:first-child,td:first-child{text-align:left}
 <script>
 (function(){
  'use strict';
- // Multiplier formula verified from v0.2.6 IL2CPP; the announced 16억-100 cap extends the existing formula.
+ // Multiplier formula verified from v0.2.6 IL2CPP; the announced 20억-1 cap extends the existing formula.
  window.archerMasteryMultiplier=function(level){
   var n=Number(level);
   if(!Number.isFinite(n) || n<=0)return 1;
-  n=Math.min(33507,Math.floor(n));
+  n=Math.min(41507,Math.floor(n));
   return n<=5507?1.25+n/4:1378+(n-5507)/8;
  };
 })();
@@ -377,11 +377,11 @@ th:first-child,td:first-child{text-align:left}
 <section class="card">
 <h2>4. 내 던전 숙련도</h2>
 <div class="grid3">
-<label>숙련도 단계<input id="masteryLevel" type="text" inputmode="numeric" value="33507" placeholder="1~33507"></label>
-<label>숙련도 배율<input id="masteryMult" type="text" value="4878" readonly aria-readonly="true"></label>
-<label>수련장 단계<input id="masteryTrainingStage" type="text" value="16억-100" readonly aria-readonly="true"></label>
+<label>숙련도 단계<input id="masteryLevel" type="text" inputmode="numeric" value="41507" placeholder="1~41507"></label>
+<label>숙련도 배율<input id="masteryMult" type="text" value="5878" readonly aria-readonly="true"></label>
+<label>수련장 단계<input id="masteryTrainingStage" type="text" value="20억-1" readonly aria-readonly="true"></label>
 </div>
-<div class="note">숙련도 단계를 입력하면 숙련도 배율과 필요한 수련장 단계가 자동으로 표시됩니다. 최대 33,507단계 · 수련장 16억-100 · 최대 배율 ×4,878. 최신 확장 공지에 따라 상한을 높였으며, 기존에 검증한 증가 공식을 새 구간에도 그대로 적용합니다. 2억 이후에는 수련장 5만 증가당 +0.125배입니다.</div>
+<div class="note">숙련도 단계를 입력하면 숙련도 배율과 필요한 수련장 단계가 자동으로 표시됩니다. 최대 41,507단계 · 수련장 20억-1 · 최대 배율 ×5,878. 최신 게임 화면에 따라 상한을 높였으며, 기존에 검증한 증가 공식을 새 구간에도 그대로 적용합니다. 2억 이후에는 수련장 5만 증가당 +0.125배입니다.</div>
 </section>
 
 <section class="card result-card">
@@ -570,8 +570,8 @@ function calc(){
  need(tg,count);
  var rawMastery=String(el('masteryLevel').value).trim();
   var masteryLv=/^\d+$/.test(rawMastery)?Number(rawMastery):NaN;
-  if(!Number.isSafeInteger(masteryLv)||masteryLv<1||masteryLv>33507){
-   el('resourceResults').innerHTML='<div class="box"><h3>숙련도 입력 확인</h3><div class="line">숙련도 단계를 1~33,507 사이로 입력하면 소탕 횟수와 입장권을 계산합니다.</div></div>';
+  if(!Number.isSafeInteger(masteryLv)||masteryLv<1||masteryLv>41507){
+   el('resourceResults').innerHTML='<div class="box"><h3>숙련도 입력 확인</h3><div class="line">숙련도 단계를 1~41,507 사이로 입력하면 소탕 횟수와 입장권을 계산합니다.</div></div>';
    ['ticketsTotal','ticketsByType','totalRuns','ticketShort','diamondNeed','dungeonDiamond','huntingDiamond','dungeonRuns','huntingRuns','dungeonShort','huntingShort'].forEach(function(id){el(id).textContent='—';});
    el('summary').textContent='숙련도를 입력해 주세요.';
    return;
@@ -639,6 +639,7 @@ function masteryRequiredStage(lv){
 }
 function stageText(stage){
  if(stage===null)return "신규 구간 미확인";
+ if(stage===2000000000)return "20억-1";
  if(stage>=100000000&&stage%100000000===0)return fmtPlain(stage/100000000)+'억-100';
  if(stage%10000===0)return fmtPlain(stage/10000)+'만-1';
  return fmtPlain(stage)+'-1';
@@ -660,7 +661,7 @@ function syncMastery(){
    calc();
    return;
  }
- if(lv>33507){lv=33507;field.value='33507';}
+ if(lv>41507){lv=41507;field.value='41507';}
  var mult=window.archerMasteryMultiplier(lv);
  el('masteryMult').value=mult.toFixed(3).replace(/\.?0+$/,'');
  el('masteryTrainingStage').value=stageText(masteryRequiredStage(lv));
