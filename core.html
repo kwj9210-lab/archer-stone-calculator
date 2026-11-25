@@ -80,6 +80,7 @@ button.action.secondary{
 </style>
 <script src="./korean-amount.js?v=1"></script>
 <style>
+.core-input-heading{grid-column:1/-1;margin-top:3px;padding-bottom:5px;border-bottom:1px solid #e6eee8;color:#557669;font-size:12px;font-weight:900}.core-input-heading:not(:first-child){margin-top:7px}
 .core-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
 .core-plan-box{padding:12px;border:1px solid #e2d6c5;border-radius:12px;background:#fffefa;min-width:0}
 .core-plan-box h3{margin:0 0 8px;color:#75421f}
@@ -180,21 +181,23 @@ button.action.secondary{
  월광수·별의 핵은 드랍 확률을 반영한 평균 예상 획득량(확정값 아님)으로 계산합니다.<br>
  <mark style="background:#c5eee8;color:#285b56;padding:2px 1px;box-decoration-break:clone;-webkit-box-decoration-break:clone;">실제 월광수·별의 핵 획득량에 따라 필요 던전 입장권 수량은 증감될 수 있습니다.</mark></p>
  <div class="grid two">
+  <div class="core-input-heading">던전 정보</div>
   <div class="field"><label for="coreDungeonMastery">던전 숙련도 (1~41,507)</label><input id="coreDungeonMastery" type="text" inputmode="numeric" value="15168"></div>
-  <div class="field"><label for="coreDungeonTicketOwned">보유 던전 입장권</label><input id="coreDungeonTicketOwned" type="text" value="0"></div>
-  <div class="field"><label for="corePlatYield">백금괴 실제 1회 획득량</label><input id="corePlatYield" type="text" value="837742"></div>
-  <div class="field"><label for="coreSteelYield">성철괴 실제 1회 획득량</label><input id="coreSteelYield" type="text" value="819643"></div>
+  <div class="field"><label for="coreDungeonTicketOwned">보유 던전 입장권</label><input id="coreDungeonTicketOwned" type="text" inputmode="numeric" value="0"></div>
+  <div class="core-input-heading">고정 재료 실제 1회 획득량 직접 입력</div>
+  <div class="field"><label for="corePlatYield">백금괴</label><input id="corePlatYield" type="text" inputmode="numeric" value="837742"></div>
+  <div class="field"><label for="coreSteelYield">성철괴</label><input id="coreSteelYield" type="text" inputmode="numeric" value="819643"></div>
  </div>
  <div class="status" id="coreMasteryInfo"></div>
  <p class="small">백금괴·성철괴는 현재 숙련도에서 실제 1회 획득량을 입력하세요.</p>
- <div class="table-wrap" style="margin-top:12px"><table style="min-width:620px"><thead><tr><th>던전 / 재료</th><th>1회 최소</th><th>1회 평균</th><th>1회 최대</th><th>평균 기준 필요 소탕</th></tr></thead><tbody id="coreYieldRows"></tbody></table></div>
+ <div class="table-wrap" style="margin-top:12px"><table style="min-width:620px"><thead><tr><th>던전 / 재료</th><th>1회 최소</th><th>1회 평균</th><th>1회 최대</th><th>평균 획득량 기준 소탕</th></tr></thead><tbody id="coreYieldRows"></tbody></table></div>
  <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:800">월광수·별의 핵 지급 확률 (APK 클라이언트 기준)</summary>
  <div class="table-wrap"><table style="min-width:340px"><thead><tr><th>기본 수량</th><th>확률</th><th>숙련도 적용 수량</th></tr></thead><tbody id="coreProbabilityRows"></tbody></table></div>
  <p class="small">0.2.14 RollDungeonQuestDrop 신규 던전 분기 기준. 기본 수량 × 숙련도 배율의 소수점 이하 버림은 실제 화면에서 1·2·4·6배 수량과 일치합니다. 서버 소탕 확률 및 대량 소탕의 반올림 방식은 별도 검증 전입니다.</p></details>
  <div class="summary" style="margin-top:12px">
-  <div class="metric"><span>월신의 신전 예상 소탕</span><b id="coreMoonRuns">-</b></div>
-  <div class="metric"><span>천공의 용광로 예상 소탕</span><b id="coreStarRuns">-</b></div>
-  <div class="metric"><span>전체 예상 던전 입장권</span><b id="coreTicketsNeed">-</b></div>
+  <div class="metric"><span>월신의 신전 평균 기준 소탕</span><b id="coreMoonRuns">-</b></div>
+  <div class="metric"><span>천공의 용광로 평균 기준 소탕</span><b id="coreStarRuns">-</b></div>
+  <div class="metric"><span>평균 기준 예상 입장권</span><b id="coreTicketsNeed">-</b></div>
  </div>
  <div class="status" id="coreTicketResult"></div>
  <div class="status warn" id="coreTicketShortage"></div>
@@ -203,7 +206,7 @@ button.action.secondary{
  <p class="small">같은 던전에서 두 재료가 함께 나오므로 더 많은 소탕이 필요한 재료를 기준으로 계산합니다. 입장권은 던전별로 한 번만 합산합니다.</p>
  <details><summary style="cursor:pointer">소탕 단위별 상세표</summary><div class="table-wrap"><table style="min-width:300px"><thead><tr><th>소탕 단위</th><th>월신의 신전</th><th>천공의 용광로</th></tr></thead><tbody id="coreSweepPlanRows"></tbody></table></div></details>
  <div class="status" id="coreSweepPlanSummary"></div>
- <p class="small">제작식은 기존 0.2.10 기준입니다. 소탕 1회당 던전 입장권 2장 외에 별도 소탕권 1장 또는 게임에서 정한 대체 비용이 필요할 수 있습니다. 평균 소탕은 부족량 ÷ 평균 획득량의 계획값이며 확정 횟수나 정확한 평균 도달시간이 아닙니다.</p>
+ <p class="small">제작식은 기존 0.2.10 기준입니다. 소탕 1회당 던전 입장권 2장 외에 별도 소탕권 1장 또는 게임에서 정한 대체 비용이 필요할 수 있습니다. 평균 소탕은 부족량 ÷ 평균 획득량으로 계산한 계획값입니다. 입장권 범위는 매회 최소 또는 최대 수량이 지급된다고 가정한 이론값이며, 실제 확률 변동 구간은 아닙니다.</p>
 </section>
 <details class="card" id="legacyPieceEditor"><summary style="cursor:pointer;font-weight:800;color:#47725b">천명의 핵 20조각 별도 제작식 (아직 미확인, 펼쳐보기)</summary>
 <p class="note">이 아래는 천명의 핵 20조각의 별도 계획용 도구입니다. 위에서 확인한 초월핵 1개 제작 재료와 혼동하지 마세요.</p>
