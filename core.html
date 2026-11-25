@@ -182,11 +182,11 @@ button.action.secondary{
  <div class="grid two">
   <div class="field"><label for="coreDungeonMastery">던전 숙련도 (1~41,507)</label><input id="coreDungeonMastery" type="text" inputmode="numeric" value="15168"></div>
   <div class="field"><label for="coreDungeonTicketOwned">보유 던전 입장권</label><input id="coreDungeonTicketOwned" type="text" value="0"></div>
-  <div class="field"><label for="corePlatYield">백금괴 실제 1회 획득량</label><input id="corePlatYield" type="text" value="837742"></div>
-  <div class="field"><label for="coreSteelYield">성철괴 실제 1회 획득량</label><input id="coreSteelYield" type="text" value="819643"></div>
+  <div class="field"><label for="corePlatYield">백금괴 자동 1회 획득량</label><input id="corePlatYield" type="text" value="837742" readonly></div>
+  <div class="field"><label for="coreSteelYield">성철괴 자동 1회 획득량</label><input id="coreSteelYield" type="text" value="819643" readonly></div>
  </div>
  <div class="status" id="coreMasteryInfo"></div>
- <p class="small">고정 재료 기본 입력값은 숙련도 15,168의 실제 화면 기준입니다. 숙련도를 변경하면 고정 재료의 실제 획득량도 직접 갱신하세요. 고정 재료에는 배율을 다시 곱하지 않습니다.</p>
+ <p class="small">백금괴·성철괴는 숙련도 배율에 따라 자동 계산합니다. (기본 획득량: 백금괴 324, 성철괴 317)</p>
  <div class="table-wrap" style="margin-top:12px"><table style="min-width:620px"><thead><tr><th>던전 / 재료</th><th>1회 최소</th><th>1회 평균</th><th>1회 최대</th><th>평균 기준 필요 소탕</th></tr></thead><tbody id="coreYieldRows"></tbody></table></div>
  <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:800">월광수·별의 핵 지급 확률 (APK 클라이언트 기준)</summary>
  <div class="table-wrap"><table style="min-width:340px"><thead><tr><th>기본 수량</th><th>확률</th><th>숙련도 적용 수량</th></tr></thead><tbody id="coreProbabilityRows"></tbody></table></div>
@@ -369,7 +369,7 @@ const verifiedCoreMaterials=[
  {id:9703,name:"월광수",qty:10000000000},
  {id:9704,name:"별의 핵",qty:10000000000}
 ];
-const coreTicketInputIds=["coreDungeonMastery","coreDungeonTicketOwned","corePlatYield","coreSteelYield"];
+const coreTicketInputIds=["coreDungeonMastery","coreDungeonTicketOwned"];
 const coreTicketStorageKey="archer:core-dungeon-ticket:v2";
 const coreDropDistribution=[[1,40],[2,26],[4,12],[6,10],[8,7],[10,5]];
 function coreMasteryMultiplier(n){return n<=5507?1.25+n/4:1378+(n-5507)/8;}
@@ -423,6 +423,8 @@ function renderCoreDungeonTickets(){
  $("coreTicketResult").textContent="";$("coreTicketShortage").textContent="입장권 부족분: 계산 대기";
  if(!Number.isSafeInteger(mastery)||mastery<1||mastery>41507){info.textContent="숙련도는 1~41,507 사이의 정수로 입력하세요.";info.className="status warn";return;}
  const mult=coreMasteryMultiplier(mastery);
+ $("corePlatYield").value=String(Math.floor(324*mult));
+ $("coreSteelYield").value=String(Math.floor(317*mult));
  info.textContent="현재 숙련도 배율 ×"+mult.toLocaleString("ko-KR",{maximumFractionDigits:3});info.className="status";
  const drops=coreDropDistribution.map(([q,p])=>[q,p,Math.floor(q*mult)]);
  const rare=[drops[0][2],drops.reduce((s,[q,p,v])=>s+p*v,0)/100,drops[drops.length-1][2]];
