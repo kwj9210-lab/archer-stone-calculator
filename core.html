@@ -87,7 +87,14 @@ button.action.secondary{
 .core-plan-line{font-size:12px;line-height:1.8;color:#71665b;overflow-wrap:anywhere}
 .core-plan-strong{font-size:14px;line-height:1.65;font-weight:850;color:#198b64;margin-top:7px;overflow-wrap:anywhere}
 @media(max-width:480px){.core-plan-grid{grid-template-columns:1fr}}
-</style></head>
+</style><style>
+.stage-data-details>summary{cursor:pointer;list-style:none;font-size:16px;font-weight:850;color:var(--ink,#46372b);display:flex;align-items:center;gap:9px}
+.stage-data-details>summary::-webkit-details-marker{display:none}
+.stage-data-details>summary::before{content:"▸";color:#218b78;font-size:18px;transition:transform .15s ease}
+.stage-data-details[open]>summary::before{transform:rotate(90deg)}
+.stage-data-details[open] .table-wrap{margin-top:12px}
+</style>
+</head>
 <body>
 <main>
 <section class="hero">
@@ -134,16 +141,16 @@ button.action.secondary{
   <div class="actions"><button id="handoffCraft" class="action" type="button">부족한 초월핵 제작량 계산하기</button></div>
  </section>
 
- <section class="card">
-  <h2>1~20단계 재료 및 공격력 데이터</h2>
-  <p class="note">APK v0.2.10의 ARM64 네이티브 코드에서 복원한 1~20단계 데이터를 미리 입력했습니다. 현재 단계부터 목표 단계까지 필요한 재료와 공격력 증가량을 합산합니다. 숫자는 원본 정수이며 반올림하지 않았습니다.</p>
-  <div class="table-wrap">
-   <table>
-    <thead><tr><th>단계</th><th>천명석 소모</th><th>성운석 소모</th><th>초월핵 소모</th><th>공격력 증가</th><th>누적 공격력</th></tr></thead>
-    <tbody id="stageRows"></tbody>
-   </table>
-  </div>
-
+ <section class="card stage-data-card">
+  <details class="stage-data-details">
+   <summary>1~20단계 재료 및 공격력 데이터</summary>
+   <div class="table-wrap">
+    <table>
+     <thead><tr><th>단계</th><th>천명석 소모</th><th>성운석 소모</th><th>초월핵 소모</th><th>공격력 증가</th><th>누적 공격력</th></tr></thead>
+     <tbody id="stageRows"></tbody>
+    </table>
+   </div>
+  </details>
  </section>
 </section>
 
