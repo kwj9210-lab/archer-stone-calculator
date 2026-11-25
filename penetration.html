@@ -124,6 +124,8 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 .codex-set-row[data-registered="true"]{border-color:#a6d7bb;background:#f7fff9}
 @media(max-width:640px){.codex-groups{grid-template-columns:1fr}}
 
+.shoe-codex-heading{margin:20px 0 0;padding:13px 0 0;border-top:1px solid #e5ddd0;color:#315d4d;font-size:15px;font-weight:900;letter-spacing:-.2px}
+.shoe-codex-heading:before{content:"";display:inline-block;width:4px;height:17px;margin:0 9px -3px 0;background:#58cf98;border-radius:2px}
 .glove-codex-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;padding:10px 12px;border:1px solid #cce4d4;border-radius:11px;background:#f4fcf6}
 .glove-codex-line label{margin:0;flex:1;min-width:175px}
 .glove-codex-line b{color:#197951;font-size:16px}
@@ -318,9 +320,7 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 </div>
 <div class="glove-stat"><span>현재 장착 <span id="shoeEquippedName">없음</span></span><b id="shoeSum">관통 +0</b></div>
 <div class="note">다른 신발을 선택하면 기존 신발 대신 새 신발 관통만 적용합니다. 해제하려면 미장착을 선택하세요.</div>
-</section>
-<section class="card" id="shoeCodexSection">
-<h2>05-2 · 신발 도감 관통 (9~1등급)</h2>
+<div class="shoe-codex-heading">05-2 · 신발 도감 관통 (9~1등급)</div>
 <div class="note">등급마다 5세트, 총 45세트입니다. 완성한 세트에만 해당 등급의 관통 보너스를 적용하며, 신발 장착 관통과 별도로 합산합니다.</div>
 <div class="glove-codex-line">
 <label class="checkrow"><input id="shoeCodexEnabled" type="checkbox" autocomplete="off"> 신발 도감 보너스 적용</label>
@@ -333,9 +333,8 @@ button.action:disabled{background:#dae5de;color:#80988b;cursor:not-allowed}
 <div id="shoeCodexGroups" class="codex-groups"></div>
 <p class="codex-guide">등급별 5세트 중 완성한 항목만 체크하세요. 체크한 세트 1개당 9등급 +75, 8등급 +105, 7등급 +150, 6등급 +210, 5등급 +300, 4등급 +420, 3등급 +1,200, 2등급 +1,680, 1등급 +2,400 관통을 적용합니다. 전체 45세트 완성 시 +32,700입니다.</p>
 </details>
-</section>
 <section class="card">
-<h2>06 · 오행 개방 누적 관통</h2>
+ <h2>06 · 오행 개방 누적 관통</h2>
 <div class="fields">
  <div class="field"><label for="openingCompleted">오행 개방 완료 단계 (0~500)</label><input id="openingCompleted" type="number" min="0" max="500" step="1" value="" autocomplete="off"></div>
  <div class="field"><label>완료 단계 누적 관통</label><div class="readout" id="openingGain">+0</div></div>
