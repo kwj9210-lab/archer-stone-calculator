@@ -240,8 +240,8 @@ function updateReward(f){
  const all=totalStoneReward(rewardFloor);
  const base=totalStoneReward(Math.min(rewardFloor,8000));
  const extension=Math.max(0,rewardFloor-8000)*1280;
- const detail=f>8000
-  ? '<div style="margin-top:6px;font-size:12px;color:#71867c">기존 1~8,000층 누적 '+fmt(base)+'개</div><div style="font-size:12px;color:#198b64">확장 8,001~'+fmt(f)+'층 추가 '+fmt(extension)+'개</div>'
+ const detail=rewardFloor>8000
+  ? '<div style="margin-top:6px;font-size:12px;color:#71867c">기존 1~8,000층 누적 '+fmt(base)+'개</div><div style="font-size:12px;color:#198b64">확인된 확장 8,001~'+fmt(rewardFloor)+'층 추가 '+fmt(extension)+'개</div>'
   : '<div style="margin-top:6px;font-size:12px;color:#71867c">기존 구간 누적 '+fmt(base)+'개</div>';
  out.innerHTML='<b style="font-size:17px">'+fmt(rewardFloor)+'층까지 확인된 누적 '+fmt(all)+'개</b>'+detail+(f>11000?'<div style="margin-top:6px;font-size:12px;color:#a46a22">11,001~'+fmt(f)+'층 초월석 보상은 미확인으로 제외했습니다.</div>':'');
 }
@@ -259,7 +259,7 @@ function updateLookup(){
  }
  const [p,a]=req(f);
  let extra='';
- if(f<11000){
+ if(f<20000){
   const [np,na]=req(f+1);
   extra='<br><span style="font-size:12px;color:#71867c">다음 '+(f+1)+'층 · 필요 관통 '+fmt(np)+' / 필요 명중 '+fmt(na)+'</span>';
  }
@@ -271,11 +271,11 @@ function updateFloorCheck(){
  const field=document.getElementById('floorCheck'),out=document.getElementById('floorCheckResult');
  const raw=String(field.value).trim();
  const n=Number(raw);
- const valid=/^\d+$/.test(raw)&&Number.isSafeInteger(n)&&n>=500&&n<=11000;
+ const valid=/^\d+$/.test(raw)&&Number.isSafeInteger(n)&&n>=500&&n<=20000;
  field.setAttribute('aria-invalid',valid?'false':'true');
- if(!valid){out.textContent='500~11,000층 정수를 입력해 주세요.';return;}
+ if(!valid){out.textContent='500~20,000층 정수를 입력해 주세요.';return;}
  const [block,evasion]=req(n);
- out.textContent=fmt(n)+'층 · 필요 관통 '+fmt(block)+' / 필요 명중 '+fmt(evasion)+(n===11000?' · APK MAX':'');
+ out.textContent=fmt(n)+'층 · 필요 관통 '+fmt(block)+' / 필요 명중 '+fmt(evasion)+(n===20000?' · 확장 MAX':'');
 }
 document.getElementById('floorCheck').addEventListener('input',updateFloorCheck);
 updateFloorCheck();
