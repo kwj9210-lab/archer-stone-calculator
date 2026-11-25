@@ -78,6 +78,7 @@ button.action.secondary{
 }
 .prereq input{accent-color:#a95a2d!important}
 </style>
+<script src="./korean-amount.js?v=1"></script>
 </head>
 <body>
 <main>
@@ -157,10 +158,10 @@ button.action.secondary{
   <div class="metric"><span>제작 수량 검증</span><b style="font-size:13px">APK v0.2.10</b></div>
  </div>
  <div class="table-wrap" style="margin-top:12px">
-  <table style="min-width:690px"><thead><tr><th>재료</th><th>1개당</th><th>총 필요량</th><th>재료 보유량</th><th>부족량</th></tr></thead><tbody><tr><td>백금괴</td><td>1,000,000,000,000</td><td id="verifiedNeed9701">-</td><td><input id="verifiedHave9701" aria-label="백금괴 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9701">-</td></tr>
-<tr><td>성철괴</td><td>1,000,000,000,000</td><td id="verifiedNeed9702">-</td><td><input id="verifiedHave9702" aria-label="성철괴 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9702">-</td></tr>
-<tr><td>월광수</td><td>10,000,000,000</td><td id="verifiedNeed9703">-</td><td><input id="verifiedHave9703" aria-label="월광수 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9703">-</td></tr>
-<tr><td>별의 핵</td><td>10,000,000,000</td><td id="verifiedNeed9704">-</td><td><input id="verifiedHave9704" aria-label="별의 핵 보유량" type="number" min="0" step="1" value="0"></td><td id="verifiedShort9704">-</td></tr></tbody></table>
+  <table style="min-width:690px"><thead><tr><th>재료</th><th>1개당</th><th>총 필요량</th><th>재료 보유량</th><th>부족량</th></tr></thead><tbody><tr><td>백금괴</td><td>1,000,000,000,000</td><td id="verifiedNeed9701">-</td><td><input id="verifiedHave9701" aria-label="백금괴 보유량" type="text" inputmode="text" min="0" step="1" value="0"></td><td id="verifiedShort9701">-</td></tr>
+<tr><td>성철괴</td><td>1,000,000,000,000</td><td id="verifiedNeed9702">-</td><td><input id="verifiedHave9702" aria-label="성철괴 보유량" type="text" inputmode="text" min="0" step="1" value="0"></td><td id="verifiedShort9702">-</td></tr>
+<tr><td>월광수</td><td>10,000,000,000</td><td id="verifiedNeed9703">-</td><td><input id="verifiedHave9703" aria-label="월광수 보유량" type="text" inputmode="text" min="0" step="1" value="0"></td><td id="verifiedShort9703">-</td></tr>
+<tr><td>별의 핵</td><td>10,000,000,000</td><td id="verifiedNeed9704">-</td><td><input id="verifiedHave9704" aria-label="별의 핵 보유량" type="text" inputmode="text" min="0" step="1" value="0"></td><td id="verifiedShort9704">-</td></tr></tbody></table>
  </div>
  <div id="verifiedCoreStatus" class="status">보유 수량을 입력하면 추가 제작량과 부족 재료가 자동 계산됩니다.</div>
  <p class="note">수량은 원본 정수 배열을 기준으로 합니다. 실제 제작 성공·서버 상태를 조회하는 기능은 아닙니다.</p>
@@ -168,32 +169,27 @@ button.action.secondary{
 
 <section class="card" id="coreDungeonTicketCard">
  <h2>던전 입장권 계산</h2>
- <p class="note">초월핵 제작에 부족한 재료를 기준으로 월신의 신전·천공의 용광로 소탕 횟수와 입장권을 계산합니다. 두 재료는 같은 던전에서 함께 얻으므로 던전별 소탕 횟수는 재료별 횟수를 더하지 않고 큰 값으로 계산합니다. 드랍 확률은 확인되지 않아 임의로 넣지 않았습니다.</p>
+ <p class="note">백금괴·성철괴는 현재 숙련도에서 실제 소탕 1회당 획득량을 입력하세요. 월광수·별의 핵은 숙련도에 따라 자동 계산합니다.</p>
  <div class="grid two">
-  <div class="field"><label for="coreDungeonMastery">던전 숙련도 (1~33,507)</label><input id="coreDungeonMastery" type="text" inputmode="numeric" value="33507" data-core-ticket></div>
-  <div class="field"><label for="coreDungeonTicketOwned">보유 던전 입장권</label><input id="coreDungeonTicketOwned" type="text" inputmode="text" value="0" data-core-ticket></div>
+  <div class="field"><label for="coreDungeonMastery">던전 숙련도 (1~33,507)</label><input id="coreDungeonMastery" type="text" inputmode="numeric" value="15168"></div>
+  <div class="field"><label for="coreDungeonTicketOwned">보유 던전 입장권</label><input id="coreDungeonTicketOwned" type="text" value="0"></div>
+  <div class="field"><label for="corePlatYield">백금괴 실제 1회 획득량</label><input id="corePlatYield" type="text" value="837742"></div>
+  <div class="field"><label for="coreSteelYield">성철괴 실제 1회 획득량</label><input id="coreSteelYield" type="text" value="819643"></div>
  </div>
- <div class="status" id="coreMasteryInfo">숙련도 배율 계산 중</div>
- <h3 style="margin-top:14px">소탕 1회당 획득량 입력 (숙련도 1배 기준)</h3>
- <p class="small">현재 APK에서 확정하지 못한 획득량은 비워 두었습니다. 게임에서 확인한 실제 수량을 입력하면 숙련도 배율을 적용합니다. 확률 재료의 확률은 입력하거나 추정하지 않습니다.</p>
- <div class="table-wrap" style="margin-top:8px">
-  <table style="min-width:760px">
-   <thead><tr><th>던전</th><th>재료</th><th>최소 획득</th><th>평균 획득</th><th>최대 획득</th></tr></thead>
-   <tbody>
-    <tr><td rowspan="2">월신의 신전</td><td>백금괴</td><td><input id="coreYieldPlatMin" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldPlatAvg" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldPlatMax" data-core-ticket type="text" placeholder="미입력"></td></tr>
-    <tr><td>월광수</td><td><input id="coreYieldMoonMin" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldMoonAvg" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldMoonMax" data-core-ticket type="text" placeholder="미입력"></td></tr>
-    <tr><td rowspan="2">천공의 용광로</td><td>성철괴</td><td><input id="coreYieldSteelMin" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldSteelAvg" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldSteelMax" data-core-ticket type="text" placeholder="미입력"></td></tr>
-    <tr><td>별의 핵</td><td><input id="coreYieldStarMin" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldStarAvg" data-core-ticket type="text" placeholder="미입력"></td><td><input id="coreYieldStarMax" data-core-ticket type="text" placeholder="미입력"></td></tr>
-   </tbody>
-  </table>
- </div>
+ <div class="status" id="coreMasteryInfo"></div>
+ <p class="small">고정 재료 기본 입력값은 숙련도 15,168의 실제 화면 기준입니다. 숙련도를 변경하면 고정 재료의 실제 획득량도 직접 갱신하세요. 고정 재료에는 배율을 다시 곱하지 않습니다.</p>
+ <div class="table-wrap" style="margin-top:12px"><table style="min-width:620px"><thead><tr><th>던전 / 재료</th><th>1회 최소</th><th>1회 평균</th><th>1회 최대</th><th>평균 기준 필요 소탕</th></tr></thead><tbody id="coreYieldRows"></tbody></table></div>
+ <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:800">월광수·별의 핵 지급 확률 (APK 클라이언트 기준)</summary>
+ <div class="table-wrap"><table style="min-width:340px"><thead><tr><th>기본 수량</th><th>확률</th><th>숙련도 적용 수량</th></tr></thead><tbody id="coreProbabilityRows"></tbody></table></div>
+ <p class="small">0.2.14 RollDungeonQuestDrop 신규 던전 분기 기준. 기본 수량 × 숙련도 배율의 소수점 이하 버림은 실제 화면에서 1·2·4·6배 수량과 일치합니다. 서버 소탕 확률 및 대량 소탕의 반올림 방식은 별도 검증 전입니다.</p></details>
  <div class="summary" style="margin-top:12px">
   <div class="metric"><span>월신의 신전 예상 소탕</span><b id="coreMoonRuns">-</b></div>
   <div class="metric"><span>천공의 용광로 예상 소탕</span><b id="coreStarRuns">-</b></div>
-  <div class="metric"><span>전체 필요 입장권</span><b id="coreTicketsNeed">-</b></div>
+  <div class="metric"><span>전체 예상 던전 입장권</span><b id="coreTicketsNeed">-</b></div>
  </div>
- <div class="status" id="coreTicketResult">재료별 1배 기준 획득량을 입력하면 소탕 횟수와 입장권을 계산합니다.</div>
- <div class="status warn" id="coreTicketShortage">입장권 부족분: -</div>
+ <div class="status" id="coreTicketResult"></div>
+ <div class="status warn" id="coreTicketShortage"></div>
+ <p class="small">제작식은 기존 0.2.10 기준입니다. 소탕 1회당 던전 입장권 2장 외에 별도 소탕권 1장 또는 게임에서 정한 대체 비용이 필요할 수 있습니다. 평균 소탕은 부족량 ÷ 평균 획득량의 계획값이며 확정 횟수나 정확한 평균 도달시간이 아닙니다.</p>
 </section>
 <details class="card" id="legacyPieceEditor"><summary style="cursor:pointer;font-weight:800;color:#47725b">천명의 핵 20조각 별도 제작식 (아직 미확인, 펼쳐보기)</summary>
 <p class="note">이 아래는 천명의 핵 20조각의 별도 계획용 도구입니다. 위에서 확인한 초월핵 1개 제작 재료와 혼동하지 마세요.</p>
@@ -298,7 +294,7 @@ function buildRows(){
   body.appendChild(tr);
  });
 }
-function number(id){const raw=$(id).value.trim();if(raw==="")return 0;const n=Number(raw);return Number.isSafeInteger(n)&&n>=0?n:NaN;}
+function number(id){if(/^verifiedHave970[1-4]$/.test(id))return window.ArcherKoreanAmount.parse($(id).value);const raw=$(id).value.trim();if(raw==="")return 0;const n=Number(raw);return Number.isSafeInteger(n)&&n>=0?n:NaN;}
 function safeAdd(a,b){const v=a+b;return Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&Number.isSafeInteger(v)?v:NaN;}
 function save(){
  const state={};
@@ -359,94 +355,57 @@ const verifiedCoreMaterials=[
  {id:9703,name:"월광수",qty:10000000000},
  {id:9704,name:"별의 핵",qty:10000000000}
 ];
-const coreTicketInputIds=["coreDungeonMastery","coreDungeonTicketOwned","coreYieldPlatMin","coreYieldPlatAvg","coreYieldPlatMax","coreYieldMoonMin","coreYieldMoonAvg","coreYieldMoonMax","coreYieldSteelMin","coreYieldSteelAvg","coreYieldSteelMax","coreYieldStarMin","coreYieldStarAvg","coreYieldStarMax"];
-const coreTicketStorageKey="archer:core-dungeon-ticket:v1";
-function parseKoreanGameAmount(raw){
- if(raw==null||String(raw).trim()==="")return null;
- const s=String(raw).replace(/,/g,"").replace(/\\s+/g,"");
- if(/^\\d+$/.test(s)){const n=Number(s);return Number.isSafeInteger(n)&&n>=0?n:null;}
- const units={"경":1e16,"조":1e12,"억":1e8,"만":1e4};
- let total=0,rest=s,matched=false;
- const re=/(\\d+(?:\\.\\d+)?)(경|조|억|만)/g;let m;
- while((m=re.exec(s))){matched=true;total+=Number(m[1])*units[m[2]];}
- rest=rest.replace(re,"");
- if(rest&&/^\\d+$/.test(rest)){total+=Number(rest);matched=true;}else if(rest)return null;
- return matched&&Number.isSafeInteger(total)&&total>=0?total:null;
-}
-function fmtCoreAmount(n){return Math.ceil(n).toLocaleString("ko-KR");}
-function coreMasteryMultiplier(level){
- const n=Math.max(1,Math.min(33507,Math.floor(level)));
- return n<=5507?1.25+n/4:1378+(n-5507)/8;
-}
-function coreTicketValue(id){return parseKoreanGameAmount($(id).value);}
+const coreTicketInputIds=["coreDungeonMastery","coreDungeonTicketOwned","corePlatYield","coreSteelYield"];
+const coreTicketStorageKey="archer:core-dungeon-ticket:v2";
+const coreDropDistribution=[[1,40],[2,26],[4,12],[6,10],[8,7],[10,5]];
+function coreMasteryMultiplier(n){return n<=5507?1.25+n/4:1378+(n-5507)/8;}
+function coreTicketValue(id){return window.ArcherKoreanAmount.parse($(id).value);}
+function fmtCoreAmount(n){return Number.isFinite(n)?n.toLocaleString("ko-KR",{maximumFractionDigits:2}):"미확인";}
 function restoreCoreTicketInputs(){
- try{const saved=JSON.parse(localStorage.getItem(coreTicketStorageKey)||"{}");coreTicketInputIds.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});}catch(_){}
+ try{const old=JSON.parse(localStorage.getItem("archer:core-dungeon-ticket:v1")||"{}");if(typeof old.coreDungeonTicketOwned==="string")$("coreDungeonTicketOwned").value=old.coreDungeonTicketOwned;
+ const saved=JSON.parse(localStorage.getItem(coreTicketStorageKey)||"{}");coreTicketInputIds.forEach(id=>{if(typeof saved[id]==="string")$(id).value=saved[id];});}catch(_){}
 }
-function saveCoreTicketInputs(){
- const saved={};coreTicketInputIds.forEach(id=>saved[id]=$(id).value);
- try{localStorage.setItem(coreTicketStorageKey,JSON.stringify(saved));}catch(_){}
-}
+function saveCoreTicketInputs(){try{localStorage.setItem(coreTicketStorageKey,JSON.stringify(Object.fromEntries(coreTicketInputIds.map(id=>[id,$(id).value]))));}catch(_){}}
 function renderCoreDungeonTickets(){
- const mastery=coreTicketValue("coreDungeonMastery");
- const ticketOwned=coreTicketValue("coreDungeonTicketOwned");
+ const mastery=coreTicketValue("coreDungeonMastery"), ticketOwned=coreTicketValue("coreDungeonTicketOwned");
+ const target=number("verifiedCoreTarget"),owned=number("verifiedCoreOwned");
  const info=$("coreMasteryInfo");
- if(!Number.isSafeInteger(mastery)||mastery<1||mastery>33507){
-  info.textContent="숙련도는 1~33,507 사이의 정수로 입력하세요.";info.className="status warn";return;
- }
+ for(const id of ["coreMoonRuns","coreStarRuns","coreTicketsNeed"])$(id).textContent="-";
+ $("coreYieldRows").textContent="";$("coreProbabilityRows").textContent="";
+ $("coreTicketResult").textContent="";$("coreTicketShortage").textContent="입장권 부족분: 계산 대기";
+ if(!Number.isSafeInteger(mastery)||mastery<1||mastery>33507){info.textContent="숙련도는 1~33,507 사이의 정수로 입력하세요.";info.className="status warn";return;}
  const mult=coreMasteryMultiplier(mastery);
- info.textContent="현재 숙련도 배율 ×"+mult.toLocaleString("ko-KR",{maximumFractionDigits:2})+" · 최고 숙련도 배율 ×4,878";
- info.className="status";
+ info.textContent="현재 숙련도 배율 ×"+mult.toLocaleString("ko-KR",{maximumFractionDigits:3});info.className="status";
+ const drops=coreDropDistribution.map(([q,p])=>[q,p,Math.floor(q*mult)]);
+ const rare=[drops[0][2],drops.reduce((s,[q,p,v])=>s+p*v,0)/100,drops[drops.length-1][2]];
+ $("coreProbabilityRows").innerHTML=drops.map(([q,p,v])=>"<tr><td>"+q+"</td><td>"+p+"%</td><td>"+fmtCoreAmount(v)+"</td></tr>").join("");
+ if(!Number.isSafeInteger(target)||!Number.isSafeInteger(owned)){$("coreTicketResult").textContent="초월핵 목표 및 보유량 입력을 확인하세요.";return;}
+ const make=Math.max(0,target-owned);
+ const fixed=id=>{const q=coreTicketValue(id);return Number.isSafeInteger(q)&&q>0?[q,q,q]:null;};
  const resources=[
-  {id:"9701",dungeon:"moon",yield:["coreYieldPlatMin","coreYieldPlatAvg","coreYieldPlatMax"]},
-  {id:"9703",dungeon:"moon",yield:["coreYieldMoonMin","coreYieldMoonAvg","coreYieldMoonMax"]},
-  {id:"9702",dungeon:"star",yield:["coreYieldSteelMin","coreYieldSteelAvg","coreYieldSteelMax"]},
-  {id:"9704",dungeon:"star",yield:["coreYieldStarMin","coreYieldStarAvg","coreYieldStarMax"]}
+  {id:9701,name:"월신의 신전 / 백금괴",group:0,qty:1e12,y:fixed("corePlatYield")},
+  {id:9703,name:"월신의 신전 / 월광수",group:0,qty:1e10,y:rare},
+  {id:9702,name:"천공의 용광로 / 성철괴",group:1,qty:1e12,y:fixed("coreSteelYield")},
+  {id:9704,name:"천공의 용광로 / 별의 핵",group:1,qty:1e10,y:rare}
  ];
- const shortages={};
- for(const item of resources){
-  const shortage=Math.max(0,Number($("verifiedShort"+item.id).textContent.replace(/,/g,""))||0);
-  shortages[item.id]=shortage;
+ const groups=[[0,0,0],[0,0,0]],ready=[true,true];
+ for(const r of resources){
+  const need=r.qty*make,have=number("verifiedHave"+r.id);
+  const valid=Number.isSafeInteger(need)&&Number.isSafeInteger(have);
+  const short=valid?Math.max(0,need-have):NaN;
+  const runs=short===0?[0,0,0]:valid&&r.y?r.y.slice().reverse().map(y=>Math.ceil(short/y)):null;
+  if(!runs||!runs.every(Number.isSafeInteger))ready[r.group]=false;
+  else groups[r.group]=groups[r.group].map((v,i)=>Math.max(v,runs[i]));
+  $("coreYieldRows").insertAdjacentHTML("beforeend","<tr><td>"+r.name+"</td>"+(r.y?r.y.map(v=>"<td>"+fmtCoreAmount(v)+"</td>").join(""):"<td>입력 필요</td><td>-</td><td>-</td>")+"<td>"+(runs?fmtCoreAmount(runs[1])+"회":"입력 확인")+"</td></tr>");
  }
- function estimate(dungeon){
-  const rows=resources.filter(x=>x.dungeon===dungeon);
-  let minRuns=0,avgRuns=0,maxRuns=0,complete=true,any=false;
-  for(const r of rows){
-   const need=shortages[r.id];if(!need)continue;any=true;
-   const vals=r.yield.map(coreTicketValue);
-   if(vals.some(v=>v===null)||vals[0]<=0||vals[1]<=0||vals[2]<=0){complete=false;continue;}
-   const [lo,av,hi]=vals.map(v=>v*mult);
-   if(lo>av||av>hi){complete=false;continue;}
-   minRuns=Math.max(minRuns,Math.ceil(need/hi));
-   avgRuns=Math.max(avgRuns,Math.ceil(need/av));
-   maxRuns=Math.max(maxRuns,Math.ceil(need/lo));
-  }
-  return {any,complete,minRuns,avgRuns,maxRuns};
- }
- const moon=estimate("moon"),star=estimate("star");
- function display(r){return !r.any?"0회":r.complete?fmtCoreAmount(r.avgRuns)+"회": "입력 필요";}
- $("coreMoonRuns").textContent=display(moon);
- $("coreStarRuns").textContent=display(star);
- const ready=(!moon.any||moon.complete)&&(!star.any||star.complete);
- if(!ready){
-  $("coreTicketsNeed").textContent="-";
-  $("coreTicketResult").textContent="부족 재료가 있는 던전의 최소·평균·최대 획득량을 모두 입력해야 계산할 수 있습니다. 확률 재료의 드랍 확률은 APK에서 확인되지 않아 임의로 가정하지 않습니다.";
-  $("coreTicketResult").className="status warn";
-  $("coreTicketShortage").textContent="입장권 부족분: 계산 대기";
-  return;
- }
- const minTotal=(moon.any?moon.minRuns:0)+(star.any?star.minRuns:0);
- const avgTotal=(moon.any?moon.avgRuns:0)+(star.any?star.avgRuns:0);
- const maxTotal=(moon.any?moon.maxRuns:0)+(star.any?star.maxRuns:0);
- const tickets=avgTotal*2;
- $("coreTicketsNeed").textContent=fmtCoreAmount(tickets)+"장";
- $("coreTicketResult").textContent="소탕 범위 "+fmtCoreAmount(minTotal)+"~"+fmtCoreAmount(maxTotal)+"회 · 평균 획득량 기준 계획 "+fmtCoreAmount(avgTotal)+"회 · 던전 소탕 1회당 입장권 2장. 평균은 확정 필요량이 아닙니다.";
- $("coreTicketResult").className="status";
- if(!Number.isSafeInteger(ticketOwned)){
-  $("coreTicketShortage").textContent="보유 입장권을 0 이상의 정수로 입력하세요.";
- }else{
-  const gap=Math.max(0,tickets-ticketOwned);
-  $("coreTicketShortage").textContent="평균 기준 필요 입장권 "+fmtCoreAmount(tickets)+"장 / 보유 "+fmtCoreAmount(ticketOwned)+"장 / 부족 "+fmtCoreAmount(gap)+"장";
- }
+ const range=g=>fmtCoreAmount(g[0])+"~"+fmtCoreAmount(g[2])+"회";
+ ["coreMoonRuns","coreStarRuns"].forEach((id,i)=>{$(id).textContent=ready[i]?fmtCoreAmount(groups[i][1])+"회":"입력 필요";});
+ if(!ready.every(Boolean)){$("coreTicketResult").textContent="부족한 고정 재료의 실제 획득량 및 보유량을 확인하세요.";return;}
+ const total=groups[0].map((v,i)=>v+groups[1][i]),tickets=total.map(v=>v*2);
+ if(!tickets.every(Number.isSafeInteger)){$("coreTicketResult").textContent="계산 범위 초과";return;}
+ $("coreTicketsNeed").textContent=fmtCoreAmount(tickets[1])+"장";
+ $("coreTicketResult").textContent="월신의 신전 "+range(groups[0])+" / 천공의 용광로 "+range(groups[1])+" · 전체 입장권 범위 "+fmtCoreAmount(tickets[0])+"~"+fmtCoreAmount(tickets[2])+"장 (클라이언트 확률 및 1회 지급 모델 기준)";
+ $("coreTicketShortage").textContent=Number.isSafeInteger(ticketOwned)?"평균 기준 필요 "+fmtCoreAmount(tickets[1])+"장 / 보유 "+fmtCoreAmount(ticketOwned)+"장 / 부족 "+fmtCoreAmount(Math.max(0,tickets[1]-ticketOwned))+"장":"보유 입장권 입력을 확인하세요.";
 }
 function renderVerifiedCoreCraft(){
  const target=number("verifiedCoreTarget"),owned=number("verifiedCoreOwned");
