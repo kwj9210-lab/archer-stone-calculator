@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="./clarity-ui.css?v=2">
 </head>
 <body><main>
-<header class="site-head"><h1>궁수키우기 RPG 각성석 시뮬레이터</h1><div class="submark">Lv.0–120,000</div></header>
+<header class="site-head"><h1>궁수키우기 RPG 각성석 시뮬레이터</h1><div class="submark">Lv.0–130,000</div></header>
 <p class="hero-sub">초월석 최적 배분과 같은 방식 · 각성 초기화 후 보유한 <b>총 각성석</b>을 입력하면 Lv.0부터 추천 레벨을 계산합니다.</p>
 <div class="workspace">
 <section class="panel input-panel">
@@ -36,13 +36,13 @@
 </div>
 <section class="cost-panel">
 <h2>비용 기준</h2>
-<div class="cost-summary">최신 공지 반영: 각성석 강화 4종 최대 Lv.120,000 · 기존 APK에서 검증된 Cost 공식과 AttackDigits 효과 계수 사용<br>같은 공격력 효과를 내는 조합 중 <b>잔여 각성석이 가장 적은 조합 하나</b>를 표시합니다.</div>
+<div class="cost-summary">최신 공지 반영: 각성석 강화 4종 최대 Lv.130,000 · 기존 APK에서 검증된 Cost 공식과 AttackDigits 효과 계수 사용<br>같은 공격력 효과를 내는 조합 중 <b>잔여 각성석이 가장 적은 조합 하나</b>를 표시합니다.</div>
 <details class="cost-details" id="details"><summary>100레벨 구간별 각성석 비용</summary><div class="scroll"><table id="costTable"><thead><tr><th>구간</th><th>성혼각성</th><th>성혼각인</th><th>신성공명</th><th>영겁승화</th></tr></thead><tbody></tbody></table></div></details>
 
 </section>
 </main><script>
 (function(global){"use strict";
-const MAX=120000,NAMES=['성혼각성','성혼각인','신성공명','영겁승화'];
+const MAX=130000,NAMES=['성혼각성','성혼각인','신성공명','영겁승화'];
 function oneCost(k,l){if(!Number.isInteger(k)||k<0||k>3||!Number.isInteger(l)||l<0||l>=MAX)throw Error('범위 오류');return Math.ceil((10+5*k)*(l+500)*(l+500)/250000)}
 const costs=Array.from({length:4},(_,k)=>{let out=new Float64Array(MAX+1);for(let lv=1;lv<=MAX;lv++)out[lv]=out[lv-1]+oneCost(k,lv-1);return out});
 const MAX_POOL=costs.reduce((a,c)=>a+c[MAX],0);
