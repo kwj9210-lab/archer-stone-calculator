@@ -138,8 +138,6 @@ header.menu-open .tabs{
 <button id="tabCore" type="button"><span class="tab-label"><span class="full">초월핵</span><span class="short">초월핵</span></span></button>
 <button id="tabAwakening" type="button"><span class="tab-label"><span class="full">각성석</span><span class="short">각성석</span></span></button>
 <button id="tabPenetration" type="button"><span class="tab-label"><span class="full">관통 Total</span><span class="short">관통 Total</span></span></button>
-<button id="tabSanctuary" type="button"><span class="tab-label"><span class="full">오행의 성역</span><span class="short">오행의성역</span></span></button>
-<button id="tabOpening" type="button"><span class="tab-label"><span class="full">오행 개방</span><span class="short">오행개방</span></span></button>
 <button id="tabWeekday" type="button"><span class="tab-label"><span class="full">요일던전</span><span class="short">요일던전</span></span></button>
 </div></div></header>
 <main>
@@ -147,8 +145,6 @@ header.menu-open .tabs{
 <iframe id="stone" src="transcend.html" title="초월석 시뮬레이터"></iframe>
 <iframe id="core" src="core.html" title="천명의 핵 초월 및 20조각 제작 계산기"></iframe>
 <iframe id="awakening" src="awakening.html" title="각성석 최적 배분 시뮬레이터"></iframe>
-<iframe id="sanctuary" src="sanctuary.html" title="오행의 성역"></iframe>
-<iframe id="opening" src="opening.html" title="오행 개방"></iframe>
 <iframe id="penetration" src="penetration.html" title="관통 Total"></iframe>
 <iframe id="weekday" src="weekday.html" title="요일던전 클리어 투력 계산기"></iframe>
 </main>
@@ -156,7 +152,7 @@ header.menu-open .tabs{
 const tabs=[
  ["engrave","tabEngrave"],
  ["stone","tabStone"],["core","tabCore"],["awakening","tabAwakening"],["penetration","tabPenetration"],
- ["sanctuary","tabSanctuary"],["opening","tabOpening"],["weekday","tabWeekday"]
+["weekday","tabWeekday"]
 ];
 const LAST_TAB_KEY="archer:calculator:last-tab:v1";
 const frames=Object.fromEntries(tabs.map(([id])=>[id,document.getElementById(id)]));
