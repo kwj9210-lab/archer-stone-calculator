@@ -280,7 +280,11 @@ function buildRows(){
  stageData.forEach((d,i)=>{
   const fixed=i>=FIXED_FROM_LEVEL;
   const tr=document.createElement("tr");tr.dataset.stage=String(i+1);tr.dataset.fixed=fixed?"true":"false";
-  const first=document.createElement("td");first.textContent=(i+1)+"단계"+(fixed?" *":"");tr.appendChild(first);
+  const first=document.createElement("td");
+  const provisional=i+1>=21&&i+1<=35;
+  first.textContent=(i+1)+"단계"+(provisional?" (잠정)":fixed?" *":"");
+  if(provisional){first.title="0.2.10 네이티브 구간식 연장값. 0.2.14 ARM64 교차검증 전";tr.classList.add("provisional");}
+  tr.appendChild(first);
   [["heaven","천명석 소모",d.heaven],["nebula","성운석 소모",d.nebula],["core","초월핵 소모",d.core],["attack","공격력 증가",d.attack]].forEach(([kind,label,value])=>{
    const td=document.createElement("td"),input=document.createElement("input");
    input.type="number";input.min="0";input.step="1";input.value=value;input.dataset.kind=kind;
@@ -347,7 +351,13 @@ function render(){
  if(!Number.isSafeInteger(current)||current<0||current>MAX_TRANSCEND||!Number.isSafeInteger(target)||target<0||target>MAX_TRANSCEND)gates.push("단계 입력 오류");
  if(gates.length){$("gateStatus").textContent="초월 조건 미충족: "+gates.join(" · ");$("gateStatus").className="status warn";}
  else if(!complete){$("gateStatus").textContent="선행 조건은 충족했습니다. 단계별 실제 소모량 데이터가 입력되지 않은 항목이 "+materialMissing.length+"개 있습니다.";$("gateStatus").className="status warn";}
- else{$("gateStatus").textContent="초월 조건 충족. 목표 단계까지 필요한 재료를 계산했습니다.";$("gateStatus").className="status";}
+ else{
+   const usesProvisional=current<35&&target>20;
+   $("gateStatus").textContent=usesProvisional
+    ?"계산 완료. 단, 21~35단계는 0.2.10 계산식 연장 잠정값이 포함되어 실제 0.2.14 수치와 다를 수 있습니다."
+    :"초월 조건 충족. 목표 단계까지 필요한 재료를 계산했습니다.";
+   $("gateStatus").className=usesProvisional?"status warn":"status";
+  }
  rows.forEach((tr,i)=>tr.classList.toggle("selected",i>=current&&i<target));
 }
 const verifiedCoreMaterials=[
