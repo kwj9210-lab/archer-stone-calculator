@@ -46,6 +46,16 @@ function runCoreTests(html,dataset){
  check(prefix[20].nebula===13000000000,"20 stage nebula total");
  check(prefix[20].core===475,"20 stage core total");
  check(prefix[20].attack===103999999180800,"20 stage attack total");
+ // 0.2.14 stage-cap and fixed-price inheritance regression checks.
+ check(html.includes("const MAX_TRANSCEND=100"),"maximum transcend stage is 100");
+ check(html.includes("const FIXED_FROM_LEVEL=35"),"fixed price source level is 35");
+ check(html.includes("while(stageData.length<MAX_TRANSCEND)stageData.push"),"stage data array is expanded to 100");
+ check(html.includes("for(let i=FIXED_FROM_LEVEL;i<MAX_TRANSCEND;i++)Object.assign(stageData[i],source)"),"stages 36-100 inherit stage 35 costs");
+ check(html.includes("level<=35"),"provisional extension covers levels 21-35");
+ check(html.includes("i+1>=21&&i+1<=35"),"provisional levels are visibly flagged");
+ check(html.includes("0.2.14 네이티브 바이너리 교차검증"),"unverified 0.2.14 values are disclosed");
+ check(html.includes('a.value=b.value=String(i)'),"stage selectors are generated from the maximum stage");
+ check(html.includes('i<=MAX_TRANSCEND'),"stage selectors include level 100");
  check(html.includes('id="handoffCraft"'),"craft handoff UI");
  check(html.includes('id="pieceRows"'),"20 piece editor UI");
  check(html.includes('const defaultStageData=stageData.map'),"reset verified stage defaults");
